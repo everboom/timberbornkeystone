@@ -78,11 +78,21 @@ $repoId = $repo.id
 $catId = $cat.id
 
 # --- Create the discussion ---
+# The body is passed via a temp file (-F body=@file) rather than inline, so
+# non-ASCII text (em-dashes, accents) survives: Windows PowerShell 5.1 mangles
+# non-ASCII when handing arguments to a native command.
 
 $mutation = 'mutation($repoId:ID!,$catId:ID!,$title:String!,$body:String!){createDiscussion(input:{repositoryId:$repoId,categoryId:$catId,title:$title,body:$body}){discussion{url number}}}'
-$raw = gh api graphql -f repoId=$repoId -f catId=$catId -f title=$Title -f body=$Body -f query=$mutation
-if ($LASTEXITCODE -ne 0) {
-    throw "createDiscussion failed."
+$bodyFile = New-TemporaryFile
+try {
+    [System.IO.File]::WriteAllText($bodyFile.FullName, $Body)
+    $raw = gh api graphql -f repoId=$repoId -f catId=$catId -f title=$Title -f query=$mutation -F "body=@$($bodyFile.FullName)"
+    if ($LASTEXITCODE -ne 0) {
+        throw "createDiscussion failed."
+    }
+}
+finally {
+    Remove-Item $bodyFile.FullName -ErrorAction SilentlyContinue
 }
 $discussion = ($raw | ConvertFrom-Json).data.createDiscussion.discussion
 
