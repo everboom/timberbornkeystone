@@ -145,3 +145,42 @@ console app under `tools/` and have the script invoke it.
 **Why em-dashes are avoided in this script's source.** PowerShell 5.1 reads
 unmarked UTF-8 source as ANSI, mangling non-ASCII characters into parse
 errors. Stick to ASCII inside `.ps1` files, or save with a UTF-8 BOM.
+
+## `new-bug-report.ps1`
+
+Files a structured bug-report **issue** on the GitHub repo via `gh issue create`.
+Run from inside the repo; requires the GitHub CLI authenticated (`gh auth login`).
+
+```powershell
+.\tools\new-bug-report.ps1 -Title "Cattails flicker at L3" `
+    -GameVersion 1.0.0.0 -Faction Folktails `
+    -Description "Cattail flourishes z-fight on river edges at level 3." -IncludeLog
+```
+
+Assembles a body with Timberborn version, faction, description, and a Player.log
+pointer, and labels the issue `bug`. `-IncludeLog` copies the current Player.log
+into `dump/` (via `copy-player-log.ps1`) so you can drag it onto the issue in the
+browser -- gh can't upload attachments itself. Omit `-Description` to be prompted.
+
+## `new-idea.ps1`
+
+Posts a feature idea to GitHub **Discussions** (the `Ideas` category by default).
+There is no native `gh discussion` command, so this wraps the GraphQL
+`createDiscussion` mutation: it resolves the repo node ID and category ID
+automatically (via GraphQL variables, which sidestep PowerShell's native-arg
+quoting trap), creates the discussion, and prints its URL. Requires `gh`
+authenticated.
+
+```powershell
+.\tools\new-idea.ps1 -Title "Sea and ocean biomes" `
+    -Body "Large-water biomes with their own fauna -- whales, manta rays, ocean life."
+```
+
+`-Category <name>` targets a different Discussions category (case-insensitive;
+defaults to `Ideas`). Omit `-Body` to be prompted. Use this to seed or grow the
+Ideas board from the CLI instead of the web UI.
+
+**Bug reports vs. ideas.** Bugs are concrete and trackable, so they go to
+**Issues** (`new-bug-report.ps1`); open-ended suggestions that benefit from
+community upvoting go to **Discussions** (`new-idea.ps1`). The README's
+"Suggest a feature or report a bug" section points players to the same split.
