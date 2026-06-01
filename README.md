@@ -73,12 +73,6 @@ Mark the area for planting (with any crop). Keystone honours planting marks and 
 **How do I stop trees, berry bushes, and dandelions from spawning where I don't want them?**
 Use the vanilla **mark for cutting** tool. Areas designated for cutting won't see new Keystone-driven spawns of blocking plants, so the swath you've earmarked for clearing stays cleared.
 
-## Coming soon
-
-- **Sea and ocean biomes** — new large-water biomes with their own fauna: whales, manta rays, and other ocean life.
-- **Polyculture beats monoculture** — mixed-crop farms grow faster and yield more than the same area sown as a single crop.
-- **More variety throughout** — additional fauna, plant species, and atmospheric effects, filling out biomes that are sparser today.
-
 ## Feedback and suggestions
 
 Bug reports, biome ideas, ecosystem screenshots, and faction-integration requests are all welcome.
