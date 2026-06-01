@@ -62,7 +62,7 @@ Ecology is heavy to simulate, so Keystone is built not to cost you framerate. Wo
 ## FAQ
 
 **Will it slow my game down?**
-Most setups shouldn't notice — Keystone's per-frame work is intentionally spread thinly across many frames rather than ticked in bursts. Press **Alt+Shift+K** in-game for a live performance window that breaks out Keystone's own costs. An upcoming update will add per-system throttles for lower-end hardware.
+Most setups shouldn't notice — Keystone's per-frame work is intentionally spread thinly across many frames rather than ticked in bursts. Press **Alt+Shift+K** in-game for a live performance window that breaks out Keystone's own costs. On lower-end hardware, the mod settings menu lets you throttle individual systems to claw back more.
 
 **Is it just visual, or does it affect gameplay?**
 Mainly visual feedback — a world that visibly responds to your stewardship — but it touches gameplay in two ways: plants grow faster near the healthy biomes they belong to, and beavers gain an optional Nature wellbeing need. No yield penalties, raids, or disease.
