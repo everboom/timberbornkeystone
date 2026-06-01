@@ -75,12 +75,10 @@ Use the vanilla **mark for cutting** tool. Areas designated for cutting won't se
 
 ## Suggest a feature or report a bug
 
-Keystone's backlog is community-driven through **[GitHub Discussions »](https://github.com/everboom/timberbornkeystone/discussions)**.
-
 - **💡 Have an idea?** A biome, an animal, a plant, a faction integration — [start a discussion in the **Ideas** category](https://github.com/everboom/timberbornkeystone/discussions/new/choose). Say what you'd like to see and why it fits Keystone's "shape the land, and the world answers" loop. **Browse the existing ideas first and upvote the ones you want** — the most-upvoted suggestions rise to the top and steer what gets built next.
-- **🐛 Found a bug?** Open a discussion with your Timberborn version, faction, what happened, and (ideally) your `Player.log` (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`).
+- **🐛 Found a bug?** [Open an issue](https://github.com/everboom/timberbornkeystone/issues/new) with your Timberborn version, faction, what happened, and (ideally) your `Player.log` (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`).
 
-Ecosystem screenshots and faction-integration requests are always welcome.
+General questions, ecosystem screenshots, and faction-integration requests are welcome in [Discussions](https://github.com/everboom/timberbornkeystone/discussions).
 
 ## License
 
