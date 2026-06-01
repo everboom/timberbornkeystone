@@ -73,9 +73,14 @@ Mark the area for planting (with any crop). Keystone honours planting marks and 
 **How do I stop trees, berry bushes, and dandelions from spawning where I don't want them?**
 Use the vanilla **mark for cutting** tool. Areas designated for cutting won't see new Keystone-driven spawns of blocking plants, so the swath you've earmarked for clearing stays cleared.
 
-## Feedback and suggestions
+## Suggest a feature or report a bug
 
-Bug reports, biome ideas, ecosystem screenshots, and faction-integration requests are all welcome.
+Keystone's backlog is community-driven through **[GitHub Discussions »](https://github.com/everboom/timberbornkeystone/discussions)**.
+
+- **💡 Have an idea?** A biome, an animal, a plant, a faction integration — [start a discussion in the **Ideas** category](https://github.com/everboom/timberbornkeystone/discussions/new/choose). Say what you'd like to see and why it fits Keystone's "shape the land, and the world answers" loop. **Browse the existing ideas first and upvote the ones you want** — the most-upvoted suggestions rise to the top and steer what gets built next.
+- **🐛 Found a bug?** Open a discussion with your Timberborn version, faction, what happened, and (ideally) your `Player.log` (`%USERPROFILE%\AppData\LocalLow\Mechanistry\Timberborn\Player.log`).
+
+Ecosystem screenshots and faction-integration requests are always welcome.
 
 ## License
 
