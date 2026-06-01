@@ -21,14 +21,6 @@ Your beavers feel it too — three new Nature needs join their wellbeing, met at
 [*][b]Emberpelts and Leaf Coats supported.[/b] Their nature-oriented buildings get their own thematic Nature needs — Leaf Coats enjoy nature from the vantage point of their trees; Emberpelts and wetlands don't get along.
 [/list]
 
-[h2]Coming soon[/h2]
-
-[list]
-[*][b]Sea and ocean biomes.[/b] New large-water biomes with their own fauna — whales, manta rays, and other ocean life.
-[*][b]Polyculture beats monoculture.[/b] Mixed-crop farms grow faster and yield more than the same area sown as a single-crop monoculture.
-[*][b]More variety throughout.[/b] Additional fauna, plant species, and atmospheric effects, filling out biomes that are sparser today.
-[/list]
-
 [h2]Compatibility[/h2]
 
 [list]
@@ -43,7 +35,7 @@ Your beavers feel it too — three new Nature needs join their wellbeing, met at
 [h2]FAQ[/h2]
 
 [b]Will it slow my game down?[/b]
-Most setups shouldn't notice — Keystone's per-frame work is intentionally spread thinly across many frames rather than ticked in bursts. If you want to see for yourself, press [b]Alt+Shift+K[/b] in-game to open a live performance window that breaks out Keystone's own costs. An upcoming update will add per-system throttles for players on lower-end hardware.
+Most setups shouldn't notice — Keystone's per-frame work is intentionally spread thinly across many frames rather than ticked in bursts. If you want to see for yourself, press [b]Alt+Shift+K[/b] in-game to open a live performance window that breaks out Keystone's own costs. On lower-end hardware, the mod settings menu lets you throttle individual systems to claw back more.
 
 [b]How do I keep Keystone's ambient flora off my build site?[/b]
 Mark the area for planting (with any crop). Keystone honours planting marks and won't drop flourishes, ground cover, or other ambient flora on tiles you've designated for farming.
