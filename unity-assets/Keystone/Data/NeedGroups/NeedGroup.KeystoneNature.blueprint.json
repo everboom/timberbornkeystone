@@ -1,0 +1,7 @@
+{
+  "NeedGroupSpec": {
+    "Id": "KeystoneNature",
+    "Order": 50,
+    "DisplayNameLocKey": "Keystone.NeedGroup.Nature.DisplayName"
+  }
+}

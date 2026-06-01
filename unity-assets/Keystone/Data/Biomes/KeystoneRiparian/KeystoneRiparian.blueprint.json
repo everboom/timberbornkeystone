@@ -1,0 +1,39 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneRiparian",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneBiomeLevelsSpec": {
+    "Biome": "Riparian",
+    "Levels": [
+      { "LevelId": "L1", "LowerMaturity": 0.5, "UpperMaturity":       3.0, "Density": 0.15 },
+      { "LevelId": "L2", "LowerMaturity": 3.0, "UpperMaturity": 30.0, "Density": 0.15 }
+    ]
+  },
+  "KeystoneRecipeBookSpec": {
+    "Recipes": [
+      {
+        "Class": "B", "Biome": "Riparian", "Level": "L1",
+        "BlueprintNames": [
+          "KeystoneRiparianMini1",  "KeystoneRiparianMini2",  "KeystoneRiparianMini3",
+          "KeystoneRiparianMini4",  "KeystoneRiparianMini5",  "KeystoneRiparianMini6",
+          "KeystoneRiparianMini7",  "KeystoneRiparianMini8",  "KeystoneRiparianMini9",
+          "KeystoneRiparianMini10", "KeystoneRiparianMini11", "KeystoneRiparianMini12",
+          "KeystoneRiparianMini13", "KeystoneRiparianMini14", "KeystoneRiparianMini15"
+        ]
+      },
+      {
+        "Class": "B", "Biome": "Riparian", "Level": "L2",
+        "BlueprintNames": [
+          "KeystoneRiparianMini1",  "KeystoneRiparianMini2",  "KeystoneRiparianMini3",
+          "KeystoneRiparianMini4",  "KeystoneRiparianMini5",  "KeystoneRiparianMini6",
+          "KeystoneRiparianMini7",  "KeystoneRiparianMini8",  "KeystoneRiparianMini9",
+          "KeystoneRiparianMini10", "KeystoneRiparianMini11", "KeystoneRiparianMini12",
+          "KeystoneRiparianMini13", "KeystoneRiparianMini14", "KeystoneRiparianMini15"
+        ]
+      }
+    ]
+  }
+}

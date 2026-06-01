@@ -1,0 +1,350 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneWetlandMini10",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneFlourishSpec": {},
+  "KeystoneVariantSpec": {},
+  "BlockObjectSpec": {
+    "Size": {
+      "X": 1,
+      "Y": 1,
+      "Z": 1
+    },
+    "Blocks": [
+      {
+        "MatterBelow": "Ground",
+        "Occupations": "Floor, Bottom, Corners, Path, Middle",
+        "Stackable": "None",
+        "OccupyAllBelow": false,
+        "Underground": false
+      }
+    ],
+    "Entrance": {
+      "HasEntrance": false,
+      "Coordinates": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      }
+    },
+    "BaseZ": 0,
+    "Overridable": true,
+    "Flippable": false
+  },
+  "NaturalResourceSpec": {
+    "Order": 100
+  },
+  "FloodableNaturalResourceSpec": {
+    "MinWaterHeight": 1,
+    "MaxWaterHeight": 1,
+    "DaysToDie": 1000000000.0
+  },
+  "DemolishableSpec": {
+    "DemolishTimeInHours": 0.5,
+    "ShowDemolishButtonInEntityPanel": false
+  },
+  "LabeledEntitySpec": {
+    "DisplayNameLocKey": "NaturalResource.KeystoneFlourish.DisplayName",
+    "DescriptionLocKey": "",
+    "FlavorDescriptionLocKey": "",
+    "Icon": "NaturalResources/Trees/Pine/PineIcon"
+  },
+  "BlockObjectModelSpec": {
+    "FullModelName": "#Models",
+    "UncoveredModelName": "",
+    "UndergroundModelName": "",
+    "UndergroundModelDepth": 0
+  },
+  "Children": {
+    "#Models": {
+      "Children": {
+        "Mature": {
+          "Children": {
+            "#Alive": {
+              "Children": {
+                "SpadderdockA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Spadderdock/SpadderdockSeedling"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.25,
+                      "Y": 0.0,
+                      "Z": -0.28
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.86,
+                      "Y": 0.86,
+                      "Z": 0.86
+                    }
+                  }
+                },
+                "SpadderdockB": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Spadderdock/SpadderdockSeedling"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.26,
+                      "Y": 0.0,
+                      "Z": 0.38
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.74,
+                      "Y": 0.74,
+                      "Z": 0.74
+                    }
+                  }
+                },
+                "CornA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Corn/CornSeedling"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.13,
+                      "Y": 0.0,
+                      "Z": -0.12
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.7,
+                      "Y": 0.7,
+                      "Z": 0.7
+                    }
+                  }
+                },
+                "Pebble_Square_5A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_5_Mossy"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.84,
+                      "Y": 0.0,
+                      "Z": 0.29
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.96,
+                      "Y": 0.96,
+                      "Z": 0.96
+                    }
+                  }
+                }
+              }
+            },
+            "#Dying": {
+              "Children": {
+                "SpadderdockA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Spadderdock/SpadderdockSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.25,
+                      "Y": 0.0,
+                      "Z": -0.28
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.86,
+                      "Y": 0.86,
+                      "Z": 0.86
+                    }
+                  }
+                },
+                "SpadderdockB": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Spadderdock/SpadderdockSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.26,
+                      "Y": 0.0,
+                      "Z": 0.38
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.74,
+                      "Y": 0.74,
+                      "Z": 0.74
+                    }
+                  }
+                },
+                "CornA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Corn/CornSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.13,
+                      "Y": 0.0,
+                      "Z": -0.12
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.7,
+                      "Y": 0.7,
+                      "Z": 0.7
+                    }
+                  }
+                },
+                "Pebble_Square_5A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_5_Mossy"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.84,
+                      "Y": 0.0,
+                      "Z": 0.29
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.96,
+                      "Y": 0.96,
+                      "Z": 0.96
+                    }
+                  }
+                }
+              }
+            },
+            "#Dead": {
+              "Children": {
+                "SpadderdockA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Spadderdock/SpadderdockSeedlingDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.25,
+                      "Y": 0.0,
+                      "Z": -0.28
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.86,
+                      "Y": 0.86,
+                      "Z": 0.86
+                    }
+                  }
+                },
+                "SpadderdockB": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Spadderdock/SpadderdockSeedlingDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.26,
+                      "Y": 0.0,
+                      "Z": 0.38
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.74,
+                      "Y": 0.74,
+                      "Z": 0.74
+                    }
+                  }
+                },
+                "CornA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Corn/CornSeedlingDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.13,
+                      "Y": 0.0,
+                      "Z": -0.12
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.7,
+                      "Y": 0.7,
+                      "Z": 0.7
+                    }
+                  }
+                },
+                "Pebble_Square_5A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_5_Mossy"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.84,
+                      "Y": 0.0,
+                      "Z": 0.29
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.96,
+                      "Y": 0.96,
+                      "Z": 0.96
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "WateredNaturalResourceSpec": {
+    "DaysToDieDry": 1000000000.0
+  }
+}

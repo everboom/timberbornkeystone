@@ -1,0 +1,148 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneRockCluster1",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneVariantSpec": {},
+  "BlockObjectSpec": {
+    "Size": {
+      "X": 1,
+      "Y": 1,
+      "Z": 1
+    },
+    "Blocks": [
+      {
+        "MatterBelow": "Ground",
+        "Occupations": "All",
+        "Stackable": "None",
+        "OccupyAllBelow": false,
+        "Underground": false
+      }
+    ],
+    "Entrance": {
+      "HasEntrance": false,
+      "Coordinates": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      }
+    },
+    "BaseZ": 0,
+    "Overridable": true,
+    "Flippable": false
+  },
+  "NaturalResourceSpec": {
+    "Order": 100
+  },
+  "FloodableNaturalResourceSpec": {
+    "MinWaterHeight": 0,
+    "MaxWaterHeight": 0,
+    "DaysToDie": 1000000000.0
+  },
+  "DemolishableSpec": {
+    "DemolishTimeInHours": 0.5,
+    "ShowDemolishButtonInEntityPanel": false
+  },
+  "DemolishableFromTopSpec": {},
+  "LabeledEntitySpec": {
+    "DisplayNameLocKey": "NaturalResource.KeystoneRockCluster.DisplayName",
+    "DescriptionLocKey": "",
+    "FlavorDescriptionLocKey": "",
+    "Icon": "NaturalResources/Trees/Pine/PineIcon"
+  },
+  "BlockObjectModelSpec": {
+    "FullModelName": "#Models",
+    "UncoveredModelName": "",
+    "UndergroundModelName": "",
+    "UndergroundModelDepth": 0
+  },
+  "Children": {
+    "#Models": {
+      "Children": {
+        "Rock_Medium_2A": {
+          "TimbermeshSpec": {
+            "Model": "NaturalResources/KeystoneRocks/Rock_Medium_2"
+          },
+          "TransformSpec": {
+            "Position": {
+              "X": 0.35,
+              "Y": 0.0,
+              "Z": 0.69
+            },
+            "Rotation": {
+              "X": 0.0,
+              "Y": 90.86,
+              "Z": 0.0
+            },
+            "Scale": {
+              "X": 0.82,
+              "Y": 0.82,
+              "Z": 0.82
+            }
+          },
+          "CollidersSpec": {
+            "BoxColliders": [
+              {
+                "Center": {
+                  "X": 0.0,
+                  "Y": 0.5,
+                  "Z": 0.0
+                },
+                "Size": {
+                  "X": 1.0,
+                  "Y": 1.0,
+                  "Z": 1.0
+                }
+              }
+            ],
+            "SphereColliders": [],
+            "CapsuleColliders": []
+          }
+        },
+        "Rock_Medium_2B": {
+          "TimbermeshSpec": {
+            "Model": "NaturalResources/KeystoneRocks/Rock_Medium_2"
+          },
+          "TransformSpec": {
+            "Position": {
+              "X": 0.23,
+              "Y": 0.0,
+              "Z": 0.17
+            },
+            "Rotation": {
+              "X": 0.0,
+              "Y": 180.58,
+              "Z": 0.0
+            },
+            "Scale": {
+              "X": 0.92,
+              "Y": 0.92,
+              "Z": 0.92
+            }
+          },
+          "CollidersSpec": {
+            "BoxColliders": [
+              {
+                "Center": {
+                  "X": 0.0,
+                  "Y": 0.5,
+                  "Z": 0.0
+                },
+                "Size": {
+                  "X": 1.0,
+                  "Y": 1.0,
+                  "Z": 1.0
+                }
+              }
+            ],
+            "SphereColliders": [],
+            "CapsuleColliders": []
+          }
+        }
+      }
+    }
+  },
+  "KeystoneRockTintSpec": {}
+}

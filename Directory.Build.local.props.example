@@ -1,0 +1,47 @@
+<Project>
+
+  <!--
+    Template for Directory.Build.local.props. Copy this file to
+    Directory.Build.local.props (which is gitignored) and edit the values
+    for your machine.
+
+    Required:
+      TimberbornInstallDir  — root of your Timberborn install. Must contain
+                              Timberborn_Data\Managed\ with the game DLLs.
+
+    Optional:
+      KeystoneDeployDir     — where the build copies Code.dll + manifest.
+                              Default: %USERPROFILE%\Documents\Timberborn\Mods\Keystone
+      TimberUiDir           — folder containing TimberUi.dll for compile-time
+                              reference. Steam Workshop install typically:
+                              <steam>\steamapps\workshop\content\1062090\3430626620\version-1.0
+                              The version subdir changes with TimberUi releases.
+      ModSettingsDir        — folder containing ModSettings.Core.dll and
+                              ModSettings.Common.dll (the eMka.ModSettings mod).
+                              Steam Workshop install typically:
+                              <steam>\steamapps\workshop\content\1062090\3283831040\version-1.0\Scripts
+
+    Dev-mode toggle (env var, not a build prop):
+      Set the KEYSTONE_DEV_MODE environment variable to "1" on your user
+      account to enable always-on startup dialogs, the dev toolbar, and
+      verbose logging at runtime:
+
+        setx KEYSTONE_DEV_MODE 1
+
+      Restart Steam afterwards (Steam captures its environment at launch
+      and passes it on to Timberborn). Clear the variable to disable:
+
+        setx KEYSTONE_DEV_MODE ""
+
+      The variable is per-user OS state, so a release archive cannot
+      carry it; only machines that explicitly opted in see dev behaviour.
+  -->
+
+  <PropertyGroup>
+    <TimberbornInstallDir>C:\Path\To\Timberborn</TimberbornInstallDir>
+    <!-- <KeystoneDeployDir>C:\Custom\Mods\Keystone</KeystoneDeployDir> -->
+    <!-- <TimberUiDir>C:\Path\To\Steam\steamapps\workshop\content\1062090\3430626620\version-1.0</TimberUiDir> -->
+    <!-- <ModSettingsDir>C:\Path\To\Steam\steamapps\workshop\content\1062090\3283831040\version-1.0\Scripts</ModSettingsDir> -->
+  </PropertyGroup>
+
+</Project>

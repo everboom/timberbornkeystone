@@ -1,0 +1,57 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneGrassland",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneBiomeLevelsSpec": {
+    "Biome": "Grassland",
+    "Levels": [
+      { "LevelId": "L1", "LowerMaturity":  0.5, "UpperMaturity":       2.5, "Density": 0.08 },
+      { "LevelId": "L2", "LowerMaturity":  2.5, "UpperMaturity":      30.0, "Density": 0.10 },
+      { "LevelId": "L3", "LowerMaturity":  7.5, "UpperMaturity": 1000000.0, "Density": 0.005, "Mode": "Stochastic", "FaunaCapacityAtSaturation": 8, "FaunaMinScore": 0.5 },
+      { "LevelId": "L4", "LowerMaturity": 12.5, "UpperMaturity": 1000000.0, "Density": 0.005, "Mode": "Stochastic" }
+    ]
+  },
+  "KeystoneRecipeBookSpec": {
+    "Recipes": [
+      {
+        "Class": "B", "Biome": "Grassland", "Level": "L1",
+        "BlueprintNames": [
+          "KeystoneGrasslandMini1",  "KeystoneGrasslandMini2",  "KeystoneGrasslandMini3",
+          "KeystoneGrasslandMini4",  "KeystoneGrasslandMini5",  "KeystoneGrasslandMini6",
+          "KeystoneGrasslandMini7",  "KeystoneGrasslandMini8",  "KeystoneGrasslandMini9",
+          "KeystoneGrasslandMini10", "KeystoneGrasslandMini11", "KeystoneGrasslandMini12",
+          "KeystoneGrasslandMini13", "KeystoneGrasslandMini14", "KeystoneGrasslandMini15",
+          "KeystoneGrasslandMini16", "KeystoneGrasslandMini17", "KeystoneGrasslandMini18",
+          "KeystoneGrasslandMini19", "KeystoneGrasslandMini20", "KeystoneGrasslandMini21",
+          "KeystoneGrasslandMini22", "KeystoneGrasslandMini23", "KeystoneGrasslandMini24",
+          "KeystoneGrasslandMini25"
+        ]
+      },
+      {
+        "Class": "B", "Biome": "Grassland", "Level": "L2",
+        "BlueprintNames": [
+          "KeystoneGrasslandMini1",  "KeystoneGrasslandMini2",  "KeystoneGrasslandMini3",
+          "KeystoneGrasslandMini4",  "KeystoneGrasslandMini5",  "KeystoneGrasslandMini6",
+          "KeystoneGrasslandMini7",  "KeystoneGrasslandMini8",  "KeystoneGrasslandMini9",
+          "KeystoneGrasslandMini10", "KeystoneGrasslandMini11", "KeystoneGrasslandMini12",
+          "KeystoneGrasslandMini13", "KeystoneGrasslandMini14", "KeystoneGrasslandMini15",
+          "KeystoneGrasslandMini16", "KeystoneGrasslandMini17", "KeystoneGrasslandMini18",
+          "KeystoneGrasslandMini19", "KeystoneGrasslandMini20", "KeystoneGrasslandMini21",
+          "KeystoneGrasslandMini22", "KeystoneGrasslandMini23", "KeystoneGrasslandMini24",
+          "KeystoneGrasslandMini25"
+        ]
+      },
+      { "Class": "E", "BlueprintName": "KeystoneBull",  "Biome": "Grassland", "Level": "L3", "Category": "Cattle", "Weight": 1 },
+      { "Class": "E", "BlueprintName": "KeystoneCow",   "Biome": "Grassland", "Level": "L3", "Category": "Cattle", "Weight": 4 },
+      { "Class": "D", "BlueprintName": "BlueberryBush", "Biome": "Grassland", "Level": "L3", "Category": "Bushes" },
+      { "Class": "D", "BlueprintName": "Dandelion",     "Biome": "Grassland", "Level": "L3", "Category": "Bushes" },
+      { "Class": "D", "BlueprintName": "Birch",         "Biome": "Grassland", "Level": "L4", "Category": "Trees", "Weight": 6.0 },
+      { "Class": "D", "BlueprintName": "Maple",         "Biome": "Grassland", "Level": "L4", "Category": "Trees", "Weight": 2.0 },
+      { "Class": "D", "BlueprintName": "ChestnutTree",  "Biome": "Grassland", "Level": "L4", "Category": "Trees", "Weight": 2.0 },
+      { "Class": "D", "BlueprintName": "Oak",           "Biome": "Grassland", "Level": "L4", "Category": "Trees", "Weight": 1.0 }
+    ]
+  }
+}

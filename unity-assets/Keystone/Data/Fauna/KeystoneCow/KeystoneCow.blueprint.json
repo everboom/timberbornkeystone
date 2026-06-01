@@ -1,0 +1,25 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneCow",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneFaunaAnimatorSpec": {
+    "WalkAnimationMultiplier": 0.65,
+    "IdleAnimationMultiplier": 0.80
+  },
+  "KeystoneFaunaAgentSpec": {
+    "WorldSpeedTilesPerSec": 0.65
+  },
+  "Children": {
+    "Cow": {
+      "TimbermeshSpec": { "Model": "Fauna/KeystoneCow/KeystoneCow" },
+      "TransformSpec": {
+        "Position": { "X": 0.0, "Y": 0.0, "Z": 0.0 },
+        "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 },
+        "Scale":    { "X": 0.144, "Y": 0.144, "Z": 0.144 }
+      }
+    }
+  }
+}

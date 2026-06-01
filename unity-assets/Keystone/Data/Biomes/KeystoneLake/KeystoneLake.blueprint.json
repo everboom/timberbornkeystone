@@ -1,0 +1,29 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneLake",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneBiomeLevelsSpec": {
+    "Biome": "Lake",
+    "Levels": [
+      { "LevelId": "L1", "LowerMaturity": 0.5, "UpperMaturity":       5.0 },
+      { "LevelId": "L2", "LowerMaturity": 5.0, "UpperMaturity": 1000000.0, "FaunaCapacityAtSaturation": 15, "FaunaMinScore": 0.3 }
+    ]
+  },
+  "KeystoneRecipeBookSpec": {
+    "Recipes": [
+      { "Class": "E", "BlueprintName": "KeystoneFish1", "Biome": "Lake", "Level": "L2", "Category": "Fish", "Weight": 1 },
+      { "Class": "E", "BlueprintName": "KeystoneFish2", "Biome": "Lake", "Level": "L2", "Category": "Fish", "Weight": 1 }
+    ],
+    "Attritions": [
+      {
+        "Biome": "Lake", "Level": "L1",
+        "Action": "Kill", "Classes": ["B"],
+        "Probability": 0.33, "Filter": "",
+        "IncludeHabitats": ["Dry"]
+      }
+    ]
+  }
+}

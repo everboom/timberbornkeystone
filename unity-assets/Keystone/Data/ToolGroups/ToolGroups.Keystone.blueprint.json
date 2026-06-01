@@ -1,0 +1,7 @@
+{
+  "ToolGroupSpec": {
+    "Id": "Keystone",
+    "DisplayNameLocKey": "ToolGroup.Keystone.DisplayName",
+    "Icon": "Sprites/BottomBar/KeystoneFlourishPlacement"
+  }
+}

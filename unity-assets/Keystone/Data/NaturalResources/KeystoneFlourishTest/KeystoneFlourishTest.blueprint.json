@@ -1,0 +1,86 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneFlourishTest",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneFlourishSpec": {},
+  "BlockObjectSpec": {
+    "Size": { "X": 1, "Y": 1, "Z": 2 },
+    "Blocks": [
+      { "MatterBelow": "Ground", "Occupations": "Floor, Bottom, Corners, Path, Middle", "Stackable": "None", "OccupyAllBelow": false, "Underground": false },
+      { "MatterBelow": "Any",    "Occupations": "Floor, Bottom, Corners, Path, Middle", "Stackable": "None", "OccupyAllBelow": false, "Underground": false }
+    ],
+    "Entrance": { "HasEntrance": false, "Coordinates": { "X": 0, "Y": 0, "Z": 0 } },
+    "BaseZ": 0,
+    "Overridable": true,
+    "Flippable": false
+  },
+  "NaturalResourceSpec": { "Order": 100 },
+  "WateredNaturalResourceSpec": { "DaysToDieDry": 1000000000.0 },
+  "FloodableNaturalResourceSpec": { "MinWaterHeight": 0, "MaxWaterHeight": 0, "DaysToDie": 1000000000.0 },
+  "DemolishableSpec": { "DemolishTimeInHours": 0.5, "ShowDemolishButtonInEntityPanel": false },
+  "LabeledEntitySpec": {
+    "DisplayNameLocKey": "NaturalResource.KeystoneFlourish.DisplayName",
+    "DescriptionLocKey": "",
+    "FlavorDescriptionLocKey": "",
+    "Icon": "NaturalResources/Trees/Pine/PineIcon"
+  },
+  "BlockObjectModelSpec": {
+    "FullModelName": "#Models",
+    "UncoveredModelName": "",
+    "UndergroundModelName": "",
+    "UndergroundModelDepth": 0
+  },
+  "Children": {
+    "#Models": {
+      "Children": {
+        "Seedling": {
+          "Children": {
+            "#Alive": {
+              "Children": {
+                "Pine":      { "TimbermeshSpec": { "Model": "NaturalResources/Trees/Pine/Mesh/PineSeedling" },        "TransformSpec": { "Position": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } },
+                "Sunflower": { "TimbermeshSpec": { "Model": "NaturalResources/Crops/Sunflower/SunflowerSeedling" },   "TransformSpec": { "Position": { "X": 0.5, "Y": 0.0, "Z": 0.5 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } }
+              }
+            },
+            "#Dying": {
+              "Children": {
+                "Pine":      { "TimbermeshSpec": { "Model": "NaturalResources/Trees/Pine/Mesh/PineSeedlingDry" },     "TransformSpec": { "Position": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } },
+                "Sunflower": { "TimbermeshSpec": { "Model": "NaturalResources/Crops/Sunflower/SunflowerSeedlingDry" },"TransformSpec": { "Position": { "X": 0.5, "Y": 0.0, "Z": 0.5 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } }
+              }
+            },
+            "#Dead": {
+              "Children": {
+                "Pine":      { "TimbermeshSpec": { "Model": "NaturalResources/Trees/Pine/Mesh/PineSeedlingDead" },    "TransformSpec": { "Position": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } },
+                "Sunflower": { "TimbermeshSpec": { "Model": "NaturalResources/Crops/Sunflower/SunflowerSeedlingDead" },"TransformSpec": { "Position": { "X": 0.5, "Y": 0.0, "Z": 0.5 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } }
+              }
+            }
+          }
+        },
+        "Mature": {
+          "Children": {
+            "#Alive": {
+              "Children": {
+                "Pine":      { "TimbermeshSpec": { "Model": "NaturalResources/Trees/Pine/Mesh/PineMature" },          "TransformSpec": { "Position": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } },
+                "Sunflower": { "TimbermeshSpec": { "Model": "NaturalResources/Crops/Sunflower/SunflowerMature" },     "TransformSpec": { "Position": { "X": 0.5, "Y": 0.0, "Z": 0.5 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } }
+              }
+            },
+            "#Dying": {
+              "Children": {
+                "Pine":      { "TimbermeshSpec": { "Model": "NaturalResources/Trees/Pine/Mesh/PineMatureDry" },       "TransformSpec": { "Position": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } },
+                "Sunflower": { "TimbermeshSpec": { "Model": "NaturalResources/Crops/Sunflower/SunflowerMatureDry" },  "TransformSpec": { "Position": { "X": 0.5, "Y": 0.0, "Z": 0.5 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } }
+              }
+            },
+            "#Dead": {
+              "Children": {
+                "Pine":      { "TimbermeshSpec": { "Model": "NaturalResources/Trees/Pine/Mesh/PineMatureDead" },      "TransformSpec": { "Position": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } },
+                "Sunflower": { "TimbermeshSpec": { "Model": "NaturalResources/Crops/Sunflower/SunflowerMatureDead" }, "TransformSpec": { "Position": { "X": 0.5, "Y": 0.0, "Z": 0.5 }, "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 }, "Scale": { "X": 0.5, "Y": 0.5, "Z": 0.5 } } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

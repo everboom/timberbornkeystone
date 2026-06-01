@@ -1,0 +1,15 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneBiomeLevels",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneBiomeLevelsSpec": {
+    "Biome": "",
+    "Levels": [
+      { "LevelId": "Worldgen", "LowerMaturity": 0.0, "UpperMaturity": 100.0, "Density": 0.04, "RunAtStartup": true },
+      { "LevelId": "L1", "LowerMaturity": 0.5, "UpperMaturity": 100.0 }
+    ]
+  }
+}

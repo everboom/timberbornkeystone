@@ -1,0 +1,56 @@
+[h1]Keystone — Ecology for Timberborn[/h1]
+
+[i]Beavers are nature's keystone species. Take their role further — caretakers of the land — and the whole map comes back to life.[/i]
+
+Bring water to every corner of the map, and life follows. Cattails fill slow side channels and fish thread through them. Birches line wet banks. Cattle graze established grassland; deer roam mature forest. Rocks pale under sun, darken in the wet. Dry land makes do with thin scrub and tumbleweed until water reaches it. Poisoned ground stays scarred long after the source is gone.
+
+Nothing is painted on the map and nothing is random. Underneath, the mod reads every part of your terrain — water, soil, plants, contamination — and the biomes form themselves from what it finds. Mature land takes in-game time to grow. Brief lapses heal. Sustained damage leaves traces.
+
+Your beavers feel it too — three new Nature needs join their wellbeing, met at shrines, lidos, and other nature-related buildings near healthy biomes.
+
+[h2]What it adds[/h2]
+[list]
+[*][b]Eleven emergent biomes.[/b] Forest, grassland, wetland, river, lake, shoreline, cave, monoculture, dry, contaminated, badwater. There's no designation tool — each biome is whatever the map's conditions add up to.
+[*][b]Around 70 plant scenes that bloom and decay with the map.[/b] Slow side channels grow spadderdock and cattails. Riverbanks pick up wetland-edge cover. Wet shorelines sprout birches. Drying land sheds its lush plants. Poisoned ground kills what's on it.
+[*][b]Stone that responds to its conditions.[/b] Rocks go pale and dusty under drought, wet-dark along streams, sickly under badwater.
+[*][b]Cross-faction flora.[/b] Plant the right conditions and the [i]other[/i] faction's flora takes root on its own. Folktails playthroughs grow Iron Teeth species where they belong, and vice versa. No menus, no recipes — just the right ground in the right place.
+[*][b]Morning mist over wetlands.[/b] Slow shallow water at the right depth wakes up wreathed in fog. Burns off as the day warms.
+[*][b]Long-term ecological memory.[/b] Healthy land builds slowly when conditions hold and fades when they don't. A short lapse heals. Long neglect leaves a scar. Drought management becomes biome management.
+[*][b]Wildlife where the habitat supports it.[/b] Deer roam mature forest. Cattle find their footing on established grassland. Fish thread through wetlands and across the surface of standing lakes. Populations scale with the biome's reach — a wider block of healthy forest holds more deer; a small one holds none. A degraded biome empties out.
+[*][b]Beaver wellbeing tied to the ecosystem.[/b] Three new Nature needs are satisfied at shrines, lidos, and other nature-related buildings sited near healthy biomes — the bigger and healthier the ecosystem nearby, the stronger the bonus.
+[*][b]Emberpelts and Leaf Coats supported.[/b] Their nature-oriented buildings get their own thematic Nature needs — Leaf Coats enjoy nature from the vantage point of their trees; Emberpelts and wetlands don't get along.
+[/list]
+
+[h2]Coming soon[/h2]
+
+[list]
+[*][b]Sea and ocean biomes.[/b] New large-water biomes with their own fauna — whales, manta rays, and other ocean life.
+[*][b]Polyculture beats monoculture.[/b] Mixed-crop farms grow faster and yield more than the same area sown as a single-crop monoculture.
+[*][b]More variety throughout.[/b] Additional fauna, plant species, and atmospheric effects, filling out biomes that are sparser today.
+[/list]
+
+[h2]Compatibility[/h2]
+
+[list]
+[*][b]Game version:[/b] Timberborn 1.0
+[*][b]Factions:[/b] Works with any faction. Folktails, Iron Teeth, Leaf Coats, and Emberpelts each get bespoke integration; specific integrations for other faction mods are possible.
+[*][b]Requires:[/b] TimberUI, Harmony
+[*][b]New games:[/b] the ecology starts on day one — the map's current state seeds the world's biome history immediately.
+[*][b]Existing saves:[/b] safe to add, but the world has to notice your work. Biomes need in-game time to build up history, so a mid-game install starts quiet and gathers steam over the days that follow. Mature forests and healed ground are earned at the same pace they would have been if the mod had been there all along.
+[*][b]Removing mid-save:[/b] undoes Keystone's decoration and forgets the world's ecological history.
+[/list]
+
+[h2]FAQ[/h2]
+
+[b]Will it slow my game down?[/b]
+Most setups shouldn't notice — Keystone's per-frame work is intentionally spread thinly across many frames rather than ticked in bursts. If you want to see for yourself, press [b]Alt+Shift+K[/b] in-game to open a live performance window that breaks out Keystone's own costs. An upcoming update will add per-system throttles for players on lower-end hardware.
+
+[b]How do I keep Keystone's ambient flora off my build site?[/b]
+Mark the area for planting (with any crop). Keystone honours planting marks and won't drop flourishes, ground cover, or other ambient flora on tiles you've designated for farming.
+
+[b]How do I stop trees, berry bushes, and dandelions from spawning where I don't want them?[/b]
+Use the vanilla [b]mark for cutting[/b] tool. Areas you've designated for cutting won't see new Keystone-driven spawns of blocking plants — so the swath you've earmarked for clearing stays cleared.
+
+[h2]Feedback and suggestions[/h2]
+
+Bug reports, biome ideas, ecosystem screenshots, and faction-integration requests all welcome on Discord.

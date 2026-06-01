@@ -1,0 +1,680 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneRiparianMini11",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneFlourishSpec": {},
+  "KeystoneVariantSpec": {},
+  "BlockObjectSpec": {
+    "Size": {
+      "X": 1,
+      "Y": 1,
+      "Z": 1
+    },
+    "Blocks": [
+      {
+        "MatterBelow": "Ground",
+        "Occupations": "Floor, Bottom, Corners, Path, Middle",
+        "Stackable": "None",
+        "OccupyAllBelow": false,
+        "Underground": false
+      }
+    ],
+    "Entrance": {
+      "HasEntrance": false,
+      "Coordinates": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      }
+    },
+    "BaseZ": 0,
+    "Overridable": true,
+    "Flippable": false
+  },
+  "NaturalResourceSpec": {
+    "Order": 100
+  },
+  "FloodableNaturalResourceSpec": {
+    "MinWaterHeight": 0,
+    "MaxWaterHeight": 0,
+    "DaysToDie": 1000000000.0
+  },
+  "DemolishableSpec": {
+    "DemolishTimeInHours": 0.5,
+    "ShowDemolishButtonInEntityPanel": false
+  },
+  "LabeledEntitySpec": {
+    "DisplayNameLocKey": "NaturalResource.KeystoneFlourish.DisplayName",
+    "DescriptionLocKey": "",
+    "FlavorDescriptionLocKey": "",
+    "Icon": "NaturalResources/Trees/Pine/PineIcon"
+  },
+  "BlockObjectModelSpec": {
+    "FullModelName": "#Models",
+    "UncoveredModelName": "",
+    "UndergroundModelName": "",
+    "UndergroundModelDepth": 0
+  },
+  "Children": {
+    "#Models": {
+      "Children": {
+        "Mature": {
+          "Children": {
+            "#Alive": {
+              "Children": {
+                "MangroveA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Trees/Mangrove/Mesh/MangroveMature"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.13,
+                      "Y": -0.1,
+                      "Z": 0.14
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.82,
+                      "Y": 0.82,
+                      "Z": 0.82
+                    }
+                  }
+                },
+                "CattailA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Cattail/CattailSeedling"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.08,
+                      "Y": 0.0,
+                      "Z": -0.27
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.87,
+                      "Y": 0.87,
+                      "Z": 0.87
+                    }
+                  }
+                },
+                "CassavaA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Cassava/CassavaSeedling"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.1,
+                      "Y": 0.0,
+                      "Z": -0.38
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.71,
+                      "Y": 0.71,
+                      "Z": 0.71
+                    }
+                  }
+                },
+                "Pebble_Square_5A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_5"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.73,
+                      "Y": 0.0,
+                      "Z": 0.33
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.99,
+                      "Y": 0.99,
+                      "Z": 0.99
+                    }
+                  }
+                },
+                "Pebble_Round_3A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_3"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.21,
+                      "Y": 0.0,
+                      "Z": 0.16
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.73,
+                      "Y": 0.73,
+                      "Z": 0.73
+                    }
+                  }
+                },
+                "Pebble_Square_6A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_6"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.53,
+                      "Y": 0.0,
+                      "Z": 0.85
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.71,
+                      "Y": 0.71,
+                      "Z": 0.71
+                    }
+                  }
+                },
+                "Pebble_Round_3B": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_3"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.7,
+                      "Y": 0.0,
+                      "Z": 0.61
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.79,
+                      "Y": 0.79,
+                      "Z": 0.79
+                    }
+                  }
+                },
+                "Pebble_Round_1A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_1"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.68,
+                      "Y": 0.0,
+                      "Z": 0.81
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.9,
+                      "Y": 0.9,
+                      "Z": 0.9
+                    }
+                  }
+                },
+                "Pebble_Square_2A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_2"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.23,
+                      "Y": 0.0,
+                      "Z": 0.72
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.99,
+                      "Y": 0.99,
+                      "Z": 0.99
+                    }
+                  }
+                }
+              }
+            },
+            "#Dying": {
+              "Children": {
+                "MangroveA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Trees/Mangrove/Mesh/MangroveMatureDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.13,
+                      "Y": -0.1,
+                      "Z": 0.14
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.82,
+                      "Y": 0.82,
+                      "Z": 0.82
+                    }
+                  }
+                },
+                "CattailA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Cattail/CattailSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.08,
+                      "Y": 0.0,
+                      "Z": -0.27
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.87,
+                      "Y": 0.87,
+                      "Z": 0.87
+                    }
+                  }
+                },
+                "CassavaA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Cassava/CassavaSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.1,
+                      "Y": 0.0,
+                      "Z": -0.38
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.71,
+                      "Y": 0.71,
+                      "Z": 0.71
+                    }
+                  }
+                },
+                "Pebble_Square_5A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_5"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.73,
+                      "Y": 0.0,
+                      "Z": 0.33
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.99,
+                      "Y": 0.99,
+                      "Z": 0.99
+                    }
+                  }
+                },
+                "Pebble_Round_3A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_3"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.21,
+                      "Y": 0.0,
+                      "Z": 0.16
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.73,
+                      "Y": 0.73,
+                      "Z": 0.73
+                    }
+                  }
+                },
+                "Pebble_Square_6A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_6"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.53,
+                      "Y": 0.0,
+                      "Z": 0.85
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.71,
+                      "Y": 0.71,
+                      "Z": 0.71
+                    }
+                  }
+                },
+                "Pebble_Round_3B": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_3"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.7,
+                      "Y": 0.0,
+                      "Z": 0.61
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.79,
+                      "Y": 0.79,
+                      "Z": 0.79
+                    }
+                  }
+                },
+                "Pebble_Round_1A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_1"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.68,
+                      "Y": 0.0,
+                      "Z": 0.81
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.9,
+                      "Y": 0.9,
+                      "Z": 0.9
+                    }
+                  }
+                },
+                "Pebble_Square_2A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_2"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.23,
+                      "Y": 0.0,
+                      "Z": 0.72
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.99,
+                      "Y": 0.99,
+                      "Z": 0.99
+                    }
+                  }
+                }
+              }
+            },
+            "#Dead": {
+              "Children": {
+                "MangroveA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Trees/Mangrove/Mesh/MangroveMatureDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.13,
+                      "Y": -0.1,
+                      "Z": 0.14
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.82,
+                      "Y": 0.82,
+                      "Z": 0.82
+                    }
+                  }
+                },
+                "CattailA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Cattail/CattailSeedlingDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.08,
+                      "Y": 0.0,
+                      "Z": -0.27
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.87,
+                      "Y": 0.87,
+                      "Z": 0.87
+                    }
+                  }
+                },
+                "CassavaA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Cassava/CassavaSeedlingDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.1,
+                      "Y": 0.0,
+                      "Z": -0.38
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.71,
+                      "Y": 0.71,
+                      "Z": 0.71
+                    }
+                  }
+                },
+                "Pebble_Square_5A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_5"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.73,
+                      "Y": 0.0,
+                      "Z": 0.33
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.99,
+                      "Y": 0.99,
+                      "Z": 0.99
+                    }
+                  }
+                },
+                "Pebble_Round_3A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_3"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.21,
+                      "Y": 0.0,
+                      "Z": 0.16
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.73,
+                      "Y": 0.73,
+                      "Z": 0.73
+                    }
+                  }
+                },
+                "Pebble_Square_6A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_6"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.53,
+                      "Y": 0.0,
+                      "Z": 0.85
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.71,
+                      "Y": 0.71,
+                      "Z": 0.71
+                    }
+                  }
+                },
+                "Pebble_Round_3B": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_3"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.7,
+                      "Y": 0.0,
+                      "Z": 0.61
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.79,
+                      "Y": 0.79,
+                      "Z": 0.79
+                    }
+                  }
+                },
+                "Pebble_Round_1A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_1"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.68,
+                      "Y": 0.0,
+                      "Z": 0.81
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.9,
+                      "Y": 0.9,
+                      "Z": 0.9
+                    }
+                  }
+                },
+                "Pebble_Square_2A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_2"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.23,
+                      "Y": 0.0,
+                      "Z": 0.72
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.99,
+                      "Y": 0.99,
+                      "Z": 0.99
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "WateredNaturalResourceSpec": {
+    "DaysToDieDry": 1000000000.0
+  }
+}

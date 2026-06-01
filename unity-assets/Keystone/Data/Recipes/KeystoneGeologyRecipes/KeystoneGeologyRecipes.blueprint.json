@@ -1,0 +1,20 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneGeologyRecipes",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneRecipeBookSpec": {
+    "Recipes": [
+      {
+        "Class": "B", "Biome": "", "Level": "Worldgen",
+        "BlueprintNames": [
+          "KeystoneRockCluster1", "KeystoneRockCluster2", "KeystoneRockCluster3",
+          "KeystoneRockCluster4", "KeystoneRockCluster5", "KeystoneRockCluster6",
+          "KeystoneRockCluster7", "KeystoneRockCluster8"
+        ]
+      }
+    ]
+  }
+}

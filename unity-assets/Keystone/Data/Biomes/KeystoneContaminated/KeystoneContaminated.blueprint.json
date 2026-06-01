@@ -1,0 +1,29 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneContaminated",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneBiomeLevelsSpec": {
+    "Biome": "Contaminated",
+    "Levels": [
+      { "LevelId": "L1", "LowerMaturity": 0.5, "UpperMaturity": 1000.0, "Density": 0.10 }
+    ]
+  },
+  "KeystoneRecipeBookSpec": {
+    "Recipes": [],
+    "Attritions": [
+      {
+        "Biome": "Contaminated", "Level": "L1",
+        "Action": "Kill", "Classes": ["B", "C"],
+        "Probability": 0.5, "Filter": ""
+      },
+      {
+        "Biome": "Contaminated", "Level": "L1",
+        "Action": "Kill", "Classes": ["B", "C"],
+        "Probability": 1.0, "Filter": "ContaminatedTile"
+      }
+    ]
+  }
+}

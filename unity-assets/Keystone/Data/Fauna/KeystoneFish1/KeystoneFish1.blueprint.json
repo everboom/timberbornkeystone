@@ -1,0 +1,20 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneFish1",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneFaunaAnimatorSpec": {},
+  "KeystoneAquaticAgentSpec": {},
+  "Children": {
+    "Fish1": {
+      "TimbermeshSpec": { "Model": "Fauna/KeystoneFish1/KeystoneFish1" },
+      "TransformSpec": {
+        "Position": { "X": 0.0, "Y": 0.0, "Z": 0.0 },
+        "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 },
+        "Scale":    { "X": 0.0312, "Y": 0.0312, "Z": 0.0312 }
+      }
+    }
+  }
+}

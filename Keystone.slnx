@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Keystone.Core/Keystone.Core.csproj" />
+    <Project Path="src/Keystone.Mod/Keystone.Mod.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Keystone.Core.Tests/Keystone.Core.Tests.csproj" />
+  </Folder>
+</Solution>

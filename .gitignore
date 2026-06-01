@@ -1,0 +1,98 @@
+## Build output
+bin/
+obj/
+
+## VS / Rider / VSCode
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Test results / coverage
+TestResults/
+coverage*.xml
+*.coverage
+*.coveragexml
+
+## NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+## OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+## Local overrides
+*.local.props
+.env
+
+## Claude Code per-machine settings
+.claude/
+
+## Project guidance for Claude Code — kept local, not published
+CLAUDE.md
+
+## Local diagnostic dumps (player.log captures, building-specs.txt, etc.)
+dump/
+
+## Local scratch — Blender/mesh work-in-progress, one-off scripts, smoke-test fixtures
+tmp/
+
+## Private reference notes — decompilation-derived docs on third-party mods and
+## our decompiled dependencies. Kept locally for reference, not published.
+## (Notes on the vanilla game itself remain tracked in docs/.)
+docs/private/
+
+## Decompiled-source scratch files written by ilspycmd during investigation
+*.decompiled.cs
+
+## Unity
+# Generated caches and per-machine artifacts at the SDK project root
+# (the timberborn-modding SDK clone); patterns also apply if/when we
+# ever host a Unity project locally. .meta files are intentionally NOT
+# ignored -- they're required project metadata and must be committed.
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+*.tmp
+*.log
+*.unitypackage
+*.app
+
+# Unity-generated solution / project files (regenerated on demand)
+*.csproj.user
+*.unityproj
+*.pidb
+*.booproj
+*.svd
+*.pdb.meta
+*.opendb
+*.VC.db
+
+# Crashlytics generated file
+crashlytics-build.properties
+
+# Packages -- lock file is committed (Mechanistry SDK ships one); rest is generated
+[Pp]ackages/[Pp]ackages-Lock.json
+
+# Asset import noise
+sysinfo.txt
+*.apk
+*.aab
+*.unitypackage.meta
+*.pidb.meta
+ExportedObj/
+.consulo/
+*.ide/

@@ -1,0 +1,21 @@
+{
+  "Name": "Keystone",
+  "Version": "1.0.0.1",
+  "Id": "SylvanGames.Keystone",
+  "MinimumGameVersion": "1.0.0.0",
+  "Description": "Adds an ecology layer where the player's water and land choices create the conditions under which an ecosystem can exist.",
+  "RequiredMods": [
+    {
+      "Id": "TimberUi",
+      "MinimumVersion": "10.1.5"
+    },
+    {
+      "Id": "Harmony",
+      "MinimumVersion": "2.3.3"
+    },
+    {
+      "Id": "eMka.ModSettings",
+      "MinimumVersion": "1.0.13.0"
+    }
+  ]
+}

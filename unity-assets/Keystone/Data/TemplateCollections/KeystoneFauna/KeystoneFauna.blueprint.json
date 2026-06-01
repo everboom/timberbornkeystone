@@ -1,0 +1,12 @@
+{
+  "TemplateCollectionSpec": {
+    "CollectionId": "KeystoneFauna",
+    "Blueprints": [
+      "Fauna/KeystoneDeer/KeystoneDeer.blueprint",
+      "Fauna/KeystoneBull/KeystoneBull.blueprint",
+      "Fauna/KeystoneCow/KeystoneCow.blueprint",
+      "Fauna/KeystoneFish1/KeystoneFish1.blueprint",
+      "Fauna/KeystoneFish2/KeystoneFish2.blueprint"
+    ]
+  }
+}

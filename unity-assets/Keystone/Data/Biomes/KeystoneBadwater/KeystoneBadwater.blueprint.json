@@ -1,0 +1,27 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneBadwater",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneBiomeLevelsSpec": {
+    "Biome": "Badwater",
+    "Levels": [
+      { "LevelId": "L1", "LowerMaturity": 0.0, "UpperMaturity": 1000000.0 }
+    ]
+  },
+  "KeystoneRecipeBookSpec": {
+    "Recipes": [],
+    "Attritions": [
+      {
+        "Biome": "Badwater", "Level": "L1",
+        "Action": "Kill", "Classes": ["B", "C"],
+        "Probability": 1.0, "Filter": "",
+        "ScaleBy": "WaterContamination",
+        "ScaleMin": 0.05, "ScaleMax": 0.5,
+        "ProbabilityAtMin": 0.10
+      }
+    ]
+  }
+}

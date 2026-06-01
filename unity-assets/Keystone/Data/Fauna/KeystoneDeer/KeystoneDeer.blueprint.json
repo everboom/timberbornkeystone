@@ -1,0 +1,25 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneDeer",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneFaunaAnimatorSpec": {
+    "WalkAnimationMultiplier": 0.72,
+    "IdleAnimationMultiplier": 0.80
+  },
+  "KeystoneFaunaAgentSpec": {
+    "WorldSpeedTilesPerSec": 0.90
+  },
+  "Children": {
+    "Deer": {
+      "TimbermeshSpec": { "Model": "Fauna/KeystoneDeer/KeystoneDeer" },
+      "TransformSpec": {
+        "Position": { "X": 0.0, "Y": 0.0, "Z": 0.0 },
+        "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 },
+        "Scale":    { "X": 0.144, "Y": 0.144, "Z": 0.144 }
+      }
+    }
+  }
+}

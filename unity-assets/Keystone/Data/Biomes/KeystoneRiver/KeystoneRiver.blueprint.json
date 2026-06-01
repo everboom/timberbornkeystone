@@ -1,0 +1,55 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneRiver",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneBiomeLevelsSpec": {
+    "Biome": "River",
+    "Levels": [
+      { "LevelId": "L0", "LowerMaturity": 0.0, "UpperMaturity": 1000000.0 },
+      { "LevelId": "L1", "LowerMaturity": 0.5, "UpperMaturity":       2.5, "Density": 0.08 },
+      { "LevelId": "L2", "LowerMaturity": 2.5, "UpperMaturity":      15.0, "Density": 0.08 }
+    ]
+  },
+  "KeystoneRecipeBookSpec": {
+    "Recipes": [
+      {
+        "Class": "B", "Biome": "River", "Level": "L1", "Filter": "RiverBank",
+        "BlueprintNames": [
+          "KeystoneWetlandMini1", "KeystoneWetlandMini2", "KeystoneWetlandMini3",
+          "KeystoneWetlandMini4", "KeystoneWetlandMini5", "KeystoneWetlandMini6",
+          "KeystoneWetlandMini7", "KeystoneWetlandMini8", "KeystoneWetlandMini9",
+          "KeystoneWetlandMini10"
+        ]
+      },
+      {
+        "Class": "B", "Biome": "River", "Level": "L2", "Filter": "RiverBank",
+        "BlueprintNames": [
+          "KeystoneWetlandMini1", "KeystoneWetlandMini2", "KeystoneWetlandMini3",
+          "KeystoneWetlandMini4", "KeystoneWetlandMini5", "KeystoneWetlandMini6",
+          "KeystoneWetlandMini7", "KeystoneWetlandMini8", "KeystoneWetlandMini9",
+          "KeystoneWetlandMini10"
+        ]
+      }
+    ],
+    "Attritions": [
+      {
+        "Biome": "River", "Level": "L0",
+        "Action": "Destroy", "Classes": ["B", "C"],
+        "VanillaSpecies": ["Cattail", "Spadderdock"],
+        "Probability": 1.0, "Filter": "",
+        "ScaleBy": "WaterFlowMagnitude",
+        "ScaleMin": 0.5, "ScaleMax": 1.0,
+        "ProbabilityAtMin": 0.25
+      },
+      {
+        "Biome": "River", "Level": "L1",
+        "Action": "Kill", "Classes": ["B"],
+        "Probability": 0.33, "Filter": "",
+        "IncludeHabitats": ["Dry"]
+      }
+    ]
+  }
+}

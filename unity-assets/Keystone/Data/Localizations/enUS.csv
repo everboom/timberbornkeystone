@@ -1,0 +1,152 @@
+ID,Text,Comment
+Keystone.NeedGroup.Nature.DisplayName,Nature,"Header for the Keystone Nature need group in the wellbeing panel."
+Keystone.Need.Nature.Forest.DisplayName,Forest,"Nature need flavor — filled by visiting a contemplation building surrounded by Forest biome."
+Keystone.Need.Nature.Grassland.DisplayName,Grassland,"Nature need flavor — filled by visiting a contemplation building surrounded by Grassland biome."
+Keystone.Need.Nature.Wetland.DisplayName,Wetland,"Nature need flavor — filled by visiting a contemplation building surrounded by Wetland biome (the Lido is the only vanilla source today)."
+ToolGroup.Keystone.DisplayName,Keystone Dev Tools,Tooltip on the bottom-bar group button.
+Tool.Keystone.Flourish.DisplayName,Class B: Force-Place Biome Flourish,
+Tool.Keystone.Flourish.Description,"Force-places a Class B flourish appropriate to the clicked tile's biome -- bypasses the score/threshold gate the auto-spawn handler uses. Picks the biome with the highest score at the cursor (among biomes that have a registered Class B recipe) and spawns its first registered recipe. Useful for staging content without waiting for ecology dynamics to catch up.",
+Tool.Keystone.Decoration.DisplayName,Class A: Reactive Decoration,
+Tool.Keystone.Decoration.Description,"Spawns a Class A decoration -- non-blocking, non-persisted, with a moisture-driven controller. Sample uses a Dandelion clone (alive when moist, dry when not). Reactivity is the orthogonal axis -- the same Class A bucket also hosts purely passive content.",
+Tool.Keystone.Particle.DisplayName,Class A: Particle Decoration,
+Tool.Keystone.Particle.Description,"Spawns a Class A decoration carrying a Unity ParticleSystem. Passive (no ecology reactivity, no interaction) -- demonstrates the same registry can host non-mesh decorations like atmospheric effects.",
+Tool.Keystone.CrossFactionFlora.DisplayName,Class D: Cross-Faction Flora,
+Tool.Keystone.CrossFactionFlora.Description,"Spawns a Class D natural resource: vanilla flora from the OTHER faction (CoffeeBush in a Folktails game, Maple in IronTeeth). Plantable / Gatherable specs are stripped by Keystone's faction-strip patch so the active faction's UIs don't crash on it.",
+Tool.Keystone.VanillaFlora.DisplayName,Class D: Active-Faction Flora,
+Tool.Keystone.VanillaFlora.Description,"Spawns a Class D natural resource: a Pine, available natively in both factions. Full vanilla pipeline -- can be cut, planted, gathered (where applicable), and reacts to moisture/flood normally.",
+Tool.Keystone.Rock.DisplayName,Class A: Keystone Rock,
+Tool.Keystone.Rock.Description,"Spawns a Class A decoration cloning the Keystone-original Rock_medium_1 blueprint. End-to-end smoke test of the custom-mesh pipeline: Quaternius FBX -> Blender -> .timbermesh -> TimbermeshSpec -> KeystoneMaterialProvider resolves the KeystoneRock material -> rendered in-game. Retired once Class C rock spawning is wired through the recipe system.",
+Tool.Keystone.RockCluster.DisplayName,Class C: Rock Cluster (inanimate),
+Tool.Keystone.RockCluster.Description,"Spawns a random KeystoneRockCluster* inanimate Class C blueprint at the cursor. No lifecycle (rocks don't wither); runtime biome-driven re-tint via KeystoneRockTint adjusts material to mossy / dry / default based on the tile's dominant biome. Bypasses the Class C recipe gate so the cluster lands regardless of biome+level conditions -- useful for verifying tint behaviour across biomes.",
+NaturalResource.KeystoneRockCluster.DisplayName,Rock Cluster,Shared display name for all KeystoneRockCluster* variants.
+NaturalResource.KeystoneFlourish.DisplayName,Wild Plant,"Shared display name for all Keystone flourish blueprints. Surfaced only by vanilla's loading-issue cleanup path when a stale flourish is deleted on load; flourishes are non-selectable so it isn't shown in normal play."
+Tool.Keystone.Fauna.DisplayName,Fauna: Place Deer (smoke test),
+Tool.Keystone.Fauna.Description,"Spawns a KeystoneDeer BlockObject at the cursor. End-to-end smoke test of the custom-mesh pipeline for fauna assets: Quaternius .blend -> Blender shade-smooth + VAT palette bake -> .timbermesh -> KeystoneDeer material -> rendered in-game. Hardcoded blueprint, no biome resolution. Replaced or generalised once proper fauna content infrastructure (Class E / agent system) lands.",
+Tool.Keystone.FishSmokeTest.DisplayName,Fish: Place KeystoneFish1 above water (smoke test),
+Tool.Keystone.FishSmokeTest.Description,"Spawns a KeystoneFish1 static prop at the cursor and starts looping its Default animation clip. Gated on water depth: click a dry tile and nothing spawns; click a water tile and a fish appears just above the water surface, swimming in place. No agent, no pathfinding, no despawn — pure visual verification of the fish mesh + Default clip. Reload to clear accumulated fish.",
+Tool.Keystone.Stump.DisplayName,Dev: Place Birch Stump,
+Tool.Keystone.Stump.Description,"Places a mature Birch, kills it, and removes its yield — leaving a harvested stump. Used to test stump-replacement logic in Class B/D spawn handlers.",
+Keystone.Settings.Flora.Header,Flora,Header above the flora section of the Keystone settings panel.
+Keystone.Settings.Flora.ClassBDensity,Decorative plants,Class B flourish density slider label.
+Keystone.Settings.Flora.ClassBDensity.Tooltip,"How many small plants — flowers, ferns, cattails, and the like — appear in each biome.
+
+0% removes them entirely.
+100% is the default amount.
+200% doubles the amount.
+
+These plants are most of what makes Keystone visible on the map — at 0% the ecology still runs, but you won't see much of it.
+
+Lower this if your computer struggles on foliage-heavy maps.",
+Keystone.Settings.Flora.TreeDensity,Trees,Class D Trees density slider label.
+Keystone.Settings.Flora.TreeDensity.Tooltip,"How many wild trees (birch, maple, oak, chestnut, mangrove) appear as part of each biome.
+
+0% removes them entirely.
+100% is the default amount.
+200% doubles the amount.
+
+Lower this if your map feels too crowded with trees, or if you want more building space.",
+Keystone.Settings.Flora.BushDensity,Bushes,Class D Bushes density slider label.
+Keystone.Settings.Flora.BushDensity.Tooltip,"How many wild bushes (blueberry, dandelion) appear as part of each biome.
+
+Bushes are planted by the forester and persist after harvest.
+
+0% removes them entirely.
+100% is the default amount.
+200% doubles the amount.",
+Keystone.Settings.Flora.CropDensity,Crops,Class D Crops density slider label.
+Keystone.Settings.Flora.CropDensity.Tooltip,"How many wild aquatic crops (cattail, spadderdock) appear as part of each biome.
+
+Crops are planted by the farmer and harvested as the whole plant.
+
+0% removes them entirely.
+100% is the default amount.
+200% doubles the amount.",
+Keystone.Settings.Flora.NewGameWarmup,New game ecosystem maturity (days),Warmup slider label.
+Keystone.Settings.Flora.NewGameWarmup.Tooltip,"NEW GAMES ONLY — this setting has no effect on loaded saves.
+
+Simulates this many days of ecosystem development when starting a new settlement.
+
+0 = start from scratch — biomes build up from nothing over the first few game-days.
+3 = the default — basic biomes are established and visible from the start.
+7 = mature ecosystem — higher-level biomes are well underway from day one.",
+Keystone.Settings.Flora.GrowthBonus,Max biome growth bonus,Growth bonus slider label.
+Keystone.Settings.Flora.GrowthBonus.Tooltip,"Maximum growth-speed bonus for plants in a healthy biome. Trees grow faster in forests, water plants in wetlands.
+
+0% disables the bonus entirely.
+30% is the default (up to 30% faster growth at full biome health).
+100% allows up to double growth speed.",
+Keystone.Settings.Fauna.Header,Fauna,Header above the fauna section of the Keystone settings panel.
+Keystone.Settings.Fauna.EnableFauna,Enable wildlife,Master fauna toggle label.
+Keystone.Settings.Fauna.EnableFauna.Tooltip,"Master switch for all wildlife — deer, cattle, and fish.
+
+Turning this off removes any currently-spawned animals and stops new ones from appearing.
+
+The sliders below have no effect when this is off.",
+Keystone.Settings.Fauna.DeerAbundance,Deer abundance,Per-species deer slider label.
+Keystone.Settings.Fauna.DeerAbundance.Tooltip,"How many deer appear in suitable areas.
+
+0% removes deer entirely.
+100% is the default amount.
+200% doubles the population.",
+Keystone.Settings.Fauna.CattleAbundance,Cattle abundance (cows + bulls),Per-species cattle slider label.
+Keystone.Settings.Fauna.CattleAbundance.Tooltip,"How many cows and bulls appear in suitable areas.
+
+0% removes them entirely.
+100% is the default amount.
+200% doubles the population.",
+Keystone.Settings.Fauna.FishAbundance,Fish abundance,Per-species fish slider label.
+Keystone.Settings.Fauna.FishAbundance.Tooltip,"How many fish appear in suitable water.
+
+0% removes fish entirely.
+100% is the default amount.
+200% doubles the population.",
+Keystone.Settings.Effects.Header,Effects,Header above the atmospheric-effects section of the Keystone settings panel.
+Keystone.Settings.Effects.FoggyMorningFrequency,Foggy mornings,Foggy-morning frequency dropdown label.
+Keystone.Settings.Effects.FoggyMorningFrequency.Tooltip,"How often a misty morning rolls in over wetland areas.
+
+Off — no foggy mornings ever.
+Rare — roughly once a week.
+Sometimes — about one in four mornings (the default).
+Often — about half of all mornings.
+Always — every morning.
+
+Only affects wetlands.",
+Keystone.Settings.Effects.FoggyMorningFrequency.Off,Off,Dropdown option: no foggy mornings.
+Keystone.Settings.Effects.FoggyMorningFrequency.Rare,Rare,Dropdown option: foggy mornings roughly once a week.
+Keystone.Settings.Effects.FoggyMorningFrequency.Sometimes,Sometimes,Dropdown option: foggy mornings about one in four days.
+Keystone.Settings.Effects.FoggyMorningFrequency.Often,Often,Dropdown option: foggy mornings about half of all mornings.
+Keystone.Settings.Effects.FoggyMorningFrequency.Always,Always,Dropdown option: foggy morning every day.
+Keystone.Settings.Performance.Header,Performance,Header above the performance-tuning section of the Keystone settings panel.
+Keystone.Settings.Performance.MapUpdateHours,Map update frequency (every N hours),Map-update cadence slider label.
+Keystone.Settings.Performance.MapUpdateHours.Tooltip,"How often Keystone re-checks the state of the map (moisture, water, contamination) and updates which biomes are present where.
+
+1 = every in-game hour (the default; biomes react most quickly to player changes).
+4 = once every four hours (lighter on the CPU on large maps; biomes react more slowly).
+
+Has no effect on wildlife — use the Fauna sliders to tune that.
+
+Only changeable from the main menu.",
+Keystone.Settings.Performance.RulesUpdateDays,Flora/decor update frequency (every N days),Rules-applier cadence slider label.
+Keystone.Settings.Performance.RulesUpdateDays.Tooltip,"How often Keystone re-evaluates which flourishes, decorations, and attrition rules should fire on each tile.
+
+1 = once per in-game day (the default; flora and decor appear and are reclaimed most quickly).
+4 = once every four in-game days (lightest on the CPU on large maps; flora and decor change more slowly).
+
+This is the biggest CPU lever on saturated maps — most of the per-tile work is in spawning new objects, and slowing the cycle cuts it proportionally.
+
+Only changeable from the main menu.",
+Keystone.GrowthBonus.Growing.SuitableConditions,"<GreenHighlight>{0} growth bonus from suitable {1} conditions.</GreenHighlight>",Suitability high but maturity low.
+Keystone.GrowthBonus.Growing.NearbyEstablished,"<GreenHighlight>{0} growth bonus from a nearby established {1}.</GreenHighlight>",Maturity high but suitability low.
+Keystone.GrowthBonus.Growing.Maturing,"<GreenHighlight>{0} growth bonus from a maturing {1}.</GreenHighlight>",Both suitability and maturity contributing.
+Keystone.GrowthBonus.Growing.Thriving,"<GreenHighlight>{0} growth bonus from a thriving {1}.</GreenHighlight>",Both suitability and maturity high.
+Keystone.GrowthBonus.WouldGrow,"<YellowHighlight>Would grow faster in a healthy {0} biome.</YellowHighlight>",Growth bonus hint when bonus is zero.
+Keystone.GrowthBonus.HealthyBiome,"<GreenHighlight>Part of a healthy {0}.</GreenHighlight>",Brief status on a mature plant in a healthy biome.
+Keystone.GrowthBonus.MonocultureWarning,"<YellowHighlight>Add species diversity to increase growth bonus.</YellowHighlight>",Monoculture suppression warning on a growing plant.
+Keystone.GrowthBonus.MonocultureBrief,"<YellowHighlight>This area lacks species diversity.</YellowHighlight>",Monoculture brief on a mature plant.
+Keystone.GrowthBonus.RiverWarning,"<YellowHighlight>Water flow is too strong for a wetland to develop here.</YellowHighlight>",River suppression warning on a growing aquatic plant.
+Keystone.GrowthBonus.RiverBrief,"<YellowHighlight>Water flow is too strong for a wetland here.</YellowHighlight>",River brief on a mature aquatic plant.
+Keystone.BiomeOverlay.Show,Show biome overlay,Tooltip when the biome overlay toggle is off.
+Keystone.BiomeOverlay.Hide,Hide biome overlay,Tooltip when the biome overlay toggle is on.
+Keystone.Settings.UI.Header,UI,Header above the UI section of the Keystone settings panel.
+Keystone.Settings.UI.BiomeOverlayOpacity,Biome overlay opacity (%),Biome overlay opacity slider label.
+Keystone.Settings.UI.BiomeOverlayOpacity.Tooltip,"How opaque the biome overlay boxes appear when the overlay is active. 25% lets the terrain show through clearly, 100% is fully opaque. Default 75%.",Tooltip for the biome overlay opacity slider.

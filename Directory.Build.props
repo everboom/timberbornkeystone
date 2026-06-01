@@ -1,0 +1,64 @@
+<Project TreatAsLocalProperty="Configuration">
+
+  <!--
+    Repository-wide MSBuild defaults for Keystone.
+
+    Override mechanism for the Timberborn install path (no committed default —
+    the path is machine-specific and stays out of git):
+      1. Pass -p:TimberbornInstallDir=<path> on the dotnet command line.
+      2. Set the KEYSTONE_TIMBERBORN_DIR environment variable.
+      3. Create Directory.Build.local.props (gitignored — copy from
+         Directory.Build.local.props.example) and set TimberbornInstallDir.
+
+    Resolution order is highest-precedence first; the first non-empty value wins.
+
+    Optional: KEYSTONE_DEPLOY_DIR redirects the post-build deploy somewhere
+    other than %USERPROFILE%\Documents\Timberborn\Mods\Keystone.
+  -->
+
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.local.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.local.props')" />
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!--
+    Force Release for every build, regardless of what `-c` is passed.
+    The deployed Mods folder is the only thing the running game JITs,
+    Keystone's per-frame work (field updater, rolling-sweep tickers)
+    is perf-sensitive, and we don't use Debug.Assert or
+    [Conditional("DEBUG")] guards anywhere, so Debug builds buy us
+    nothing and would silently degrade perf if used.
+
+    TreatAsLocalProperty="Configuration" on <Project> above strips the
+    "global" flag from any Configuration set by `dotnet build -c X` or
+    the CLI's own Debug default, letting this unconditional assignment
+    win. Removing one or both elements re-enables `-c Debug` if we ever
+    actually need it (stack-trace work against an attached debugger).
+  -->
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Timberborn paths">
+    <TimberbornInstallDir Condition="'$(TimberbornInstallDir)' == '' AND '$(KEYSTONE_TIMBERBORN_DIR)' != ''">$(KEYSTONE_TIMBERBORN_DIR)</TimberbornInstallDir>
+    <TimberbornManagedDir Condition="'$(TimberbornInstallDir)' != ''">$(TimberbornInstallDir)\Timberborn_Data\Managed</TimberbornManagedDir>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Mod deploy paths">
+    <KeystoneDeployDir Condition="'$(KeystoneDeployDir)' == '' AND '$(KEYSTONE_DEPLOY_DIR)' != ''">$(KEYSTONE_DEPLOY_DIR)</KeystoneDeployDir>
+    <KeystoneDeployDir Condition="'$(KeystoneDeployDir)' == ''">$(USERPROFILE)\Documents\Timberborn\Mods\Keystone</KeystoneDeployDir>
+    <!--
+      manifest.json is owned by the Unity build now. The canonical
+      source is unity-assets/Keystone/manifest.json. This property
+      remains only so historical references don't break; it's no
+      longer consumed by the deploy target.
+    -->
+    <KeystoneManifestPath>$(MSBuildThisFileDirectory)unity-assets\Keystone\manifest.json</KeystoneManifestPath>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,414 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneDryMini2",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneFlourishSpec": {},
+  "KeystoneVariantSpec": {},
+  "BlockObjectSpec": {
+    "Size": {
+      "X": 1,
+      "Y": 1,
+      "Z": 1
+    },
+    "Blocks": [
+      {
+        "MatterBelow": "Ground",
+        "Occupations": "Floor, Bottom, Corners, Path, Middle",
+        "Stackable": "None",
+        "OccupyAllBelow": false,
+        "Underground": false
+      }
+    ],
+    "Entrance": {
+      "HasEntrance": false,
+      "Coordinates": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      }
+    },
+    "BaseZ": 0,
+    "Overridable": true,
+    "Flippable": false
+  },
+  "NaturalResourceSpec": {
+    "Order": 100
+  },
+  "FloodableNaturalResourceSpec": {
+    "MinWaterHeight": 0,
+    "MaxWaterHeight": 0,
+    "DaysToDie": 1000000000.0
+  },
+  "DemolishableSpec": {
+    "DemolishTimeInHours": 0.5,
+    "ShowDemolishButtonInEntityPanel": false
+  },
+  "LabeledEntitySpec": {
+    "DisplayNameLocKey": "NaturalResource.KeystoneFlourish.DisplayName",
+    "DescriptionLocKey": "",
+    "FlavorDescriptionLocKey": "",
+    "Icon": "NaturalResources/Trees/Pine/PineIcon"
+  },
+  "BlockObjectModelSpec": {
+    "FullModelName": "#Models",
+    "UncoveredModelName": "",
+    "UndergroundModelName": "",
+    "UndergroundModelDepth": 0
+  },
+  "Children": {
+    "#Models": {
+      "Children": {
+        "Mature": {
+          "Children": {
+            "#Alive": {
+              "Children": {
+                "EggplantA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Eggplant/EggplantSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.05,
+                      "Y": 0.0,
+                      "Z": -0.29
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.87,
+                      "Y": 0.87,
+                      "Z": 0.87
+                    }
+                  }
+                },
+                "EggplantB": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Eggplant/EggplantSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.06,
+                      "Y": 0.0,
+                      "Z": 0.03
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.89,
+                      "Y": 0.89,
+                      "Z": 0.89
+                    }
+                  }
+                },
+                "EggplantC": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Eggplant/EggplantSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.32,
+                      "Y": 0.0,
+                      "Z": 0.17
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.85,
+                      "Y": 0.85,
+                      "Z": 0.85
+                    }
+                  }
+                },
+                "Pebble_Square_1A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_1_Dry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.56,
+                      "Y": 0.0,
+                      "Z": 0.47
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.91,
+                      "Y": 0.91,
+                      "Z": 0.91
+                    }
+                  }
+                },
+                "Pebble_Square_3A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_3_Dry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.36,
+                      "Y": 0.0,
+                      "Z": 0.71
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.77,
+                      "Y": 0.77,
+                      "Z": 0.77
+                    }
+                  }
+                }
+              }
+            },
+            "#Dying": {
+              "Children": {
+                "EggplantA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Eggplant/EggplantSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.05,
+                      "Y": 0.0,
+                      "Z": -0.29
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.87,
+                      "Y": 0.87,
+                      "Z": 0.87
+                    }
+                  }
+                },
+                "EggplantB": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Eggplant/EggplantSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.06,
+                      "Y": 0.0,
+                      "Z": 0.03
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.89,
+                      "Y": 0.89,
+                      "Z": 0.89
+                    }
+                  }
+                },
+                "EggplantC": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Eggplant/EggplantSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.32,
+                      "Y": 0.0,
+                      "Z": 0.17
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.85,
+                      "Y": 0.85,
+                      "Z": 0.85
+                    }
+                  }
+                },
+                "Pebble_Square_1A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_1_Dry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.56,
+                      "Y": 0.0,
+                      "Z": 0.47
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.91,
+                      "Y": 0.91,
+                      "Z": 0.91
+                    }
+                  }
+                },
+                "Pebble_Square_3A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_3_Dry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.36,
+                      "Y": 0.0,
+                      "Z": 0.71
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.77,
+                      "Y": 0.77,
+                      "Z": 0.77
+                    }
+                  }
+                }
+              }
+            },
+            "#Dead": {
+              "Children": {
+                "EggplantA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Eggplant/EggplantSeedlingDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.05,
+                      "Y": 0.0,
+                      "Z": -0.29
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.87,
+                      "Y": 0.87,
+                      "Z": 0.87
+                    }
+                  }
+                },
+                "EggplantB": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Eggplant/EggplantSeedlingDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.06,
+                      "Y": 0.0,
+                      "Z": 0.03
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.89,
+                      "Y": 0.89,
+                      "Z": 0.89
+                    }
+                  }
+                },
+                "EggplantC": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Eggplant/EggplantSeedlingDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.32,
+                      "Y": 0.0,
+                      "Z": 0.17
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.85,
+                      "Y": 0.85,
+                      "Z": 0.85
+                    }
+                  }
+                },
+                "Pebble_Square_1A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_1_Dry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.56,
+                      "Y": 0.0,
+                      "Z": 0.47
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.91,
+                      "Y": 0.91,
+                      "Z": 0.91
+                    }
+                  }
+                },
+                "Pebble_Square_3A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Square_3_Dry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.36,
+                      "Y": 0.0,
+                      "Z": 0.71
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.77,
+                      "Y": 0.77,
+                      "Z": 0.77
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "KeystoneDryNaturalResourceSpec": {}
+}

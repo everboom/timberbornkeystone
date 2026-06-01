@@ -1,0 +1,36 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneDry",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneBiomeLevelsSpec": {
+    "Biome": "Dry",
+    "Levels": [
+      { "LevelId": "L1", "LowerMaturity": 0.5, "UpperMaturity": 1000000.0 },
+      { "LevelId": "L2", "LowerMaturity": 1.5, "UpperMaturity":      10.0, "Density": 0.15 }
+    ]
+  },
+  "KeystoneRecipeBookSpec": {
+    "Recipes": [
+      {
+        "Class": "B", "Biome": "Dry", "Level": "L2",
+        "BlueprintNames": [
+          "KeystoneDryMini1", "KeystoneDryMini2", "KeystoneDryMini3",
+          "KeystoneDryMini4", "KeystoneDryMini5", "KeystoneDryMini6",
+          "KeystoneDryMini7", "KeystoneDryMini8", "KeystoneDryMini9",
+          "KeystoneDryMini10"
+        ]
+      }
+    ],
+    "Attritions": [
+      {
+        "Biome": "Dry", "Level": "L1",
+        "Action": "Kill", "Classes": ["B", "C"],
+        "Probability": 0.25, "Filter": "",
+        "ExcludeHabitats": ["Dry"]
+      }
+    ]
+  }
+}

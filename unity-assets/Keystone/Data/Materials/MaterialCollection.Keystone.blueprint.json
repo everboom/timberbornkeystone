@@ -1,0 +1,19 @@
+{
+  "MaterialCollectionSpec": {
+    "CollectionId": "Keystone",
+    "Materials": [
+      "Materials/KeystoneRock",
+      "Materials/KeystoneRock_Dry",
+      "Materials/KeystoneRock_Mossy",
+      "Materials/KeystonePathRocks",
+      "Materials/KeystonePathRocks_Dry",
+      "Materials/KeystonePathRocks_Mossy",
+      "Materials/KeystoneDeer",
+      "Materials/KeystoneBull",
+      "Materials/KeystoneCow",
+      "Materials/KeystoneFish1",
+      "Materials/KeystoneFish2",
+      "Materials/BiomeBox"
+    ]
+  }
+}

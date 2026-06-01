@@ -1,0 +1,43 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "Rock_medium_1",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "BlockObjectSpec": {
+    "Size": { "X": 1, "Y": 1, "Z": 1 },
+    "Blocks": [
+      { "MatterBelow": "Ground", "Occupations": "Floor, Bottom, Corners, Path, Middle", "Stackable": "None", "OccupyAllBelow": false, "Underground": false }
+    ],
+    "Entrance": { "HasEntrance": false, "Coordinates": { "X": 0, "Y": 0, "Z": 0 } },
+    "BaseZ": 0,
+    "Overridable": true,
+    "Flippable": false
+  },
+  "NaturalResourceSpec": { "Order": 100 },
+  "FloodableNaturalResourceSpec": { "MinWaterHeight": 0, "MaxWaterHeight": 0, "DaysToDie": 1000000000.0 },
+  "DemolishableSpec": { "DemolishTimeInHours": 0.5, "ShowDemolishButtonInEntityPanel": false },
+  "LabeledEntitySpec": {
+    "DisplayNameLocKey": "NaturalResource.KeystoneFlourish.DisplayName",
+    "DescriptionLocKey": "",
+    "FlavorDescriptionLocKey": "",
+    "Icon": "NaturalResources/Trees/Pine/PineIcon"
+  },
+  "BlockObjectModelSpec": {
+    "FullModelName": "Rock",
+    "UncoveredModelName": "",
+    "UndergroundModelName": "",
+    "UndergroundModelDepth": 0
+  },
+  "Children": {
+    "Rock": {
+      "TimbermeshSpec": { "Model": "NaturalResources/KeystoneRocks/Rock_medium_1" },
+      "TransformSpec": {
+        "Position": { "X": 0.0, "Y": 0.0, "Z": 0.0 },
+        "Rotation": { "X": 0.0, "Y": 0.0, "Z": 0.0 },
+        "Scale":    { "X": 1.0, "Y": 1.0, "Z": 1.0 }
+      }
+    }
+  }
+}
