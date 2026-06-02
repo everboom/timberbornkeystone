@@ -184,3 +184,31 @@ Ideas board from the CLI instead of the web UI.
 **Issues** (`new-bug-report.ps1`); open-ended suggestions that benefit from
 community upvoting go to **Discussions** (`new-idea.ps1`). The README's
 "Suggest a feature or report a bug" section points players to the same split.
+Once an idea is accepted, `promote-idea.ps1` moves it from Discussions to
+Issues.
+
+## `promote-idea.ps1`
+
+Promotes a Discussion **idea** to a tracked **issue** once it lands on the
+roadmap / enters development. There is no native `gh discussion` command, so the
+discussion read/edit/close go through `gh api graphql`; issue creation uses
+`gh issue create`. Run from inside the repo; requires `gh` authenticated.
+
+```powershell
+.\tools\promote-idea.ps1 -DiscussionNumber 17
+.\tools\promote-idea.ps1 -DiscussionNumber 17 -Label roadmap -Title "Sea and ocean biomes (MVP)"
+```
+
+In one shot it (1) creates an issue from the discussion's title/body with a
+"Promoted from discussion #N" back-link, labelled `enhancement` by default;
+(2) appends a forward-link ("Promoted to issue #M -- now under development")
+to the discussion body via `updateDiscussion`; and (3) closes the discussion
+via `closeDiscussion` so the issue becomes the single source of truth for
+active work. `-Label <name>` sets the issue label (must already exist on the
+repo). `-Title <text>` overrides the issue title (defaults to the discussion
+title). `-CloseReason RESOLVED|OUTDATED|DUPLICATE` sets the close reason
+(default `RESOLVED`).
+
+Note: this is the natural follow-up to `new-idea.ps1` -- ideas flow in via
+Discussions and graduate to Issues here. Issues are no longer bug-only; the
+label distinguishes bug reports (`bug`) from promoted ideas (`enhancement`).
