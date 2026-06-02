@@ -168,9 +168,9 @@ namespace Keystone.Mod.Wellbeing {
       yield return EntityDescription.CreateTextSection(text, DescriptionOrder);
     }
 
-    /// <summary>Emit a two-axis status string like "Medium bonus from
-    /// a small mature Forest nearby." Score buckets give the headline
-    /// tier (Minor / Medium / Major / Pristine) and the size + maturity
+    /// <summary>Emit a two-axis status string like "Medium wellbeing
+    /// bonus from a small mature Forest nearby." Score buckets give the headline
+    /// tier (Minor / Medium / Major / Perfect) and the size + maturity
     /// adjectives are derived independently from the winning cluster's
     /// chunk count and average Maturity, so the player can see which
     /// axis is weak and what to improve. Size buckets at 2/5 chunks,
@@ -178,7 +178,7 @@ namespace Keystone.Mod.Wellbeing {
     /// / 0.75 against the hyperbolic <c>Score</c>, evenly spaced
     /// across the practical score range — each step roughly doubles
     /// the cluster's effective biome footprint, so the leap between
-    /// tiers feels earned. Pristine reads as "you've built a
+    /// tiers feels earned. Perfect reads as "you've built a
     /// world-class example of this biome."</summary>
     private static void AppendQualitativeStatus(
         StringBuilder b,
@@ -200,10 +200,10 @@ namespace Keystone.Mod.Wellbeing {
       if (score < 0.25f) tierWord = "Minor";
       else if (score < 0.50f) tierWord = "Medium";
       else if (score < 0.75f) tierWord = "Major";
-      else tierWord = "Pristine";
+      else tierWord = "Perfect";
 
       b.Append(tierWord)
-          .Append(" bonus from a ")
+          .Append(" wellbeing bonus from a ")
           .Append(sizeAdj)
           .Append(' ')
           .Append(maturityAdj)
