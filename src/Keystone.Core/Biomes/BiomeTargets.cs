@@ -130,20 +130,33 @@ namespace Keystone.Core.Biomes {
       return i.IrrigatedFraction * diversity * density * monoSuppression * matureGate;
     }
 
-    /// <summary>Grassland: irrigated land scaled down by tree presence
-    /// (yields to Forest) and monoculture (yields to the player-managed
-    /// area). Each competitor reduces Grassland multiplicatively rather
-    /// than gating with a hard threshold, so partial overlaps still
-    /// accumulate a partial Grassland score alongside their other
-    /// classifications -- avoiding the wave-along-chunk-border
-    /// artifacts a binary gate produces. Near-water tiles spawn
-    /// riparian-style decorations via the <c>WaterEdge</c> recipe
-    /// filter; the biome scoring itself is water-distance-agnostic.</summary>
+    /// <summary>Grassland: irrigated land scaled down by mature-canopy
+    /// presence (yields to established Forest) and monoculture (yields
+    /// to the player-managed area). Each competitor reduces Grassland
+    /// multiplicatively rather than gating with a hard threshold, so
+    /// partial overlaps still accumulate a partial Grassland score
+    /// alongside their other classifications -- avoiding the
+    /// wave-along-chunk-border artifacts a binary gate produces.
+    ///
+    /// <para><b>Yields to mature trees, not raw tree presence.</b> The
+    /// canopy term keys off <see cref="ChunkBiomeInputs.MatureTreeCount"/>,
+    /// the same mature signal <see cref="Forest"/>'s mature-canopy gate
+    /// uses. A chunk freshly planted with seedlings doesn't yet read as
+    /// Forest (the gate holds Forest at ~0), so Grassland correctly
+    /// holds the chunk until the trees establish -- then Grassland
+    /// recedes as Forest rises. Keying Grassland off raw
+    /// <c>TreeCount</c> instead would leave a seedling field suppressed
+    /// on both axes (not-Forest, not-Grassland) in a low-everything
+    /// limbo.</para>
+    ///
+    /// <para>Near-water tiles spawn riparian-style decorations via the
+    /// <c>WaterEdge</c> recipe filter; the biome scoring itself is
+    /// water-distance-agnostic.</para></summary>
     public static float Grassland(in ChunkBiomeInputs i) {
-      var treePresence = Saturate(i.TreeCount / ForestDensitySaturation);
+      var matureCanopyPresence = Saturate(i.MatureTreeCount / ForestDensitySaturation);
       var monoSuppression = 1f - Monoculture(i);
       return i.IrrigatedFraction
-          * (1f - treePresence)
+          * (1f - matureCanopyPresence)
           * monoSuppression;
     }
 

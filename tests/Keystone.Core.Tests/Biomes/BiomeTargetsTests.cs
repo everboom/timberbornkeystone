@@ -139,39 +139,62 @@ namespace Keystone.Core.Tests.Biomes {
     }
 
     [TestMethod]
-    public void Grassland_FullDensityForest_TargetIsZero() {
-      // With trees at the density saturation point (5+), the linear
-      // tree-presence reduction takes Grassland to 0.
+    public void Grassland_FullDensityMatureForest_TargetIsZero() {
+      // With *mature* trees at the density saturation point (5+), the
+      // linear mature-canopy reduction takes Grassland to 0.
       var inputs = new ChunkBiomeInputs {
           IrrigatedFraction = 1f,
           TreeCount = 5,
           TreeSpeciesCount = 2,
+          MatureTreeCount = 5,
       };
       Assert.AreEqual(0f, BiomeTargets.Grassland(inputs));
     }
 
     [TestMethod]
-    public void Grassland_PartialTrees_TargetReducedProportionally() {
-      // 2 trees at density saturation 5 -> tree presence = 0.4.
-      // Grassland target = irrigated * (1 - 0.4) = 0.6.
+    public void Grassland_PartialMatureTrees_TargetReducedProportionally() {
+      // 2 mature trees at density saturation 5 -> mature-canopy
+      // presence = 0.4. Grassland target = irrigated * (1 - 0.4) = 0.6.
       var inputs = new ChunkBiomeInputs {
           IrrigatedFraction = 1f,
           TreeCount = 2,
           TreeSpeciesCount = 2,
+          MatureTreeCount = 2,
       };
       Assert.AreEqual(0.6f, BiomeTargets.Grassland(inputs), 1e-4f);
     }
 
     [TestMethod]
-    public void Grassland_OneTreePartialIrrigation_ScalesBoth() {
-      // 1 tree -> tree presence = 0.2. Half-irrigated -> 0.5.
-      // Grassland target = 0.5 * (1 - 0.2) = 0.4.
+    public void Grassland_OneMatureTreePartialIrrigation_ScalesBoth() {
+      // 1 mature tree -> mature-canopy presence = 0.2. Half-irrigated ->
+      // 0.5. Grassland target = 0.5 * (1 - 0.2) = 0.4.
       var inputs = new ChunkBiomeInputs {
           IrrigatedFraction = 0.5f,
           TreeCount = 1,
           TreeSpeciesCount = 1,
+          MatureTreeCount = 1,
       };
       Assert.AreEqual(0.4f, BiomeTargets.Grassland(inputs), 1e-4f);
+    }
+
+    [TestMethod]
+    public void Grassland_DenseSeedlingsDoNotSuppress_FallsBackToFull() {
+      // The corollary to Forest's mature-canopy gate: a chunk densely
+      // planted with *immature* trees reads as ~0 Forest (gate) AND must
+      // NOT be suppressed as Grassland -- it falls back to full Grassland
+      // until the canopy establishes, rather than sitting in a
+      // low-everything limbo. Mature-canopy presence is 0 here, so
+      // Grassland == irrigated.
+      var inputs = new ChunkBiomeInputs {
+          IrrigatedFraction = 1f,
+          TreeCount = 10,
+          TreeSpeciesCount = 3,
+          MatureTreeCount = 0,
+      };
+      Assert.AreEqual(1f, BiomeTargets.Grassland(inputs), 1e-4f);
+      // ...and Forest is gated off, so the chunk genuinely reads as
+      // Grassland, not Forest.
+      Assert.AreEqual(0f, BiomeTargets.Forest(inputs), 1e-4f);
     }
 
     [TestMethod]

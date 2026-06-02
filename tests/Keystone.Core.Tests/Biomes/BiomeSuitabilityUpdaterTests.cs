@@ -212,14 +212,15 @@ namespace Keystone.Core.Tests.Biomes {
 
     [TestMethod]
     public void Tick_TopBiomes_OrderedDescendingByValue() {
-      // Irrigated land with trees → Forest and Grassland both
-      // positive, Monoculture zero (multi-species). Verify rank 0
-      // is genuinely the max-suitability biome and ranks are
-      // monotonically non-increasing.
+      // Irrigated land with a partly-mature grove → Forest and
+      // Grassland both positive (2 mature trees: Forest ~0.4 from the
+      // 2/5 density, Grassland 0.6 from the 1 - 2/5 mature-canopy yield),
+      // Monoculture zero (multi-species). Verify rank 0 is genuinely the
+      // max-suitability biome and ranks are monotonically non-increasing.
       var updater = MakeUpdater();
       var data = MakeData();
       var inputs = new ChunkBiomeInputs {
-          IrrigatedFraction = 1f, TreeCount = 5, TreeSpeciesCount = 2, MatureTreeCount = 5,
+          IrrigatedFraction = 1f, TreeCount = 2, TreeSpeciesCount = 2, MatureTreeCount = 2,
       };
       updater.Tick(data, in inputs);
 

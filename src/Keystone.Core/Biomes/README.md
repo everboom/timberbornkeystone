@@ -83,16 +83,26 @@ dominance when Contaminated and Badwater tie at the same Suitability.
 
 Grassland is the positive predicate that yields multiplicatively to
 two competitors: it's
-`irrigated * (1 - tree_density) * (1 - Monoculture)`.
-A treed chunk yields Grassland to Forest; a player-managed chunk
-yields Grassland to Monoculture; a chunk that has both gives
-a smaller residual Grassland alongside the others. Multiplicative
-rather than gated so partial-overlap cases produce smooth
+`irrigated * (1 - mature_canopy) * (1 - Monoculture)`.
+A chunk with *established* (mature) trees yields Grassland to Forest; a
+player-managed chunk yields Grassland to Monoculture; a chunk that has
+both gives a smaller residual Grassland alongside the others.
+Multiplicative rather than gated so partial-overlap cases produce smooth
 accumulation rather than chunk-edge cliffs. Forest also carries
 the `(1 - Monoculture)` multiplier so managed areas suppress every
-natural healthy-land biome at once. Near-water tiles within a
-Grassland chunk spawn riparian-style decorations via the `WaterEdge`
-recipe filter; the biome scoring itself is water-distance-agnostic.
+natural healthy-land biome at once.
+
+The canopy term keys off `MatureTreeCount`, the same mature signal
+Forest's mature-canopy gate uses (see above) — not raw `TreeCount`. So a
+chunk freshly planted with seedlings reads as ~0 Forest (gated) *and*
+full Grassland (no mature canopy to yield to), handing off cleanly to
+Forest as the trees establish. Keying off raw tree count instead would
+strand a seedling field in a low-everything limbo (not-Forest,
+not-Grassland).
+
+Near-water tiles within a Grassland chunk spawn riparian-style
+decorations via the `WaterEdge` recipe filter; the biome scoring itself
+is water-distance-agnostic.
 
 ## Forest mature-canopy gate
 
