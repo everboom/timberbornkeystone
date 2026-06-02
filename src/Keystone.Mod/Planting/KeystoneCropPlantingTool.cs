@@ -12,11 +12,13 @@ using Timberborn.UILayoutSystem;
 namespace Keystone.Mod.Planting {
 
   /// <summary>
-  /// Mixed-planting brush for <b>crops</b> — the live variant, surfaced in
-  /// the vanilla farmhouse / field planting menu (tool group
-  /// <see cref="GroupId"/>). Offers every faction crop
-  /// (<see cref="CropSpec"/>); the player drag-selects field tiles and the
-  /// brush queues a random mix.
+  /// Mixed-planting brush for <b>crops</b>, surfaced in the vanilla
+  /// farmhouse / field planting menu (tool group <see cref="GroupId"/>).
+  /// Offers every faction crop (<see cref="CropSpec"/>); drag-select field
+  /// tiles and the brush queues a random mix.
+  ///
+  /// <para>Currently <b>dev-mode only</b> (along with the trees/bushes
+  /// brush) — see <see cref="KeystonePlantingMenuInitializer"/>.</para>
   /// </summary>
   public sealed class KeystoneCropPlantingTool : KeystonePlantingToolBase {
 

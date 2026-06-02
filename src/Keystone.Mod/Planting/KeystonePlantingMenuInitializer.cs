@@ -17,25 +17,20 @@ namespace Keystone.Mod.Planting {
   /// and one <see cref="PlantingTool"/> button per plantable. We find a
   /// vanilla planting tool of the target category, ask
   /// <see cref="ToolButtonService.GetToolGroupButton"/> for the group
-  /// button that owns it, and add our button to that group. Player-facing,
-  /// so — unlike <see cref="Keystone.Mod.Toolbar.KeystoneToolGroup"/> — it
-  /// is not gated behind dev mode.</para>
+  /// button that owns it, and add our button to that group.</para>
   ///
-  /// <para><b>Held-back trees variant.</b> Only the crop button is wired
-  /// today. The trees/bushes button (which overlaps the upstream Forest
-  /// Tool mod) is one flag away — set <see cref="EnableForestVariant"/> to
-  /// <c>true</c> once we've squared it with Forest Tool's author.</para>
+  /// <para><b>Dev-mode only (for now).</b> Both planting brushes — crops
+  /// and trees/bushes — are gated behind <see cref="KeystoneDevMode"/>, the
+  /// same sentinel <see cref="Keystone.Mod.Toolbar.KeystoneToolGroup"/>
+  /// uses, so neither appears in a clean release build. The design is still
+  /// in flux (see issue #30), and dev-only keeps the trees/bushes variant —
+  /// which overlaps the upstream Forest Tool mod — out of players' hands
+  /// regardless until that's squared away. When these go player-facing,
+  /// drop the gate and decide per-tool exposure here.</para>
   /// </summary>
   public sealed class KeystonePlantingMenuInitializer : IPostLoadableSingleton {
 
     #region Constants
-
-    /// <summary>When false, the trees/bushes brush is built and DI-wired
-    /// but its toolbar button is not registered. See
-    /// <see cref="KeystoneForestPlantingTool"/> for why it's held back.
-    /// <c>static readonly</c> (not <c>const</c>) so flipping it doesn't
-    /// trip an unreachable-code warning on the guarded call.</summary>
-    private static readonly bool EnableForestVariant = false;
 
     /// <summary>Placeholder button icon name, resolved by
     /// <see cref="ToolButtonFactory"/> from <c>Sprites/BottomBar/</c>.
@@ -76,10 +71,10 @@ namespace Keystone.Mod.Planting {
 
     /// <inheritdoc />
     public void PostLoad() {
+      // Dev-mode only: neither brush is surfaced in a clean release build.
+      if (!KeystoneDevMode.IsEnabled) return;
       AddToolToGroup(KeystoneCropPlantingTool.GroupId, _cropTool);
-      if (EnableForestVariant) {
-        AddToolToGroup(KeystoneForestPlantingTool.GroupId, _forestTool);
-      }
+      AddToolToGroup(KeystoneForestPlantingTool.GroupId, _forestTool);
     }
 
     /// <summary>Inject <paramref name="tool"/>'s button into the vanilla

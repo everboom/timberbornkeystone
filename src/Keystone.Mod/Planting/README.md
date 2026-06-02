@@ -7,10 +7,11 @@ Keystone's own take on the third-party "Forest Tool" mod
 built on the clean vanilla planting services instead of Forest Tool's static
 global state.
 
-Unlike the dev tools in `Keystone.Mod.Toolbar` / the various `*PlacementTool`s,
-this is **not** dev-gated — it's intended for end users, and it only writes
-planting *marks* (beavers fulfil them through the normal pipeline); nothing is
-force-spawned.
+It only writes planting *marks* (beavers fulfil them through the normal
+pipeline); nothing is force-spawned. **Currently dev-mode only** — gated behind
+`KeystoneDevMode` like the `Keystone.Mod.Toolbar` dev tools — while the design
+is still in flux (issue #30) and the trees/bushes overlap with the upstream
+Forest Tool mod is unresolved.
 
 ## Key types
 
@@ -20,10 +21,9 @@ force-spawned.
   Core `PlantingPalette` and a `KeystonePlantingPanel`. Subclasses supply the
   species category and loc keys.
 - **`KeystoneCropPlantingTool`** — crops (`CropSpec`), injected into the vanilla
-  `"Fields"` menu. **Live.**
+  `"Fields"` menu.
 - **`KeystoneForestPlantingTool`** — trees + bushes (`TreeComponentSpec ||
-  BushSpec`), targets the vanilla `"Forestry"` menu. **Held back** — built and
-  DI-bound, but its button is not registered (see below).
+  BushSpec`), injected into the vanilla `"Forestry"` menu.
 - **`KeystonePlantingPanel`** — the options window: per-species on/off toggles +
   "All" + "Allow gaps". Styled like `Visualization/BiomeOverlayLegend`
   (`square-large--brown` nine-slice, right edge, shown while the tool is active).
@@ -31,14 +31,17 @@ force-spawned.
   the tool buttons into the existing vanilla group buttons (the Forest Tool
   approach: find `ToolGroupButton` by id, `ToolButtonFactory.Create`, `AddTool`).
 
-## Why the trees/bushes variant is held back
+## Dev-mode only, for now
 
-The crops brush is net-new; the trees/bushes brush directly overlaps Forest
-Tool. We're reimplementing rather than depending (Forest Tool's author is
-inactive, and we want crops + adjustments he can't make), but out of respect
-for upstream the overlapping variant stays dark until we've talked to him. It's
-fully built so lighting it up is a one-line change:
-`KeystonePlantingMenuInitializer.EnableForestVariant = true`.
+Both brushes are gated behind `KeystoneDevMode` in
+`KeystonePlantingMenuInitializer.PostLoad` — they appear only when dev mode is
+enabled, never in a clean release build. Two reasons: the design is still in
+flux (issue #30 — e.g. count-tiered "smart planting" modes), and the
+trees/bushes brush directly overlaps the upstream Forest Tool mod, which we
+don't want in players' hands until that's squared with its author. When these
+go player-facing, drop the dev-mode gate in `PostLoad` and decide per-tool
+exposure there (crops are net-new; the trees/bushes overlap is the sensitive
+one).
 
 ## Design notes
 

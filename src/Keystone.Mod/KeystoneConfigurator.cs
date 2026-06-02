@@ -358,17 +358,17 @@ namespace Keystone.Mod {
       // expandable button.
       Bind<KeystoneToolGroup>().AsSingleton();
 
-      // Player-facing mixed-planting brush -- a Keystone reimplementation
-      // of the third-party "Forest Tool" concept (drag-select an area, queue
-      // a random mix of plantable species through the vanilla planting
-      // pipeline), extended to crops. Two category variants share
-      // KeystonePlantingToolBase + the Core PlantingPalette policy; the menu
-      // initializer injects their buttons into the vanilla "Fields" / "Forestry"
-      // planting menus. NOT dev-gated (unlike KeystoneToolGroup). The crop
-      // variant ships live; the trees/bushes variant is built and bound but
-      // its button stays unwired (KeystonePlantingMenuInitializer.EnableForestVariant)
-      // until we've squared the overlap with Forest Tool's author. See
-      // docs/private/foresttool.md and src/Keystone.Mod/Planting/README.md.
+      // Mixed-planting brush -- a Keystone reimplementation of the
+      // third-party "Forest Tool" concept (drag-select an area, queue a
+      // random mix of plantable species through the vanilla planting
+      // pipeline), extended to crops. Two category variants (crops; trees +
+      // bushes) share KeystonePlantingToolBase + the Core PlantingPalette
+      // policy; the menu initializer injects their buttons into the vanilla
+      // "Fields" / "Forestry" planting menus. Currently DEV-MODE ONLY (like
+      // KeystoneToolGroup) -- the design is still in flux (issue #30) and
+      // dev-only keeps the Forest-Tool-overlapping trees variant out of
+      // players' hands. See docs/private/foresttool.md and
+      // src/Keystone.Mod/Planting/README.md.
       Bind<KeystoneCropPlantingTool>().AsSingleton();
       Bind<KeystoneForestPlantingTool>().AsSingleton();
       Bind<KeystonePlantingMenuInitializer>().AsSingleton();

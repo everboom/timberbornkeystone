@@ -18,13 +18,12 @@ namespace Keystone.Mod.Planting {
   /// faction tree (<see cref="TreeComponentSpec"/>) and bush
   /// (<see cref="BushSpec"/>).
   ///
-  /// <para><b>Held back.</b> This variant directly overlaps the existing
-  /// third-party "Forest Tool" mod. It is fully built and wired into DI,
-  /// but its toolbar button is intentionally not registered yet — see
-  /// <see cref="KeystonePlantingMenuInitializer"/> (the
-  /// <c>EnableForestVariant</c> gate) — pending a conversation with Forest
-  /// Tool's author. The crop variant, which is net-new territory, ships
-  /// live in the meantime.</para>
+  /// <para><b>Dev-mode only.</b> Both planting brushes are gated behind
+  /// <see cref="KeystonePlantingMenuInitializer"/>'s dev-mode check, so
+  /// neither reaches players in a release build. That also keeps this
+  /// variant — which directly overlaps the third-party "Forest Tool" mod —
+  /// out of players' hands until the design settles (issue #30) and the
+  /// overlap is squared with Forest Tool's author.</para>
   /// </summary>
   public sealed class KeystoneForestPlantingTool : KeystonePlantingToolBase {
 
