@@ -82,17 +82,18 @@ namespace Keystone.Mod.Diagnostics.StartupChecks {
       if (report.ChunkValueCount > 0 && report.DroppedChunkValues > 0) {
         var droppedPct = report.DroppedChunkValues * 100.0 / report.ChunkValueCount;
         if (report.DroppedChunkValues >= ChunkDropFloor || droppedPct >= ChunkDropWarnPct) {
-          // Tile-span sample of where the reset chunks were, so the player
-          // can find the affected ground and the dev can correlate with a
-          // terrain edit.
+          // Player line gets the plain-English count of affected patches;
+          // the precise tile-span + Z sample (dev jargon) goes only into
+          // DetailedMessage and the Player.log line below, never the dialog
+          // body a release player reads.
           var where = DroppedChunkLocation.Summarize(
               report.DroppedChunkSample, report.DroppedChunkAreas, RegionEcologyField.ChunkSize);
           yield return new StartupFinding(
               StartupFindingSeverity.Warning,
               $"About {report.DroppedChunkValues} saved ecology value(s) could not " +
               "be matched to the loaded map and were reset" +
-              (where.Length > 0 ? $" ({where})" : "") + ". Affected areas will " +
-              "rebuild their biome over the next few game-days.",
+              (report.DroppedChunkAreas > 0 ? $" in {report.DroppedChunkAreas} area(s) of the map" : "") +
+              ". Affected areas will rebuild their biome over the next few game-days.",
               DetailedMessage:
                   $"DroppedChunkValues={report.DroppedChunkValues} of " +
                   $"{report.ChunkValueCount} ({droppedPct:F1}%) across " +

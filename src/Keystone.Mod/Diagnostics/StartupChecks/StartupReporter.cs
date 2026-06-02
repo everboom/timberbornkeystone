@@ -238,16 +238,16 @@ namespace Keystone.Mod.Diagnostics.StartupChecks {
         sb.Append("[").Append(category).AppendLine("]");
         foreach (var f in findings) {
           sb.Append("  ").Append(SeverityTag(f.Severity)).Append(' ').AppendLine(f.Message);
-          // Render DetailedMessage to everyone, not just dev mode. The
-          // detail typically names the offending blueprint / collection /
-          // exception type -- exactly what a bug report needs. A non-
-          // technical player doesn't have to understand it to act, but
-          // copy-pasting it into a Discord report gives the mod author
-          // (us or a third-party) actionable specifics. Before this
-          // change, release players saw only "Cross-mod compatibility
-          // logic failed: 1 issue." with no fingerprint of which mod
-          // or what exception.
-          if (!string.IsNullOrEmpty(f.DetailedMessage)) {
+          // DetailedMessage is the developer-facing follow-up: it names
+          // internal types, counts, and root-cause hints (ITerrainQuery,
+          // BiomeLevelTable, "footprint+Z", exception types) -- jargon a
+          // player can't act on and that reads like a crash dump in the
+          // dialog. Show it ONLY in dev mode, matching the IStartupCheck
+          // contract. The bug-report fingerprint isn't lost: RunAndReport
+          // logs Message + DetailedMessage to Player.log unconditionally
+          // (see above), so a report that includes the log still carries
+          // the specifics. The release dialog stays plain-English.
+          if (KeystoneDevMode.IsEnabled && !string.IsNullOrEmpty(f.DetailedMessage)) {
             sb.Append("    ").AppendLine(f.DetailedMessage);
           }
         }
