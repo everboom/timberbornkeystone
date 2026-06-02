@@ -442,6 +442,14 @@ namespace Keystone.Mod {
       // RollingSweepTicker reconcilers, each of which had its own tile
       // sweep.
       Bind<ChunkRulesApplier>().AsSingleton();
+
+      // Dead-flourish decay sweep. ITickableSingleton (auto-discovered
+      // by the singleton repository, like ChunkRulesApplier above):
+      // once per game-day it rolls every Dead flourish for deletion at
+      // ~10% so dead remains rot away instead of persisting forever on
+      // land that never recovers. Reuses EntityComponentRegistry +
+      // KeystoneFlourish.CurrentLifeStatus; no parallel tracking.
+      Bind<Keystone.Mod.Flourish.KeystoneFlourishDecayTicker>().AsSingleton();
     }
 
     /// <summary>

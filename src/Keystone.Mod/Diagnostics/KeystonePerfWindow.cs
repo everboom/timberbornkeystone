@@ -1199,6 +1199,11 @@ namespace Keystone.Mod.Diagnostics {
           now.ClusterTickerCycles, _activityReference?.ClusterTickerCycles, now, _activityReference);
       AppendActivityRow(buffer, "FaunaCycle cycles",
           now.FaunaCycleTickerCycles, _activityReference?.FaunaCycleTickerCycles, now, _activityReference);
+      // Fixed 1-day cadence (not slider-driven), so this should read
+      // ~1/day regardless of the map-update-frequency setting — a quick
+      // confirmation the dead-flourish decay sweep is actually cycling.
+      AppendActivityRow(buffer, "FlourishDecay cycles",
+          now.FlourishDecayCycles, _activityReference?.FlourishDecayCycles, now, _activityReference);
       buffer.AppendLine();
 
       // Region churn collapsed to a single line — events are usually

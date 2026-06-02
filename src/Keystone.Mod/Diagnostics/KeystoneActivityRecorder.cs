@@ -8,6 +8,7 @@ using Keystone.Core.Time;
 using Keystone.Mod.Biomes;
 using Keystone.Mod.Ecology;
 using Keystone.Mod.Fauna;
+using Keystone.Mod.Flourish;
 
 namespace Keystone.Mod.Diagnostics {
 
@@ -39,6 +40,7 @@ namespace Keystone.Mod.Diagnostics {
     private readonly ChunkBiomeTicker _biomeTicker;
     private readonly ChunkClusterTicker _clusterTicker;
     private readonly FaunaCycleTicker _faunaTicker;
+    private readonly KeystoneFlourishDecayTicker _flourishDecayTicker;
     private readonly RegionService _regions;
     private readonly ChunkClusterIndex _clusterIndex;
     private readonly KeystoneFaunaRegistry _faunaRegistry;
@@ -58,6 +60,7 @@ namespace Keystone.Mod.Diagnostics {
         ChunkBiomeTicker biomeTicker,
         ChunkClusterTicker clusterTicker,
         FaunaCycleTicker faunaTicker,
+        KeystoneFlourishDecayTicker flourishDecayTicker,
         RegionService regions,
         ChunkClusterIndex clusterIndex,
         KeystoneFaunaRegistry faunaRegistry,
@@ -67,6 +70,7 @@ namespace Keystone.Mod.Diagnostics {
       _biomeTicker = biomeTicker;
       _clusterTicker = clusterTicker;
       _faunaTicker = faunaTicker;
+      _flourishDecayTicker = flourishDecayTicker;
       _regions = regions;
       _clusterIndex = clusterIndex;
       _faunaRegistry = faunaRegistry;
@@ -83,6 +87,7 @@ namespace Keystone.Mod.Diagnostics {
           BiomeTickerCycles: _biomeTicker.CyclesCompleted,
           ClusterTickerCycles: _clusterTicker.CyclesCompleted,
           FaunaCycleTickerCycles: _faunaTicker.CyclesCompleted,
+          FlourishDecayCycles: _flourishDecayTicker.CyclesCompleted,
           RegionsCreated: _regions.RegionsCreatedCount,
           RegionSplits: _regions.RegionSplitCount,
           RegionMerges: _regions.RegionMergedCount,
@@ -210,6 +215,7 @@ namespace Keystone.Mod.Diagnostics {
       sb.AppendLine($"  ChunkBiomeTicker:    {s.BiomeTickerCycles}");
       sb.AppendLine($"  ChunkClusterTicker:  {s.ClusterTickerCycles}");
       sb.AppendLine($"  FaunaCycleTicker:    {s.FaunaCycleTickerCycles}");
+      sb.AppendLine($"  FlourishDecayTicker: {s.FlourishDecayCycles}");
       sb.AppendLine();
       sb.AppendLine("Region churn (cumulative):");
       sb.AppendLine($"  Created:  {s.RegionsCreated}");
@@ -235,6 +241,7 @@ namespace Keystone.Mod.Diagnostics {
           sb.AppendLine($"  ChunkBiomeTicker:    {(s.BiomeTickerCycles - prev.BiomeTickerCycles) / elapsed:F1} cycles/day");
           sb.AppendLine($"  ChunkClusterTicker:  {(s.ClusterTickerCycles - prev.ClusterTickerCycles) / elapsed:F1} cycles/day");
           sb.AppendLine($"  FaunaCycleTicker:    {(s.FaunaCycleTickerCycles - prev.FaunaCycleTickerCycles) / elapsed:F1} cycles/day");
+          sb.AppendLine($"  FlourishDecayTicker: {(s.FlourishDecayCycles - prev.FlourishDecayCycles) / elapsed:F1} cycles/day");
           sb.AppendLine($"  Region churn:        +{s.RegionsCreated - prev.RegionsCreated} created, " +
               $"{s.RegionSplits - prev.RegionSplits} splits, {s.RegionMerges - prev.RegionMerges} merges, " +
               $"{s.RegionsRemoved - prev.RegionsRemoved} removed");
@@ -256,6 +263,7 @@ namespace Keystone.Mod.Diagnostics {
       long BiomeTickerCycles,
       long ClusterTickerCycles,
       long FaunaCycleTickerCycles,
+      long FlourishDecayCycles,
       long RegionsCreated,
       long RegionSplits,
       long RegionMerges,

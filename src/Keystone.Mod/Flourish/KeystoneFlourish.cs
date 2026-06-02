@@ -72,7 +72,16 @@ namespace Keystone.Mod.Flourish {
   /// end-to-end.</para>
   /// </summary>
   public sealed class KeystoneFlourish
-      : TickableComponent, IInitializableEntity, IDeletableEntity, IPersistentEntity {
+      : TickableComponent, IRegisteredComponent, IInitializableEntity,
+        IDeletableEntity, IPersistentEntity {
+
+    // IRegisteredComponent is an empty marker that makes this component
+    // reachable through EntityComponentRegistry.GetEnabled<KeystoneFlourish>().
+    // KeystoneFlourishDecayTicker relies on that to enumerate every live
+    // flourish once per decay cycle and roll the dead ones for removal,
+    // rather than walking the block service tile-by-tile. Adding it has no
+    // other behavioural effect (the entity system auto-registers it at
+    // spawn and unregisters at delete).
 
     #region Persistence keys
 
