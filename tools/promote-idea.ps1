@@ -17,11 +17,17 @@
       4. Closes the discussion with reason RESOLVED via the `closeDiscussion`
          mutation, so the idea has a single source of truth (the issue) for
          active work.
+      5. Adds the new issue to the project board (default: project #2) and sets
+         its Status to Todo, unless -NoBoard is given. The Status field and the
+         target column are resolved by name at run time, so adding/reordering
+         columns doesn't break this.
 
     There is no native `gh discussion` command, so the discussion read/edit/
     close all go through `gh api graphql`. Issue creation uses `gh issue
-    create`. Run from inside the repo. Requires the GitHub CLI installed and
-    authenticated (`gh auth login`).
+    create`; the board step uses `gh project`. Run from inside the repo.
+    Requires the GitHub CLI installed and authenticated (`gh auth login`); the
+    board step additionally needs the `project` token scope
+    (`gh auth refresh -s project`).
 
 .PARAMETER DiscussionNumber
     The discussion number to promote (the #N from its URL). Required.
@@ -36,11 +42,25 @@
 .PARAMETER CloseReason
     Discussion close reason: RESOLVED (default), OUTDATED, or DUPLICATE.
 
+.PARAMETER ProjectNumber
+    The owner's project (board) number to add the new issue to. Default: 2.
+    The board is assumed to be owned by the same account as the repo.
+
+.PARAMETER BoardStatus
+    Which Status column the new issue lands in. Default: Todo. Must match an
+    existing option name on the board's Status field (case-sensitive).
+
+.PARAMETER NoBoard
+    Skip the board step entirely (just create the issue + close the discussion).
+
 .EXAMPLE
     .\tools\promote-idea.ps1 -DiscussionNumber 17
 
 .EXAMPLE
     .\tools\promote-idea.ps1 -DiscussionNumber 17 -Label roadmap -Title "Sea and ocean biomes (MVP)"
+
+.EXAMPLE
+    .\tools\promote-idea.ps1 -DiscussionNumber 17 -NoBoard
 #>
 [CmdletBinding()]
 param(
@@ -52,7 +72,13 @@ param(
     [string]$Label = 'enhancement',
 
     [ValidateSet('RESOLVED', 'OUTDATED', 'DUPLICATE')]
-    [string]$CloseReason = 'RESOLVED'
+    [string]$CloseReason = 'RESOLVED',
+
+    [int]$ProjectNumber = 2,
+
+    [string]$BoardStatus = 'Todo',
+
+    [switch]$NoBoard
 )
 
 Set-StrictMode -Version Latest
@@ -157,9 +183,49 @@ $($discussion.body)
         throw "closeDiscussion failed (issue #$issueNumber created and discussion body updated; close it manually)."
     }
 
+    # --- 5. Add the issue to the project board (default Status: Todo) ---
+    # Secondary to the promotion: by here the issue + discussion are already
+    # mutated, so a board failure warns loudly and continues rather than
+    # aborting (failing the whole run is not viable at this point).
+
+    $boardNote = "skipped (-NoBoard)"
+    if (-not $NoBoard) {
+        try {
+            $projRaw = gh project view $ProjectNumber --owner $owner --format json
+            if ($LASTEXITCODE -ne 0) { throw "couldn't read project #$ProjectNumber for owner '$owner' (is the 'project' token scope granted?)." }
+            $projectId = ($projRaw | ConvertFrom-Json).id
+
+            $itemRaw = gh project item-add $ProjectNumber --owner $owner --url $issueUrl --format json
+            if ($LASTEXITCODE -ne 0) { throw "project item-add failed." }
+            $itemId = ($itemRaw | ConvertFrom-Json).id
+
+            # Resolve the Status field + target option by name so adding or
+            # reordering columns doesn't break this.
+            $statusField = gh project field-list $ProjectNumber --owner $owner --format json |
+                ConvertFrom-Json | Select-Object -ExpandProperty fields |
+                Where-Object { $_.name -eq 'Status' } | Select-Object -First 1
+            if (-not $statusField) { throw "no 'Status' field on project #$ProjectNumber." }
+            $option = $statusField.options | Where-Object { $_.name -eq $BoardStatus } | Select-Object -First 1
+            if (-not $option) {
+                $avail = ($statusField.options.name -join ', ')
+                throw "Status option '$BoardStatus' not found. Available: $avail"
+            }
+
+            gh project item-edit --project-id $projectId --id $itemId --field-id $($statusField.id) --single-select-option-id $($option.id) *> $null
+            if ($LASTEXITCODE -ne 0) { throw "project item-edit (set Status=$BoardStatus) failed." }
+
+            $boardNote = "added to project #$ProjectNumber (Status: $BoardStatus)"
+        }
+        catch {
+            Write-Warning "Board placement failed: $($_.Exception.Message) Issue #$issueNumber is filed but not on the board -- add it manually."
+            $boardNote = "FAILED -- add manually"
+        }
+    }
+
     Write-Host "Promoted discussion #$($discussion.number) -> issue #$issueNumber"
     Write-Host "  Issue:      $issueUrl"
     Write-Host "  Discussion: $($discussion.url) (closed: $CloseReason)"
+    Write-Host "  Board:      $boardNote"
 }
 finally {
     [Console]::OutputEncoding = $prevOutputEncoding

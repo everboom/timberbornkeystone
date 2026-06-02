@@ -192,22 +192,33 @@ Issues.
 Promotes a Discussion **idea** to a tracked **issue** once it lands on the
 roadmap / enters development. There is no native `gh discussion` command, so the
 discussion read/edit/close go through `gh api graphql`; issue creation uses
-`gh issue create`. Run from inside the repo; requires `gh` authenticated.
+`gh issue create` and board placement uses `gh project`. Run from inside the
+repo; requires `gh` authenticated (the board step additionally needs the
+`project` token scope -- `gh auth refresh -s project`).
 
 ```powershell
 .\tools\promote-idea.ps1 -DiscussionNumber 17
 .\tools\promote-idea.ps1 -DiscussionNumber 17 -Label roadmap -Title "Sea and ocean biomes (MVP)"
+.\tools\promote-idea.ps1 -DiscussionNumber 17 -NoBoard
 ```
 
 In one shot it (1) creates an issue from the discussion's title/body with a
 "Promoted from discussion #N" back-link, labelled `enhancement` by default;
 (2) appends a forward-link ("Promoted to issue #M -- now under development")
-to the discussion body via `updateDiscussion`; and (3) closes the discussion
+to the discussion body via `updateDiscussion`; (3) closes the discussion
 via `closeDiscussion` so the issue becomes the single source of truth for
-active work. `-Label <name>` sets the issue label (must already exist on the
-repo). `-Title <text>` overrides the issue title (defaults to the discussion
-title). `-CloseReason RESOLVED|OUTDATED|DUPLICATE` sets the close reason
-(default `RESOLVED`).
+active work; and (4) adds the new issue to the project board (default project
+`#2`) with Status **Todo**. The board's Status field and target column are
+resolved by name at run time, so adding/reordering columns won't break it. The
+board step is secondary -- if it fails (e.g. missing `project` scope) the
+issue + discussion changes still stand and a warning is printed.
+
+`-Label <name>` sets the issue label (must already exist on the repo).
+`-Title <text>` overrides the issue title (defaults to the discussion title).
+`-CloseReason RESOLVED|OUTDATED|DUPLICATE` sets the close reason (default
+`RESOLVED`). `-ProjectNumber <n>` targets a different board (default `2`).
+`-BoardStatus <name>` sets the landing column (default `Todo`). `-NoBoard`
+skips board placement entirely.
 
 Note: this is the natural follow-up to `new-idea.ps1` -- ideas flow in via
 Discussions and graduate to Issues here. Issues are no longer bug-only; the
