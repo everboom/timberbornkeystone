@@ -1,6 +1,6 @@
 {
   "Name": "Keystone",
-  "Version": "1.1.2.0",
+  "Version": "1.2.0.0",
   "Id": "SylvanGames.Keystone",
   "MinimumGameVersion": "1.0.0.0",
   "Description": "Adds an ecology layer where the player's water and land choices create the conditions under which an ecosystem can exist.",

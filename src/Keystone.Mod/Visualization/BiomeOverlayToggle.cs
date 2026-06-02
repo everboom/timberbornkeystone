@@ -37,6 +37,7 @@ namespace Keystone.Mod.Visualization {
     private readonly IAssetLoader _assetLoader;
 
     private VisualElement _root;
+    private Toggle _toggle;
     private bool _enabled;
 
     /// <summary>Whether the biome overlay is currently active. Read
@@ -60,12 +61,22 @@ namespace Keystone.Mod.Visualization {
     public void Load() {
       _root = _visualElementLoader.LoadVisualElement("Common/SquareToggle");
       _tooltipRegistrar.RegisterLocalizable(_root, () => _enabled ? HideLocKey : ShowLocKey);
-      var toggle = _root.Q<Toggle>("Toggle");
-      var checkmark = toggle.Q(null, CheckmarkClass);
+      _toggle = _root.Q<Toggle>("Toggle");
+      var checkmark = _toggle.Q(null, CheckmarkClass);
       var texture = _assetLoader.Load<Texture2D>(IconPath);
       checkmark.style.backgroundImage = new StyleBackground(texture);
-      toggle.RegisterValueChangedCallback(evt => _enabled = evt.newValue);
+      _toggle.RegisterValueChangedCallback(evt => _enabled = evt.newValue);
       _eventBus.Register(this);
+    }
+
+    /// <summary>Force the overlay off, flipping the visual toggle too.
+    /// Used by tools that own the same screen real estate as the biome
+    /// legend (the planting brushes) so the overlay and the tool's options
+    /// panel never fight for the right edge. A no-op if already off, or if
+    /// the toggle hasn't been built yet.</summary>
+    public void Disable() {
+      if (_toggle == null) return;
+      _toggle.value = false;
     }
 
     [OnEvent]
