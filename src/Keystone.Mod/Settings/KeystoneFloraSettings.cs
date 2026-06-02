@@ -7,8 +7,8 @@ namespace Keystone.Mod.Settings {
 
   /// <summary>
   /// Player-tunable flora-density sliders. Renders as the "Flora" section
-  /// in the Keystone mod-settings panel (first section, <see cref="Order"/>
-  /// = 0).
+  /// in the Keystone mod-settings panel (second section, <see cref="Order"/>
+  /// = 1).
   ///
   /// <para>One slider for decorative Class B flourishes plus per-category
   /// sliders for Class D vanilla flora (trees, bushes, crops). The Class D
@@ -83,7 +83,7 @@ namespace Keystone.Mod.Settings {
                 .SetLocalizedTooltip("Keystone.Settings.Flora.GrowthBonus.Tooltip"));
 
     /// <inheritdoc />
-    public override int Order => 0;
+    public override int Order => 1;
 
     /// <inheritdoc />
     public override string HeaderLocKey => "Keystone.Settings.Flora.Header";

@@ -29,6 +29,7 @@ namespace Keystone.Mod.Settings {
       Bind<KeystoneFaunaSettings>().AsSingleton();
       Bind<KeystoneEffectsSettings>().AsSingleton();
       Bind<KeystonePerformanceSettings>().AsSingleton();
+      Bind<KeystoneBaseGameSettings>().AsSingleton();
       Bind<KeystoneUiSettings>().AsSingleton();
     }
 

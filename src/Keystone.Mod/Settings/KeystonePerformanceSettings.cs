@@ -7,8 +7,8 @@ namespace Keystone.Mod.Settings {
 
   /// <summary>
   /// Player-tunable performance / CPU-cost controls. Renders as the
-  /// "Performance" section in the Keystone mod-settings panel (fourth
-  /// section, <see cref="Order"/> = 3).
+  /// "Performance" section in the Keystone mod-settings panel (fifth
+  /// section, <see cref="Order"/> = 4).
   ///
   /// <para><b>MainMenu-only by design.</b> The map-update-frequency knob
   /// controls the cycle duration of <c>EcologyFieldUpdater</c>,
@@ -58,7 +58,7 @@ namespace Keystone.Mod.Settings {
                 .SetLocalizedTooltip("Keystone.Settings.Performance.RulesUpdateDays.Tooltip"));
 
     /// <inheritdoc />
-    public override int Order => 3;
+    public override int Order => 4;
 
     /// <inheritdoc />
     public override string HeaderLocKey => "Keystone.Settings.Performance.Header";

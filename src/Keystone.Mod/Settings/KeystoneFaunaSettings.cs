@@ -7,7 +7,7 @@ namespace Keystone.Mod.Settings {
 
   /// <summary>
   /// Player-tunable fauna controls. Renders as the "Fauna" section in the
-  /// Keystone mod-settings panel (second section, <see cref="Order"/> = 1).
+  /// Keystone mod-settings panel (third section, <see cref="Order"/> = 2).
   ///
   /// <para>Includes a master enable toggle plus per-category abundance
   /// sliders for the three currently-shipping fauna families (deer, cattle
@@ -55,7 +55,7 @@ namespace Keystone.Mod.Settings {
                 .SetLocalizedTooltip("Keystone.Settings.Fauna.FishAbundance.Tooltip"));
 
     /// <inheritdoc />
-    public override int Order => 1;
+    public override int Order => 2;
 
     /// <inheritdoc />
     public override string HeaderLocKey => "Keystone.Settings.Fauna.Header";

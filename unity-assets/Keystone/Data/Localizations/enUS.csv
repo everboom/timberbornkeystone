@@ -135,6 +135,19 @@ Keystone.Settings.Performance.RulesUpdateDays.Tooltip,"How often Keystone re-eva
 This is the biggest CPU lever on saturated maps — most of the per-tile work is in spawning new objects, and slowing the cycle cuts it proportionally.
 
 Only changeable from the main menu.",
+Keystone.Settings.BaseGame.Header,Base Game,Header above the base-game-tweaks section of the Keystone settings panel.
+Keystone.Settings.BaseGame.WildReproduction,Wild plant reproduction rate,Vanilla natural-reproduction throttle slider label.
+Keystone.Settings.BaseGame.WildReproduction.Tooltip,"How fast wild plants and trees spread to nearby tiles on their own — as a share of the base game's normal rate.
+
+100% is the normal rate.
+5% is the default — wild spread is slowed to a trickle.
+0% stops wild spread entirely.
+
+Keystone already fills each biome with its own plants and trees, so the base game's slow creep is mostly redundant — the low default lets Keystone drive what grows where, instead of two systems competing.
+
+This is a slow-down only; it can't make wild plants spread faster than the base game.
+
+Only changeable from the main menu.",
 Keystone.GrowthBonus.Growing.SuitableConditions,"<GreenHighlight>{0} growth bonus from suitable {1} conditions.</GreenHighlight>",Suitability high but maturity low.
 Keystone.GrowthBonus.Growing.NearbyEstablished,"<GreenHighlight>{0} growth bonus from a nearby established {1}.</GreenHighlight>",Maturity high but suitability low.
 Keystone.GrowthBonus.Growing.Maturing,"<GreenHighlight>{0} growth bonus from a maturing {1}.</GreenHighlight>",Both suitability and maturity contributing.

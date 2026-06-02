@@ -22,7 +22,7 @@ namespace Keystone.Mod.Settings {
                 .SetLocalizedTooltip("Keystone.Settings.UI.BiomeOverlayOpacity.Tooltip"));
 
     /// <inheritdoc />
-    public override int Order => 4;
+    public override int Order => 5;
 
     /// <inheritdoc />
     public override string HeaderLocKey => "Keystone.Settings.UI.Header";

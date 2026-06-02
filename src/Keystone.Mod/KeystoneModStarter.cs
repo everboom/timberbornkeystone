@@ -37,11 +37,12 @@ namespace Keystone.Mod {
     /// at startup -- catches "patch silently no-op'd because Timberborn
     /// renamed the target" before it bites in-game.
     ///
-    /// <para>Currently 8: template strip, NaturalResourceModel
+    /// <para>Currently 9: template strip, NaturalResourceModel
     /// ShowCurrentModel, SelectableObjectRetriever, EntitySelection
     /// Service, resource-demolish ActionCallback + PreviewCallback,
-    /// building-demolish PreviewCallback + ActionCallback.</para></summary>
-    public const int ExpectedPatchedMethodCount = 8;
+    /// building-demolish PreviewCallback + ActionCallback, Reproducible
+    /// ReproductionChance getter (vanilla-reproduction throttle).</para></summary>
+    public const int ExpectedPatchedMethodCount = 9;
 
     #region Static patch report
 

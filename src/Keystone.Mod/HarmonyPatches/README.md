@@ -1,10 +1,11 @@
 # Keystone.Mod.HarmonyPatches
 
 Harmony patches applied at `IModStarter.StartMod` (see
-`KeystoneModStarter`). Used narrowly: cross-faction template mutation
-plus three patches that make Keystone-ambient entities invisible to
-player interaction. Anything more invasive should go through Bindito ->
-adapter -> port instead.
+`KeystoneModStarter`). Used narrowly: cross-faction template mutation,
+patches that make Keystone-ambient entities invisible to player
+interaction (and the inverse bulk-demolish injection), and a one-getter
+throttle on vanilla natural-resource reproduction. Anything more
+invasive should go through Bindito -> adapter -> port instead.
 
 The expected patched-method count is asserted at startup
 (`KeystoneModStarter.ExpectedPatchedMethodCount`); a mismatch logs a
@@ -22,6 +23,7 @@ than silently breaking gameplay.
 | `EntitySelectionServicePatch` | Companion to the retriever patch. Cursor *click* goes through `EntitySelectionService.Select` -> the assertion-style `GetSelectableObject(BaseComponent)` overload, which would throw on the suppressed entities. We skip `Select` entirely for ambients. |
 | `DemolishableSelectionToolPatch` | Filters ambient entities out of the demolish tool's `ActionCallback` (commit) and `PreviewCallback` (drag preview) lists. `Demolishable` itself is wired to a foundational spec we keep, so spec strip / `DisableComponent` aren't viable -- the cleanest cut is at the tool's input path. |
 | `BuildingDeconstructionClassBPatch` | The inverse direction: *injects* Class B entities into the **building** bulk-demolish tool's `PreviewCallback` and `ActionCallback` lists so the player can drag-select an area and have Class Bs deleted instantly alongside actual buildings. Required because the picker filters by `GetComponent<BuildingSpec>() != null` at the LINQ stage and Class B blueprints don't carry `BuildingSpec` (would force a migration off `WateredNaturalResourceSpec`). Reads from `ClassBAreaQuery` (a small `IBlockService` wrapper exposed via static singleton because Harmony patches can't take constructor injection). The companion suppression patches stay: Class B remains unselectable on hover/click; the only way to remove one is via the bulk-area tool. |
+| `ReproducibleReproductionChancePatch` | Postfix on the `Reproducible.ReproductionChance` getter; multiplies the result by the player's menu-only "Base Game" → wild-reproduction rate (`KeystoneBaseGameSettings`, default 5%). Throttles vanilla natural-resource neighbour-spread, which Keystone's own Class A–D content pipeline largely supersedes. The getter is read only by `NaturalResourceReproducer.MarkSpots` → `ReproducibleKey.Create` (mark-time, entity load), then frozen per resource id for the session — so the patch never runs on the per-tick spread loop, and the setting is MainMenu-only to match (the value can't take effect mid-session; it re-applies on each load as resources re-mark). Reads `NaturalReproductionRateAccessor.Multiplier`, a static published from `KeystoneBaseGameSettings` via the `FactionIdAccessor` ctor-publish + eager-`ILoadableSingleton` pattern so the value is live before the first mark. Global by intent (no per-species gate): the throttle suppresses all wild spread uniformly. |
 
 Per the project convention in `CLAUDE.md`, the standard Harmony mod is
 listed as a manifest dependency rather than bundled as a NuGet ref --

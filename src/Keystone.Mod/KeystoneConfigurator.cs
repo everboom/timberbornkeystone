@@ -146,6 +146,14 @@ namespace Keystone.Mod {
       // direct ISpecService access).
       Bind<SpecServiceAccessor>().AsSingleton();
 
+      // Natural-reproduction rate accessor — publishes the menu-only
+      // KeystoneBaseGameSettings wild-reproduction multiplier to a static
+      // field that ReproducibleReproductionChancePatch reads at resource
+      // mark-time. ILoadableSingleton so Bindito eagerly constructs it
+      // (and the injected settings owner) before any Reproducible marks
+      // spots.
+      Bind<NaturalReproductionRateAccessor>().AsSingleton();
+
       // Biome values (per-chunk, time-accumulating). Cross-chunk
       // stress (Badwater radius) will be added later as a separate
       // mechanism that smooths across chunk borders. Two channels
@@ -216,6 +224,7 @@ namespace Keystone.Mod {
       MultiBind<IKeystoneSelfTest>().To<DecoratorCoverageTest>().AsSingleton();
       MultiBind<IKeystoneSelfTest>().To<LoaderSurvivalTest>().AsSingleton();
       MultiBind<IKeystoneSelfTest>().To<PatchScopeInvariantTest>().AsSingleton();
+      MultiBind<IKeystoneSelfTest>().To<WildReproductionThrottleTest>().AsSingleton();
       MultiBind<IKeystoneSelfTest>().To<PipelineHealthTest>().AsSingleton();
       MultiBind<IKeystoneSelfTest>().To<ChunkReconciliationSelfTest>().AsSingleton();
 
