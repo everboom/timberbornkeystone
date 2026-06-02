@@ -23,10 +23,20 @@ namespace Keystone.Core.Ports {
   /// channel by the aggregator so a dead Birch doesn't pad live-Birch
   /// density. Entities without a lifecycle component are treated as
   /// alive (<c>false</c>).</param>
+  /// <param name="IsGrown">True if the entity is fully grown (its
+  /// <c>Growable</c> reports grown) <i>or</i> it has no growth timer at
+  /// all (a fixed adult — e.g. a non-growable natural resource). False
+  /// only for a still-maturing seedling. Lets the chunk aggregator count
+  /// mature trees separately from seedlings so
+  /// <c>BiomeTargets.Forest</c> can gate on established canopy. Defaults
+  /// to <c>true</c> so producers/tests that don't care about maturity
+  /// (e.g. pure routing tests) read as "adult"; the real producer sets
+  /// it explicitly.</param>
   public readonly record struct NaturalResourceProbe(
       string BlueprintName,
       bool IsKeystoneOwned,
-      bool IsDead);
+      bool IsDead,
+      bool IsGrown = true);
 
   /// <summary>
   /// Enumerator-style port over the per-voxel natural-resource scan.

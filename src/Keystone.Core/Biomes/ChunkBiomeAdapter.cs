@@ -136,6 +136,7 @@ namespace Keystone.Core.Biomes {
       var contaminatedWater = waterContamFrac;
 
       var (treeCount, treeSpecies) = AggregateFromChannels(field, cx, cy, _treeIndex);
+      var matureTreeCount = MatureTreeCount(field, cx, cy);
       var (plantableCount, plantableSpecies, plantableDominance) =
           AggregatePlantables(field, cx, cy);
 
@@ -152,10 +153,26 @@ namespace Keystone.Core.Biomes {
           ContaminatedWaterFraction = contaminatedWater,
           TreeCount = treeCount,
           TreeSpeciesCount = treeSpecies,
+          MatureTreeCount = matureTreeCount,
           PlantableCount = plantableCount,
           PlantableSpeciesCount = plantableSpecies,
           PlantableDominance = plantableDominance,
       };
+    }
+
+    /// <summary>Read the synthetic mature-tree aggregate channel for
+    /// this chunk -- the producer-maintained count of live, fully-grown
+    /// tree entities. Returns 0 when the producer hasn't registered the
+    /// channel yet (too-early window) or the resolved index is outside
+    /// the field's channel range (a field allocated before the channel
+    /// existed -- the next field reallocation picks it up). Feeds
+    /// <see cref="ChunkBiomeInputs.MatureTreeCount"/>, which
+    /// <see cref="BiomeTargets.Forest"/>'s mature-canopy gate divides by
+    /// <see cref="ChunkBiomeInputs.TreeCount"/>.</summary>
+    private int MatureTreeCount(RegionEcologyField field, int cx, int cy) {
+      var idx = _fieldQuery.MatureTreeEntityIndex;
+      if (!idx.HasValue || idx.Value >= field.EntityChannelCount) return 0;
+      return (int)field.ChunkValueEntity(idx.Value, cx, cy);
     }
 
     /// <summary>Sum the per-blueprint channel counts in this chunk

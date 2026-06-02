@@ -48,6 +48,7 @@ namespace Keystone.Core.Tests.Biomes {
           IrrigatedFraction = 1f,
           TreeCount = 5,
           TreeSpeciesCount = 2,
+          MatureTreeCount = 5,
       };
       updater.Tick(data, in inputs);
 
@@ -87,7 +88,7 @@ namespace Keystone.Core.Tests.Biomes {
       var data = MakeData();
 
       var irrigated = new ChunkBiomeInputs {
-          IrrigatedFraction = 1f, TreeCount = 5, TreeSpeciesCount = 2,
+          IrrigatedFraction = 1f, TreeCount = 5, TreeSpeciesCount = 2, MatureTreeCount = 5,
       };
       updater.Tick(data, in irrigated);
       var forestAfterIrrigated = Suitability(data, BiomeKind.Forest);
@@ -129,6 +130,7 @@ namespace Keystone.Core.Tests.Biomes {
           IrrigatedFraction = 1f,
           TreeCount = 5,
           TreeSpeciesCount = 2,
+          MatureTreeCount = 5,
           ContaminatedFraction = 0.2f,  // well above kill threshold
       };
       updater.Tick(data, in inputs);
@@ -148,7 +150,7 @@ namespace Keystone.Core.Tests.Biomes {
       var updater = MakeUpdater();
       var data = MakeData();
       var inputs = new ChunkBiomeInputs {
-          IrrigatedFraction = 1f, TreeCount = 100, TreeSpeciesCount = 100,
+          IrrigatedFraction = 1f, TreeCount = 100, TreeSpeciesCount = 100, MatureTreeCount = 100,
       };
       updater.Tick(data, in inputs);
 
@@ -172,7 +174,7 @@ namespace Keystone.Core.Tests.Biomes {
       data.Set(BiomeValueKinds.SuitabilityOrdinal(BiomeKind.Grassland), 0.5f);
 
       var inputs = new ChunkBiomeInputs {
-          IrrigatedFraction = 1f, TreeCount = 5, TreeSpeciesCount = 2,
+          IrrigatedFraction = 1f, TreeCount = 5, TreeSpeciesCount = 2, MatureTreeCount = 5,
       };
       updater.Tick(data, in inputs);
 
@@ -217,7 +219,7 @@ namespace Keystone.Core.Tests.Biomes {
       var updater = MakeUpdater();
       var data = MakeData();
       var inputs = new ChunkBiomeInputs {
-          IrrigatedFraction = 1f, TreeCount = 5, TreeSpeciesCount = 2,
+          IrrigatedFraction = 1f, TreeCount = 5, TreeSpeciesCount = 2, MatureTreeCount = 5,
       };
       updater.Tick(data, in inputs);
 
@@ -248,7 +250,7 @@ namespace Keystone.Core.Tests.Biomes {
       var updater = MakeUpdater();
       var data = MakeData();
       var inputs = new ChunkBiomeInputs {
-          IrrigatedFraction = 1f, TreeCount = 5, TreeSpeciesCount = 2,
+          IrrigatedFraction = 1f, TreeCount = 5, TreeSpeciesCount = 2, MatureTreeCount = 5,
       };
       updater.Tick(data, in inputs);
 

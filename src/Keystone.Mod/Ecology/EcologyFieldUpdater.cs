@@ -56,6 +56,15 @@ namespace Keystone.Mod.Ecology {
 
     public const string DeadEntityChannelName = "(dead)";
 
+    /// <summary>Synthetic entity channel holding the per-chunk count of
+    /// live, fully-grown tree-kind entities (seedlings excluded). Fed by
+    /// the entity walk and read back through
+    /// <see cref="IEcologyFieldQuery.MatureTreeEntityIndex"/> so the
+    /// chunk biome adapter can drive Forest's mature-canopy gate. Like
+    /// <see cref="DeadEntityChannelName"/>, it's an aggregate appended
+    /// after the per-blueprint channels, not a real blueprint.</summary>
+    public const string MatureTreeChannelName = "(mature-trees)";
+
     private const int EntityCycleInterval = 4;
 
     private const int InitialBatchCapacity = 64;
@@ -90,6 +99,19 @@ namespace Keystone.Mod.Ecology {
     private readonly List<string> _entityIndexToName = new();
 
     private int _deadEntityIndex;
+
+    /// <summary>Channel index of the <see cref="MatureTreeChannelName"/>
+    /// aggregate, set alongside <see cref="_deadEntityIndex"/> in
+    /// <see cref="InitializeEntityIndexMap"/>. Valid only once
+    /// <see cref="_entityIndexToName"/> is populated.</summary>
+    private int _matureTreeIndex;
+
+    /// <summary>Channel indices of live tree-kind blueprints (from the
+    /// flora catalog's <see cref="FloraKind.Tree"/> entries). Used by
+    /// the entity walk to decide whether a routed probe should also bump
+    /// the mature-trees aggregate. Rebuilt in
+    /// <see cref="InitializeEntityIndexMap"/>.</summary>
+    private readonly HashSet<int> _treeChannelIndices = new();
 
     private float[] _scratchEntities = Array.Empty<float>();
     private readonly HashSet<object> _scratchSeen = new();
@@ -351,14 +373,22 @@ namespace Keystone.Mod.Ecology {
     private void InitializeEntityIndexMap() {
       _entityIndices.Clear();
       _entityIndexToName.Clear();
+      _treeChannelIndices.Clear();
       foreach (var entry in _flora.Entries) {
-        _entityIndices[entry.BlueprintName] = _entityIndexToName.Count;
+        var idx = _entityIndexToName.Count;
+        _entityIndices[entry.BlueprintName] = idx;
         _entityIndexToName.Add(entry.BlueprintName);
+        // Tree-kind blueprints feed the mature-trees aggregate (their
+        // grown instances do); cache the channel indices so the entity
+        // walk can recognise a routed tree probe cheaply.
+        if (entry.Kind == FloraKind.Tree) _treeChannelIndices.Add(idx);
       }
       _deadEntityIndex = _entityIndexToName.Count;
       _entityIndexToName.Add(DeadEntityChannelName);
+      _matureTreeIndex = _entityIndexToName.Count;
+      _entityIndexToName.Add(MatureTreeChannelName);
       _scratchEntities = new float[_entityIndexToName.Count];
-      KeystoneLog.Verbose($"[Keystone] EcologyFieldUpdater: registered {_entityIndexToName.Count} entity channels (incl. {DeadEntityChannelName}).");
+      KeystoneLog.Verbose($"[Keystone] EcologyFieldUpdater: registered {_entityIndexToName.Count} entity channels (incl. {DeadEntityChannelName}, {MatureTreeChannelName}; {_treeChannelIndices.Count} tree channels).");
     }
 
     #endregion
@@ -375,6 +405,10 @@ namespace Keystone.Mod.Ecology {
 
     /// <inheritdoc />
     public IReadOnlyList<string> KnownEntityBlueprints => _entityIndexToName;
+
+    /// <inheritdoc />
+    public int? MatureTreeEntityIndex =>
+        _entityIndexToName.Count > 0 ? _matureTreeIndex : (int?)null;
 
     /// <inheritdoc />
     public int FieldShapeVersion => _fieldShapeVersion;
@@ -963,6 +997,14 @@ namespace Keystone.Mod.Ecology {
           probe, EntityIndexLookup, _deadEntityIndex);
       if (!idx.HasValue) return;
       _scratchEntities[idx.Value] += 1f;
+      // Mature-trees aggregate: a grown probe that routed to a live tree
+      // channel (dead trees route to _deadEntityIndex, which isn't in
+      // the tree set, so they're excluded automatically). Seedlings
+      // (IsGrown == false) count toward TreeCount via the line above but
+      // not toward the mature aggregate.
+      if (probe.IsGrown && _treeChannelIndices.Contains(idx.Value)) {
+        _scratchEntities[_matureTreeIndex] += 1f;
+      }
     }
 
     #endregion

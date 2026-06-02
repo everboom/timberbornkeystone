@@ -54,6 +54,22 @@ namespace Keystone.Core.Biomes {
     private const float ForestSpeciesSaturation = 2f;
     private const float ForestDensitySaturation = 5f;
 
+    /// <summary>Mature-tree fraction at which Forest's mature-canopy
+    /// gate reaches full strength. The gate is
+    /// <c>saturate(MatureTreeFraction / ForestMatureFractionSaturation)</c> —
+    /// a linear ramp from 0 (no mature trees) to 1 (this fraction or
+    /// more of the chunk's trees are fully grown). At <c>0.25</c>, a
+    /// chunk needs a quarter of its trees mature for full Forest credit;
+    /// a pure-seedling carpet (0% mature) reads as 0 Forest regardless
+    /// of how dense or diverse the saplings are, which is the point —
+    /// the biome rewards genuinely established woodland and can't be
+    /// gamed by mass-planting seedlings.
+    /// <para>Smooth ramp rather than a hard threshold, matching the rest
+    /// of <see cref="BiomeTargets"/>'s multiplicative-factor style (see
+    /// <see cref="Grassland"/>'s note on avoiding chunk-border wave
+    /// artifacts from binary gates).</para></summary>
+    private const float ForestMatureFractionSaturation = 0.25f;
+
     /// <summary>Below this many plantables (entities + marks) in a
     /// chunk, monoculture cannot trigger regardless of how
     /// homogeneous the species are. Prevents a partial-chunk with a
@@ -107,7 +123,11 @@ namespace Keystone.Core.Biomes {
       var diversity = Saturate(i.TreeSpeciesCount / ForestSpeciesSaturation);
       var density = Saturate(i.TreeCount / ForestDensitySaturation);
       var monoSuppression = 1f - Monoculture(i);
-      return i.IrrigatedFraction * diversity * density * monoSuppression;
+      // Mature-canopy gate: linear ramp on the share of the chunk's
+      // trees that are fully grown. A field of seedlings (0% mature)
+      // reads as 0 Forest however dense; full credit at >= 25% mature.
+      var matureGate = Saturate(i.MatureTreeFraction / ForestMatureFractionSaturation);
+      return i.IrrigatedFraction * diversity * density * monoSuppression * matureGate;
     }
 
     /// <summary>Grassland: irrigated land scaled down by tree presence

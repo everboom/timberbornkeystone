@@ -1595,6 +1595,7 @@ namespace Keystone.Core.Tests.Ecology.Clusters {
       public RegionEcologyField? FieldFor(RegionId region) => GetField(region);
       public int? EntityIndex(string blueprintName) => null;
       public IReadOnlyList<string> KnownEntityBlueprints { get; } = System.Array.Empty<string>();
+      public int? MatureTreeEntityIndex => null;
       public int FieldShapeVersion => 0;
       public RegionTileData? TileDataFor(RegionId region) => null;
     }

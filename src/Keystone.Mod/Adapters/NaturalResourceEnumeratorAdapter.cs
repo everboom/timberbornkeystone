@@ -2,6 +2,7 @@ using System;
 using Keystone.Core.Ports;
 using Keystone.Mod.Recipes;
 using Timberborn.BlockSystem;
+using Timberborn.Growing;
 using Timberborn.NaturalResources;
 using Timberborn.NaturalResourcesLifecycle;
 using UnityEngine;
@@ -36,8 +37,15 @@ namespace Keystone.Mod.Adapters {
         var isKeystoneOwned = variant != null && !string.IsNullOrEmpty(variant.Class);
         var living = bo.GetComponent<LivingNaturalResource>();
         var isDead = living != null && living.IsDead;
+        // Maturity: a tree is a seedling only while its Growable is
+        // still maturing. No Growable -> fixed adult (or a non-growing
+        // resource) -> treated as grown. Drives the mature-trees
+        // aggregate the chunk biome adapter reads for Forest's
+        // mature-canopy gate.
+        var growable = bo.GetComponent<Growable>();
+        var isGrown = growable == null || growable.IsGrown;
         var blueprintName = bo.GetComponent<BlockObjectSpec>()?.Blueprint?.Name ?? string.Empty;
-        onProbe(bo, new NaturalResourceProbe(blueprintName, isKeystoneOwned, isDead));
+        onProbe(bo, new NaturalResourceProbe(blueprintName, isKeystoneOwned, isDead, isGrown));
       }
     }
 

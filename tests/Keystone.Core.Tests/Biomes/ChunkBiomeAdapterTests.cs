@@ -49,6 +49,11 @@ namespace Keystone.Core.Tests.Biomes {
 
       public IReadOnlyList<string> KnownEntityBlueprints => _knownBlueprints;
 
+      /// <summary>Synthetic mature-trees channel index. Null by default
+      /// (most tests don't exercise the mature gate); set explicitly in
+      /// the mature-count test.</summary>
+      public int? MatureTreeEntityIndex { get; set; }
+
       public int FieldShapeVersion { get; set; }
 
       public RegionTileData? TileDataFor(RegionId region) => null;
@@ -310,6 +315,52 @@ namespace Keystone.Core.Tests.Biomes {
 
       Assert.AreEqual(5, inputs.TreeCount);
       Assert.AreEqual(2, inputs.TreeSpeciesCount);
+    }
+
+    [TestMethod]
+    public void Build_MatureTreeCount_ReadFromMatureChannel() {
+      // The adapter reads the producer's synthetic mature-trees
+      // aggregate channel (resolved via MatureTreeEntityIndex) into
+      // MatureTreeCount, and MatureTreeFraction divides by TreeCount.
+      var catalog = new FloraCatalog();
+      var fieldQuery = new FakeFieldQuery();
+      var marks = new FakeMarks();
+      var natural = new FakeNaturalResources();
+
+      catalog.Populate(new List<FloraEntry> { FloraEntryOf("Birch", FloraKind.Tree) });
+      fieldQuery.RegisterBlueprint("Birch");      // entity channel 0
+      fieldQuery.MatureTreeEntityIndex = 1;       // synthetic aggregate channel
+
+      // Two channels: [0] Birch live count = 8, [1] mature aggregate = 3.
+      var field = new RegionEcologyField(
+          originX: 0, originY: 0, chunksX: 1, chunksY: 1, entityChannelCount: 2);
+      field.WriteChunk(0, 0, valid: true, sampleCount: 16,
+          scalarValues: Scalars(moisture: 1f),
+          entityCounts: new[] { 8f, 3f });
+      fieldQuery.SetField(new RegionId(1), field);
+
+      var adapter = new ChunkBiomeAdapter(catalog, fieldQuery, marks, natural);
+      var inputs = adapter.Build(field, 0, 0);
+
+      Assert.AreEqual(8, inputs.TreeCount);
+      Assert.AreEqual(3, inputs.MatureTreeCount);
+      Assert.AreEqual(3f / 8f, inputs.MatureTreeFraction, 1e-5f);
+    }
+
+    [TestMethod]
+    public void Build_MatureTreeCount_ZeroWhenChannelUnregistered() {
+      // When the producer hasn't registered the mature channel
+      // (MatureTreeEntityIndex == null), MatureTreeCount reads 0 rather
+      // than throwing -- the too-early window before PostLoad.
+      var (adapter, field, _, _, _) = Setup(
+          Scalars(),
+          ("Birch", FloraKind.Tree, 5f));
+
+      var inputs = adapter.Build(field, 0, 0);
+
+      Assert.AreEqual(5, inputs.TreeCount);
+      Assert.AreEqual(0, inputs.MatureTreeCount);
+      Assert.AreEqual(0f, inputs.MatureTreeFraction);
     }
 
     [TestMethod]

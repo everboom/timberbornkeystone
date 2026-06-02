@@ -111,6 +111,23 @@ namespace Keystone.Core.Biomes {
     /// <see cref="BiomeTargets.Forest"/>'s diversity factor.</summary>
     public int TreeSpeciesCount { get; init; }
 
+    /// <summary>Mature (fully-grown) tree-kind entities in the chunk --
+    /// the subset of <see cref="TreeCount"/> whose <c>Growable</c>
+    /// reports grown (seedlings excluded). Drives
+    /// <see cref="BiomeTargets.Forest"/>'s mature-canopy gate via
+    /// <see cref="MatureTreeFraction"/>, so a chunk freshly carpeted
+    /// with saplings doesn't read as established forest. Always
+    /// <c>&lt;= TreeCount</c>.</summary>
+    public int MatureTreeCount { get; init; }
+
+    /// <summary>Fraction of the chunk's trees that are mature, in
+    /// <c>[0, 1]</c>: <see cref="MatureTreeCount"/> / <see cref="TreeCount"/>.
+    /// 0 when the chunk has no trees (no canopy to be established, and
+    /// avoids a divide-by-zero). Read by
+    /// <see cref="BiomeTargets.Forest"/>'s mature-canopy gate.</summary>
+    public float MatureTreeFraction =>
+        TreeCount > 0 ? (float)MatureTreeCount / TreeCount : 0f;
+
     /// <summary>Combined count of plantable entities (trees, bushes,
     /// crops -- not GroundCover) AND player-drawn planting marks
     /// within the chunk. A tile that's both marked and has a

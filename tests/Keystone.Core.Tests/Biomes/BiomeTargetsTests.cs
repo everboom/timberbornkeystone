@@ -10,17 +10,25 @@ namespace Keystone.Core.Tests.Biomes {
 
     [TestMethod]
     public void Forest_FullyIrrigatedDiverseDenseTrees_TargetIsOne() {
+      // All trees mature (MatureTreeCount == TreeCount) so the mature-
+      // canopy gate is 1 and this test keeps pinning the irrigation ×
+      // diversity × density product, not the gate.
       var inputs = new ChunkBiomeInputs {
           IrrigatedFraction = 1f,
           TreeCount = 10,
           TreeSpeciesCount = 3,
+          MatureTreeCount = 10,
       };
       Assert.AreEqual(1f, BiomeTargets.Forest(inputs), 1e-4f);
     }
 
     [TestMethod]
     public void Forest_NoIrrigation_TargetIsZero() {
-      var inputs = new ChunkBiomeInputs { TreeCount = 10, TreeSpeciesCount = 3 };
+      // Trees fully mature so the zero is unambiguously from irrigation,
+      // not the mature-canopy gate.
+      var inputs = new ChunkBiomeInputs {
+          TreeCount = 10, TreeSpeciesCount = 3, MatureTreeCount = 10,
+      };
       Assert.AreEqual(0f, BiomeTargets.Forest(inputs));
     }
 
@@ -30,8 +38,10 @@ namespace Keystone.Core.Tests.Biomes {
           IrrigatedFraction = 1f,
           TreeCount = 10,
           TreeSpeciesCount = 1,
+          MatureTreeCount = 10,
       };
-      // diversity = saturate(1/2) = 0.5; density = saturate(10/5) = 1
+      // diversity = saturate(1/2) = 0.5; density = saturate(10/5) = 1;
+      // mature gate = 1 (all mature)
       Assert.AreEqual(0.5f, BiomeTargets.Forest(inputs), 1e-4f);
     }
 
@@ -43,9 +53,79 @@ namespace Keystone.Core.Tests.Biomes {
           IrrigatedFraction = 1f,
           TreeCount = 10,
           TreeSpeciesCount = 3,
+          MatureTreeCount = 10,
           ContaminatedFraction = 0.2f,
       };
       Assert.AreEqual(1f, BiomeTargets.Forest(inputs), 1e-4f);
+    }
+
+    #endregion
+
+    #region Forest mature-canopy gate
+
+    [TestMethod]
+    public void Forest_AllSeedlings_TargetIsZero() {
+      // The exploit this gate closes: a chunk carpeted with dense,
+      // diverse saplings (0 mature) must not read as established forest.
+      var inputs = new ChunkBiomeInputs {
+          IrrigatedFraction = 1f,
+          TreeCount = 16,
+          TreeSpeciesCount = 3,
+          MatureTreeCount = 0,
+      };
+      Assert.AreEqual(0f, BiomeTargets.Forest(inputs), 1e-4f);
+    }
+
+    [TestMethod]
+    public void Forest_MatureFractionAtSaturation_GateIsFull() {
+      // 25% mature is the saturation point -> gate = 1 -> full credit.
+      var inputs = new ChunkBiomeInputs {
+          IrrigatedFraction = 1f,
+          TreeCount = 16,
+          TreeSpeciesCount = 3,
+          MatureTreeCount = 4,
+      };
+      Assert.AreEqual(1f, BiomeTargets.Forest(inputs), 1e-4f);
+    }
+
+    [TestMethod]
+    public void Forest_MatureFractionAboveSaturation_GateStaysFull() {
+      // Beyond 25% the gate clamps at 1 (no extra credit for more
+      // maturity); the other factors are already saturated here.
+      var inputs = new ChunkBiomeInputs {
+          IrrigatedFraction = 1f,
+          TreeCount = 16,
+          TreeSpeciesCount = 3,
+          MatureTreeCount = 12,
+      };
+      Assert.AreEqual(1f, BiomeTargets.Forest(inputs), 1e-4f);
+    }
+
+    [TestMethod]
+    public void Forest_MatureFractionHalfOfSaturation_GateIsHalf() {
+      // 12.5% mature = half of the 25% saturation -> linear gate = 0.5.
+      // Other factors saturated (density 16/5 -> 1, diversity 3/2 -> 1),
+      // so Forest == the gate value.
+      var inputs = new ChunkBiomeInputs {
+          IrrigatedFraction = 1f,
+          TreeCount = 16,
+          TreeSpeciesCount = 3,
+          MatureTreeCount = 2,
+      };
+      Assert.AreEqual(0.5f, BiomeTargets.Forest(inputs), 1e-4f);
+    }
+
+    [TestMethod]
+    public void Forest_NoTrees_MatureFractionZero_NoDivideByZero() {
+      // Defensive: MatureTreeFraction is 0 when TreeCount is 0 (and
+      // density is 0 anyway), so Forest is a clean 0, not NaN.
+      var inputs = new ChunkBiomeInputs {
+          IrrigatedFraction = 1f,
+          TreeCount = 0,
+          TreeSpeciesCount = 0,
+          MatureTreeCount = 0,
+      };
+      Assert.AreEqual(0f, BiomeTargets.Forest(inputs), 1e-4f);
     }
 
     #endregion
@@ -283,6 +363,7 @@ namespace Keystone.Core.Tests.Biomes {
           IrrigatedFraction = 1f,
           TreeCount = 16,
           TreeSpeciesCount = 1,
+          MatureTreeCount = 16,
           PlantableCount = 16,
           PlantableSpeciesCount = 1,
           PlantableDominance = 1f,
@@ -293,10 +374,12 @@ namespace Keystone.Core.Tests.Biomes {
     [TestMethod]
     public void Forest_NaturalDiverseGrove_NotSuppressed() {
       // 3 evenly-mixed species -> D = 1/3 -> mono 0 -> no suppression.
+      // All mature so the mature-canopy gate is 1 and doesn't intrude.
       var inputs = new ChunkBiomeInputs {
           IrrigatedFraction = 1f,
           TreeCount = 15,
           TreeSpeciesCount = 3,
+          MatureTreeCount = 15,
           PlantableCount = 15,
           PlantableSpeciesCount = 3,
           PlantableDominance = 1f / 3f,
@@ -512,6 +595,7 @@ namespace Keystone.Core.Tests.Biomes {
           WaterFraction = 0.5f,
           TreeCount = 10,
           TreeSpeciesCount = 3,
+          MatureTreeCount = 10,
       };
       Assert.AreEqual(0.5f, BiomeTargets.Compute(BiomeKind.Forest, inputs), 1e-4f);
     }
@@ -525,6 +609,7 @@ namespace Keystone.Core.Tests.Biomes {
           IrrigatedFraction = 1f,
           TreeCount = 10,
           TreeSpeciesCount = 3,
+          MatureTreeCount = 10,
           ContaminatedFraction = 0.5f,
       };
       Assert.AreEqual(0f, BiomeTargets.Compute(BiomeKind.Forest, inputs), 1e-6f);
@@ -538,6 +623,7 @@ namespace Keystone.Core.Tests.Biomes {
           IrrigatedFraction = 1f,
           TreeCount = 10,
           TreeSpeciesCount = 3,
+          MatureTreeCount = 10,
           ContaminatedFraction = 0.025f,
       };
       Assert.AreEqual(0.5f, BiomeTargets.Compute(BiomeKind.Forest, inputs), 1e-4f);

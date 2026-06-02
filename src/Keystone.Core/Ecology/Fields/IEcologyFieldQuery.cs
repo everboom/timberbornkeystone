@@ -36,6 +36,18 @@ namespace Keystone.Core.Ecology.Fields {
     IReadOnlyList<string> KnownEntityBlueprints { get; }
 
     /// <summary>
+    /// Entity-channel index of the synthetic "mature trees" aggregate —
+    /// the per-chunk count of live, fully-grown tree-kind entities,
+    /// maintained by the producer alongside the per-blueprint channels.
+    /// <c>null</c> when the producer hasn't registered its channels yet
+    /// (same too-early window as <see cref="EntityIndex"/> returning
+    /// null). Consumers read it via
+    /// <c>RegionEcologyField.ChunkValueEntity(index, ...)</c> to derive
+    /// <see cref="Biomes.ChunkBiomeInputs.MatureTreeCount"/>.
+    /// </summary>
+    int? MatureTreeEntityIndex { get; }
+
+    /// <summary>
     /// Monotonic counter bumped whenever the producer side reshapes
     /// the per-region <see cref="RegionEcologyField"/> graph -- a
     /// field allocated for a new region, a field reallocated with a

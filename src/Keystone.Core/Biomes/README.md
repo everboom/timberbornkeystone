@@ -94,6 +94,26 @@ natural healthy-land biome at once. Near-water tiles within a
 Grassland chunk spawn riparian-style decorations via the `WaterEdge`
 recipe filter; the biome scoring itself is water-distance-agnostic.
 
+## Forest mature-canopy gate
+
+Forest carries one extra multiplicative factor beyond irrigation,
+diversity, density, and `(1 - Monoculture)`: a **mature-canopy gate**,
+`saturate(MatureTreeFraction / 0.25)`. `MatureTreeFraction` is the share
+of the chunk's trees that are fully grown (`MatureTreeCount / TreeCount`,
+0 when treeless). The gate ramps linearly from 0 (no mature trees) to 1
+(>= 25% of the chunk's trees mature). A chunk freshly carpeted with
+dense, diverse *seedlings* therefore reads as 0 Forest until roughly a
+quarter of them mature — the biome rewards genuinely established
+woodland and can't be gamed by mass-planting saplings. Smooth ramp, not
+a hard threshold, for the same chunk-edge-cliff-avoidance reason as the
+Grassland yields above.
+
+The mature count is collected upstream: `EcologyFieldUpdater` keeps a
+synthetic `(mature-trees)` aggregate channel (a live tree counts toward
+it only when its `Growable.IsGrown`), the adapter reads it into
+`ChunkBiomeInputs.MatureTreeCount`, and `BiomeTargets.Forest` divides by
+`TreeCount` for the fraction.
+
 ## Monoculture as a distribution-sensitive signal
 
 `Monoculture` reads Simpson's diversity index
