@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Keystone.Core.Ecology.Fields;
 using Keystone.Core.Persistence;
 using Keystone.Mod.Persistence;
 
@@ -81,19 +82,27 @@ namespace Keystone.Mod.Diagnostics.StartupChecks {
       if (report.ChunkValueCount > 0 && report.DroppedChunkValues > 0) {
         var droppedPct = report.DroppedChunkValues * 100.0 / report.ChunkValueCount;
         if (report.DroppedChunkValues >= ChunkDropFloor || droppedPct >= ChunkDropWarnPct) {
+          // Tile-span sample of where the reset chunks were, so the player
+          // can find the affected ground and the dev can correlate with a
+          // terrain edit.
+          var where = DroppedChunkLocation.Summarize(
+              report.DroppedChunkSample, report.DroppedChunkAreas, RegionEcologyField.ChunkSize);
           yield return new StartupFinding(
               StartupFindingSeverity.Warning,
               $"About {report.DroppedChunkValues} saved ecology value(s) could not " +
-              "be matched to the loaded map and were reset. Affected areas will " +
+              "be matched to the loaded map and were reset" +
+              (where.Length > 0 ? $" ({where})" : "") + ". Affected areas will " +
               "rebuild their biome over the next few game-days.",
               DetailedMessage:
                   $"DroppedChunkValues={report.DroppedChunkValues} of " +
-                  $"{report.ChunkValueCount} ({droppedPct:F1}%); rescued " +
+                  $"{report.ChunkValueCount} ({droppedPct:F1}%) across " +
+                  $"{report.DroppedChunkAreas} chunk area(s); rescued " +
                   $"{report.RescuedChunkValues} via spatial-footprint lookup. A drop " +
                   "means no live region existed at a saved chunk's footprint+Z -- " +
                   "terrain edited between save and load, or a version/mod-set change " +
                   "altered region topology. A large count on an unchanged map points " +
-                  "at a load-path regression.");
+                  "at a load-path regression." +
+                  (where.Length > 0 ? $" Locations: {where}." : ""));
         }
       }
 

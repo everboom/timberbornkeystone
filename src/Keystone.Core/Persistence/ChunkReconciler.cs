@@ -114,7 +114,7 @@ namespace Keystone.Core.Persistence {
       // mutated until every decision is captured, so we never enumerate a
       // collection we're also editing.
       List<(ChunkCoord From, RegionId To)>? moves = null;
-      List<ChunkCoord>? homeless = null;
+      List<(ChunkCoord Coord, int Z)>? homeless = null;
       var walked = 0;
       var scanned = 0;
       var kept = 0;
@@ -139,7 +139,7 @@ namespace Keystone.Core.Persistence {
 
         var owner = owners.OwnerOfChunk(coord.GlobalChunkX, coord.GlobalChunkY, z);
         if (owner is null) {
-          (homeless ??= new List<ChunkCoord>()).Add(coord);
+          (homeless ??= new List<(ChunkCoord, int)>()).Add((coord, z));
           // Split the loss: a chunk holding accumulated Maturity is real,
           // unrecoverable ecology history; one with none (only the
           // recomputable Suitability channel, or nothing) is benign churn.
@@ -185,9 +185,14 @@ namespace Keystone.Core.Persistence {
         }
       }
       var dropped = 0;
+      List<DroppedChunkLocation>? homelessSample = null;
       if (homeless != null) {
-        foreach (var coord in homeless) {
+        foreach (var (coord, z) in homeless) {
           if (!dryRun) ApplyDrop(coord);
+          if (dropped < DroppedChunkLocation.SampleCap) {
+            (homelessSample ??= new List<DroppedChunkLocation>()).Add(
+                new DroppedChunkLocation(coord.GlobalChunkX, coord.GlobalChunkY, z));
+          }
           dropped++;
         }
       }
@@ -206,7 +211,8 @@ namespace Keystone.Core.Persistence {
       }
 
       return new ChunkReconcileResult(
-          scanned, kept, rehomed, dropped, droppedWithMaturity, collisions);
+          scanned, kept, rehomed, dropped, droppedWithMaturity, collisions,
+          homelessSample);
     }
 
     #endregion
@@ -372,13 +378,20 @@ namespace Keystone.Core.Persistence {
   ///   just the recomputable Suitability channel or nothing).</param>
   /// <param name="CollisionsResolved">Re-homes whose destination already
   ///   held data, resolved High-beats-Low.</param>
+  /// <param name="HomelessSample">Up to
+  ///   <see cref="DroppedChunkLocation.SampleCap"/> locations of dropped
+  ///   chunks, so the per-flush warning can name <i>where</i> on the map
+  ///   the data was lost rather than only how much. Null when nothing was
+  ///   dropped; capped, so a large drop names a representative few and the
+  ///   formatter appends a "+N more" tail.</param>
   public readonly record struct ChunkReconcileResult(
       int Scanned,
       int Kept,
       int Rehomed,
       int HomelessDropped,
       int HomelessDroppedWithMaturity,
-      int CollisionsResolved) {
+      int CollisionsResolved,
+      IReadOnlyList<DroppedChunkLocation>? HomelessSample = null) {
 
     /// <summary>Dropped chunks that held no Maturity — benign churn.</summary>
     public int HomelessDroppedEmpty => HomelessDropped - HomelessDroppedWithMaturity;

@@ -57,6 +57,17 @@ namespace Keystone.Mod.Persistence {
   ///   physically belong to. High counts on first load after a
   ///   topology-changing version bump (blockages introduced, mod-set
   ///   change splitting old regions) are expected and benign.</param>
+  /// <param name="DroppedChunkAreas">Distinct chunks (by global chunk
+  ///   coords + Z) among the <see cref="DroppedChunkValues"/> — the number
+  ///   of map <i>areas</i> whose ecology reset, which is what the player
+  ///   feels. Several value kinds per chunk mean this is ≤
+  ///   <c>DroppedChunkValues</c>. Best-effort: counts the translation-time
+  ///   drops, where coordinates are in hand; the defensive post-rehydrate
+  ///   prune (normally zero) contributes to the value count but not here.</param>
+  /// <param name="DroppedChunkSample">Up to
+  ///   <see cref="Keystone.Core.Persistence.DroppedChunkLocation.SampleCap"/>
+  ///   of those dropped-chunk locations, so the startup check can name
+  ///   where the reset happened rather than only a count.</param>
   public readonly record struct SnapshotLoadReport(
       bool HasSnapshot,
       int SchemaVersion,
@@ -68,7 +79,9 @@ namespace Keystone.Mod.Persistence {
       int DroppedRegionStamps,
       int DroppedRegionValues,
       int DroppedChunkValues,
-      int RescuedChunkValues) {
+      int RescuedChunkValues,
+      int DroppedChunkAreas = 0,
+      System.Collections.Generic.IReadOnlyList<Keystone.Core.Persistence.DroppedChunkLocation>? DroppedChunkSample = null) {
 
     /// <summary>Sentinel: no snapshot present (new game, save without
     /// Keystone state, or pre-Load construction).</summary>

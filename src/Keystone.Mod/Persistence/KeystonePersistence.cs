@@ -403,6 +403,11 @@ namespace Keystone.Mod.Persistence {
       var droppedChunkValues = 0;
       var rescuedChunkValues = 0;
       var zMismatches = 0;
+      // Distinct dropped-chunk locations (several value kinds share one
+      // chunk) and a capped sample, so the startup check can say WHERE the
+      // ecology reset, not just how much.
+      var droppedChunkAreas = new HashSet<DroppedChunkLocation>();
+      var droppedChunkSample = new List<DroppedChunkLocation>(DroppedChunkLocation.SampleCap);
       foreach (var kv in _pending.ChunkValues) {
         int? targetZ = savedRegionZ.TryGetValue(kv.Key.RegionId, out var z) ? z : (int?)null;
         var liveOwner = _regions.FindRegionByChunkFootprint(
@@ -413,6 +418,10 @@ namespace Keystone.Mod.Persistence {
           // regions at other Z layers exist now). Drop the chunk
           // rather than misattach it across Z.
           droppedChunkValues++;
+          var loc = new DroppedChunkLocation(kv.Key.ChunkX, kv.Key.ChunkY, targetZ);
+          if (droppedChunkAreas.Add(loc) && droppedChunkSample.Count < DroppedChunkLocation.SampleCap) {
+            droppedChunkSample.Add(loc);
+          }
           continue;
         }
         var effectiveId = liveOwner.Value;
@@ -475,6 +484,8 @@ namespace Keystone.Mod.Persistence {
           DroppedRegionValues = droppedRegionValues + prunedRegionValues,
           DroppedChunkValues = droppedChunkValues + prunedChunkValues,
           RescuedChunkValues = rescuedChunkValues,
+          DroppedChunkAreas = droppedChunkAreas.Count,
+          DroppedChunkSample = droppedChunkSample,
       };
 
       KeystoneLog.Verbose(

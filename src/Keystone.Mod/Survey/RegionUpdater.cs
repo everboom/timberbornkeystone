@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Keystone.Core.Ecology.Fields;
 using Keystone.Core.Persistence;
 using Keystone.Core.Regions;
 using Keystone.Core.Survey;
@@ -311,6 +312,10 @@ namespace Keystone.Mod.Survey {
       }
       sw.Stop();
 
+      // Tile-span sample of where the drops landed, so the warning points
+      // the player/dev at the affected area instead of only a count.
+      var droppedWhere = DroppedChunkLocation.Summarize(
+          reconcile.HomelessSample, reconcile.HomelessDropped, RegionEcologyField.ChunkSize);
       if (reconcile.Outcome == Keystone.Core.Persistence.ChunkReconcileOutcome.MaturityLost) {
         // The only path that loses real, unrecoverable ecology history.
         // Expected where matured terrain was genuinely removed (no live
@@ -322,14 +327,16 @@ namespace Keystone.Mod.Survey {
             $"{reconcile.HomelessDroppedWithMaturity} chunk(s) holding accumulated biome " +
             $"maturity, with no live region at their footprint/Z " +
             $"({reconcile.HomelessDroppedEmpty} more empty chunk(s) dropped, " +
-            $"{reconcile.Rehomed} re-homed, {reconcile.CollisionsResolved} collisions). " +
-            "Real ecology history lost — expected only where matured terrain was removed; " +
+            $"{reconcile.Rehomed} re-homed, {reconcile.CollisionsResolved} collisions)" +
+            (droppedWhere.Length > 0 ? $" {droppedWhere}." : ".") +
+            " Real ecology history lost — expected only where matured terrain was removed; " +
             "a large count on a small edit points at a bug.");
       } else if (reconcile.AnyChange) {
         KeystoneLog.Verbose(
             $"[Keystone] Flush ({trigger}): re-homed {reconcile.Rehomed} chunk(s), dropped " +
             $"{reconcile.HomelessDroppedEmpty} empty chunk(s), {reconcile.CollisionsResolved} " +
-            "collisions (no maturity lost).");
+            "collisions (no maturity lost)" +
+            (droppedWhere.Length > 0 ? $"; dropped {droppedWhere}." : "."));
       }
 
       KeystoneLog.Verbose($"[Keystone] Flush ({trigger}, {ticksElapsed} ticks, {eventCount} events, {sw.ElapsedMilliseconds} ms): {dirtyCount} dirty col(s), {allDetached.Count} detached, {allAttached.Count} attached -> {_regions.Count} regions.");

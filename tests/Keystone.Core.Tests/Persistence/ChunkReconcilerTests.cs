@@ -253,6 +253,81 @@ namespace Keystone.Core.Tests.Persistence {
 
     #endregion
 
+    #region HomelessSample (where the drops landed)
+
+    [TestMethod]
+    public void Reconcile_HomelessChunks_SampleCapturesLocationsWithZ() {
+      // The sample must carry each dropped chunk's global coords AND its Z,
+      // so the per-flush warning can name the affected tile span/layer.
+      // Arrange: two homeless chunks at distinct coords/Z.
+      var data = NewDataStore();
+      var values = new ChunkValueStore();
+      Seed(data, values, new RegionId(5), cx: 2, cy: 3, z: 5, maturity: 12f);
+      Seed(data, values, new RegionId(5), cx: 4, cy: 1, z: 8, maturity: 3f);
+      var owners = new FakeOwners(); // empty -> everything homeless
+      var reconciler = new ChunkReconciler(data, values, owners);
+
+      // Act
+      var result = reconciler.ReconcileFromDataStore();
+
+      // Assert
+      Assert.AreEqual(2, result.HomelessDropped);
+      Assert.IsNotNull(result.HomelessSample);
+      Assert.AreEqual(2, result.HomelessSample.Count);
+      CollectionAssert.AreEquivalent(
+          new[] {
+            new DroppedChunkLocation(2, 3, 5),
+            new DroppedChunkLocation(4, 1, 8),
+          },
+          new List<DroppedChunkLocation>(result.HomelessSample),
+          "sample must carry each dropped chunk's (cx, cy, z)");
+    }
+
+    [TestMethod]
+    public void Reconcile_MoreHomelessThanCap_SampleCappedButCountIsTotal() {
+      // The sample is a bounded preview; the HomelessDropped count stays the
+      // true total so the formatter's "+N more" tail is correct.
+      // Arrange: SampleCap + 2 homeless chunks.
+      var data = NewDataStore();
+      var values = new ChunkValueStore();
+      var total = DroppedChunkLocation.SampleCap + 2;
+      for (var i = 0; i < total; i++) {
+        Seed(data, values, new RegionId(5), cx: i, cy: 0, z: 5, maturity: 1f);
+      }
+      var owners = new FakeOwners(); // all homeless
+      var reconciler = new ChunkReconciler(data, values, owners);
+
+      // Act
+      var result = reconciler.ReconcileFromDataStore();
+
+      // Assert
+      Assert.AreEqual(total, result.HomelessDropped, "count is the true total");
+      Assert.IsNotNull(result.HomelessSample);
+      Assert.AreEqual(DroppedChunkLocation.SampleCap, result.HomelessSample.Count,
+          "sample is capped at SampleCap regardless of how many dropped");
+    }
+
+    [TestMethod]
+    public void Reconcile_NothingDropped_SampleIsNull() {
+      // No drops -> no sample allocated (null, not an empty list); the
+      // formatter treats null as "nothing to report".
+      // Arrange: chunk whose keyed region still owns it -> kept.
+      var data = NewDataStore();
+      var values = new ChunkValueStore();
+      Seed(data, values, new RegionId(5), cx: 2, cy: 3, z: 5, maturity: 12f);
+      var owners = new FakeOwners().Own(2, 3, 5, new RegionId(5));
+      var reconciler = new ChunkReconciler(data, values, owners);
+
+      // Act
+      var result = reconciler.ReconcileFromDataStore();
+
+      // Assert
+      Assert.AreEqual(0, result.HomelessDropped);
+      Assert.IsNull(result.HomelessSample);
+    }
+
+    #endregion
+
     #region Collision (High beats Low)
 
     [TestMethod]
