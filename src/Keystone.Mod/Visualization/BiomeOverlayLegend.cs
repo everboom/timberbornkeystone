@@ -13,11 +13,15 @@ namespace Keystone.Mod.Visualization {
   /// name for each biome. Visible only while the overlay toggle is
   /// active. Vertically centered on the right edge of the screen.
   ///
+  /// <para>Shares the standalone-panel look (dark-green nine-slice frame +
+  /// title header) with the mixed-planting options panel via
+  /// <see cref="KeystonePanelStyle"/>.</para>
+  ///
   /// <para><b>Mounting.</b> Inserted via
   /// <see cref="UILayout.AddAbsoluteItem"/> rather than a fresh
   /// <c>RootVisualElementProvider.CreateEmpty</c> UIDocument. The
   /// distinction matters because Timberborn's global panel
-  /// stylesheets (which define <c>square-large--brown</c>,
+  /// stylesheets (which define <c>square-large--green</c>,
   /// <c>game-text-normal</c>, etc.) are attached to the
   /// <c>Common/GameUI</c> visual tree backing <c>UILayout</c>. A
   /// detached UIDocument inherits none of those classes, so a
@@ -31,21 +35,17 @@ namespace Keystone.Mod.Visualization {
 
     private const float PanelRight = 20f;
     private const float PanelWidth = 170f;
-    private const float Padding = 5f;
+    // Per-side panel padding. Left and bottom are roomier; the top stays
+    // modest because the header already carries its own bottom margin.
+    private const float PaddingTop = 6f;
+    private const float PaddingRight = 8f;
+    private const float PaddingBottom = 12f;
+    private const float PaddingLeft = 12f;
     private const float SwatchSize = 14f;
     private const float SwatchTextGap = 8f;
     private const float RowSpacing = 3f;
-    private const float HeaderMarginBottom = 4f;
     private const float FooterMarginTop = 6f;
     private const float FooterOpacity = 0.65f;
-
-    // Standalone-panel nine-slice background — the neutral dark-wood
-    // look the game's own info panels use (e.g.
-    // WaterPoweredGeneratorPreviewPanel for "brown",
-    // QuickNotificationPanel and Beaver Chronicles for "green").
-    // Defined in the global panel stylesheet, so it only resolves
-    // while the panel is mounted under UILayout.
-    private const string FrameBgClass = "square-large--brown";
 
     private static readonly Color SwatchBorderColor = new(0f, 0f, 0f, 0.45f);
 
@@ -85,14 +85,16 @@ namespace Keystone.Mod.Visualization {
       wrapper.pickingMode = PickingMode.Ignore;
 
       _root = wrapper.AddChild<NineSliceVisualElement>("BiomeLegendRoot")
-          .AddClass(FrameBgClass)
+          .AddClass(KeystonePanelStyle.FrameBgClass)
           .SetWidth(PanelWidth)
-          .SetPadding(Padding)
           .SetMarginRight(PanelRight)
           .SetDisplay(false);
+      _root.style.paddingTop = PaddingTop;
+      _root.style.paddingRight = PaddingRight;
+      _root.style.paddingBottom = PaddingBottom;
+      _root.style.paddingLeft = PaddingLeft;
 
-      _root.AddGameLabel("Biomes", bold: true)
-          .SetMarginBottom(HeaderMarginBottom);
+      KeystonePanelStyle.AddHeader(_root, "Biomes");
 
       AddEntry("Forest", BiomeOverlayRenderer.ColorFor(BiomeKind.Forest));
       AddEntry("Grassland", BiomeOverlayRenderer.ColorFor(BiomeKind.Grassland));

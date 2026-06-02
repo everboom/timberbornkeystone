@@ -20,6 +20,17 @@
                               ModSettings.Common.dll (the eMka.ModSettings mod).
                               Steam Workshop install typically:
                               <steam>\steamapps\workshop\content\1062090\3283831040\version-1.0\Scripts
+      TimberbornPublicizedDir — folder of PUBLICIZED game DLLs (internal/private
+                              members exposed) so the mod can compile against
+                              internal Timberborn types (e.g. NineSliceButton
+                              for native-styled UI). Produced by the Mechanistry
+                              modding SDK's asset importer at
+                              <sdk>\Assets\Plugins\Timberborn. COMPILE-TIME only;
+                              the game loads its own DLLs at runtime (the build
+                              sets AllowUnsafeBlocks so that access runs under
+                              Mono). When unset, only Timberborn.CoreUI is
+                              affected — code using its internals won't compile,
+                              but nothing else breaks.
 
     Dev-mode toggle (env var, not a build prop):
       Set the KEYSTONE_DEV_MODE environment variable to "1" on your user
@@ -42,6 +53,7 @@
     <!-- <KeystoneDeployDir>C:\Custom\Mods\Keystone</KeystoneDeployDir> -->
     <!-- <TimberUiDir>C:\Path\To\Steam\steamapps\workshop\content\1062090\3430626620\version-1.0</TimberUiDir> -->
     <!-- <ModSettingsDir>C:\Path\To\Steam\steamapps\workshop\content\1062090\3283831040\version-1.0\Scripts</ModSettingsDir> -->
+    <!-- <TimberbornPublicizedDir>C:\Path\To\timberborn-modding\Assets\Plugins\Timberborn</TimberbornPublicizedDir> -->
   </PropertyGroup>
 
 </Project>

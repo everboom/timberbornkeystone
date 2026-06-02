@@ -8,6 +8,17 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <!--
+      Runtime half of publicized-DLL access to Timberborn internals (see the
+      Timberborn DLLs ItemGroup below, which compiles against a publicized
+      Timberborn.CoreUI). This is the csproj mirror of the asmdef
+      `allowUnsafeCode` the Mechanistry asset-importer docs name as the runtime
+      requirement — it's what lets the publicized-compiled access run under
+      Unity's Mono instead of throwing. The publicized-compile + this flag was
+      verified working in-game 2026-06-02 (NineSliceButton instantiates, no
+      MethodAccessException); per the docs this flag alone is the requirement.
+    -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,8 +41,35 @@
     These are NOT redistributed (Private=false) — Timberborn itself provides
     them at load time. Wildcards expand at item-evaluation time.
   -->
+  <!--
+    Compile-time access to internal Timberborn types (e.g. NineSliceButton) is
+    taken from the SDK asset-importer's PUBLICIZED copy of Timberborn.CoreUI.dll
+    (DllPublicizer rewrites internal -> public). We redirect ONLY that one DLL,
+    so a possible game-version skew between the publicized set and the local
+    install can only affect CoreUI, not the whole mod. Runtime loads the game's
+    own (internal) DLLs; AllowUnsafeBlocks (above) is what lets the
+    publicized-compiled access run under Mono. When TimberbornPublicizedDir is
+    unset, everything falls back to stock and any internal-using code won't
+    compile — same per-machine-path contract as TimberUiDir.
+  -->
+  <PropertyGroup>
+    <KeystoneUsePublicized Condition="'$(TimberbornPublicizedDir)' != '' AND Exists('$(TimberbornPublicizedDir)\Timberborn.CoreUI.dll')">true</KeystoneUsePublicized>
+  </PropertyGroup>
+
   <ItemGroup Label="Timberborn DLLs">
-    <Reference Include="$(TimberbornManagedDir)\Timberborn.*.dll">
+    <Reference Include="$(TimberbornManagedDir)\Timberborn.*.dll"
+               Exclude="$(TimberbornManagedDir)\Timberborn.CoreUI.dll"
+               Condition="'$(KeystoneUsePublicized)' == 'true'">
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+    <Reference Include="$(TimberbornPublicizedDir)\Timberborn.CoreUI.dll"
+               Condition="'$(KeystoneUsePublicized)' == 'true'">
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+    <Reference Include="$(TimberbornManagedDir)\Timberborn.*.dll"
+               Condition="'$(KeystoneUsePublicized)' != 'true'">
       <Private>false</Private>
       <SpecificVersion>false</SpecificVersion>
     </Reference>

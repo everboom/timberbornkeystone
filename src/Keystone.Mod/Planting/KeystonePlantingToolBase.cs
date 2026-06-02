@@ -46,8 +46,9 @@ namespace Keystone.Mod.Planting {
     /// the built-in planting tools use).</summary>
     private const string CursorKey = "PlantingCursor";
 
-    private const string AllLocKey = "Tool.Keystone.Planting.All";
-    private const string AllowGapsLocKey = "Tool.Keystone.Planting.AllowGaps";
+    private const string SelectAllLocKey = "Tool.Keystone.Planting.SelectAll";
+    private const string ClearAllLocKey = "Tool.Keystone.Planting.ClearAll";
+    private const string ClearingsLocKey = "Tool.Keystone.Planting.Clearings";
 
     private static readonly Color PreviewColor = new(0f, 0.8f, 0f, 1f);
 
@@ -207,7 +208,7 @@ namespace Keystone.Mod.Planting {
     private void EnsurePanel() {
       if (_panel != null) return;
       _panel = new KeystonePlantingPanel(_uiLayout, Loc, _palette);
-      _panel.Build(PanelTitleLocKey, AllLocKey, AllowGapsLocKey, _species);
+      _panel.Build(PanelTitleLocKey, SelectAllLocKey, ClearAllLocKey, ClearingsLocKey, _species);
     }
 
     #endregion

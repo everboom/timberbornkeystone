@@ -24,9 +24,19 @@ Forest Tool mod is unresolved.
   `"Fields"` menu.
 - **`KeystoneForestPlantingTool`** — trees + bushes (`TreeComponentSpec ||
   BushSpec`), injected into the vanilla `"Forestry"` menu.
-- **`KeystonePlantingPanel`** — the options window: per-species on/off toggles +
-  "All" + "Allow gaps". Styled like `Visualization/BiomeOverlayLegend`
-  (`square-large--brown` nine-slice, right edge, shown while the tool is active).
+- **`KeystonePlantingPanel`** — the options window. One row per entry,
+  `[name] [−] [weight] [+]  [proportion bar] [NN%]`, where the bar + percent
+  show that entry's share of the total weight and rescale whenever any weight
+  changes; entries at weight 0 gray out. Above the rows are "Select all" /
+  "Clear all" bulk buttons; the last row is **Clearings** (weights how much
+  bare ground the brush leaves — a peer in the blend that replaced the old
+  "Allow gaps" toggle, not swept by the bulk buttons). The steppers/bulk
+  buttons are native `NineSliceButton`s with the game's button USS classes
+  (orange "game" button + green hover, square `+`/`−` glyphs) — reachable
+  because the mod compiles against the publicized `Timberborn.CoreUI` (see
+  `Keystone.Mod.csproj`). Shares the dark-green nine-slice frame + title header
+  with `Visualization/BiomeOverlayLegend` via `Visualization/KeystonePanelStyle`;
+  right edge, shown while the tool is active.
 - **`KeystonePlantingMenuInitializer`** — `IPostLoadableSingleton` that appends
   the tool buttons into the existing vanilla group buttons (the Forest Tool
   approach: find `ToolGroupButton` by id, `ToolButtonFactory.Create`, `AddTool`).
@@ -47,7 +57,8 @@ one).
 
 - **Selection policy lives in Core** (`Keystone.Core.Planting.PlantingPalette`),
   unit-tested. This Mod layer is only Timberborn plumbing.
-- **Not biome-aware** — a pure manual mixer, by decision. Equal weights.
+- **Not biome-aware** — a pure manual mixer, by decision. The player sets
+  per-species weights directly; the draw is proportional to them.
 - **Placeholder icon.** Both buttons currently share the dev
   `"KeystoneFlourishPlacement"` sprite; per-tool icons need the Unity asset
   pipeline.
