@@ -72,6 +72,32 @@ through `RegionValueLifecycleHandler`).
 through `ChunkReconciler`, so the two paths' collision/drop policies are
 independent. Unifying them (routing load through the reconciler) is open.
 
+**Footprint-orphan sweep at save.** The reconciler walks the *data* store,
+but the *value* store is what's persisted. A chunk can sit in the value
+store with no live data-store counterpart (e.g. a loaded chunk the rolling
+biome ticker hasn't re-touched), so when terrain under a *surviving* region
+is removed, the data-store reconcile never sees that chunk — it lingers,
+keyed under a still-live region, and gets written. On the next load it
+re-binds by footprint, finds no owner, and is dropped + reported as lost.
+`KeystonePersistence.Save` closes this by sweeping every chunk value before
+serialising: using a one-pass `BuildChunkFootprintOwnerIndex`, it drops any
+chunk whose `(X, Y, Z)` footprint has no live region — the same predicate
+the load path uses, applied where full live context (each region's Z) is
+still in hand. Result: saves are self-cleaning, so legitimate topology loss
+never resurfaces at the next load. Swept counts log at Verbose (expected
+cleanup), distinct from the `Warn` for canonical-id misses.
+
+**Load reports maturity loss by distinct chunk, not value rows.**
+`PostLoadInner` splits dropped chunks into maturity-bearing vs
+suitability-only (mirroring the reconciler's split): only a non-zero
+`keystone.chunk.maturity.*` drop is real, unrecoverable loss. The startup
+warning (`SnapshotStartupCheck`) alarms on `DroppedChunkAreasWithMaturity`
+(distinct chunk areas) above a small floor, not the raw dropped value-row
+count — one destroyed chunk is ~10-20 rows (suitability + maturity per
+biome), so the old row count over-reported a single removed chunk as a
+cluster. Suitability re-derives within a few ticks, so suitability-only
+drops are benign and logged only.
+
 ## Schema versioning
 
 `SnapshotPayload.SchemaVersion` is written to every save. Decode

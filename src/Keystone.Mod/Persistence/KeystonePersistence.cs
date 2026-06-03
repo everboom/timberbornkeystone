@@ -405,9 +405,19 @@ namespace Keystone.Mod.Persistence {
       var zMismatches = 0;
       // Distinct dropped-chunk locations (several value kinds share one
       // chunk) and a capped sample, so the startup check can say WHERE the
-      // ecology reset, not just how much.
+      // ecology reset, not just how much. We track two sets: every dropped
+      // chunk (droppedChunkAreas, for the detail log) and the subset that
+      // held accumulated *maturity* (droppedMaturityAreas). Only the latter
+      // is real, unrecoverable ecology loss worth alarming about — the
+      // suitability channel re-derives within a few ticks, so a
+      // suitability-only / empty drop is benign churn. (This mirrors the
+      // mid-game reconciler's maturity-vs-empty split; before, load alarmed
+      // on raw dropped value rows, which one destroyed chunk inflated to
+      // ~10-20 — suitability + maturity across every biome — so a single
+      // legitimately-removed chunk could trip the warning floor.)
       var droppedChunkAreas = new HashSet<DroppedChunkLocation>();
-      var droppedChunkSample = new List<DroppedChunkLocation>(DroppedChunkLocation.SampleCap);
+      var droppedMaturityAreas = new HashSet<DroppedChunkLocation>();
+      var droppedMaturitySample = new List<DroppedChunkLocation>(DroppedChunkLocation.SampleCap);
       foreach (var kv in _pending.ChunkValues) {
         int? targetZ = savedRegionZ.TryGetValue(kv.Key.RegionId, out var z) ? z : (int?)null;
         var liveOwner = _regions.FindRegionByChunkFootprint(
@@ -419,8 +429,14 @@ namespace Keystone.Mod.Persistence {
           // rather than misattach it across Z.
           droppedChunkValues++;
           var loc = new DroppedChunkLocation(kv.Key.ChunkX, kv.Key.ChunkY, targetZ);
-          if (droppedChunkAreas.Add(loc) && droppedChunkSample.Count < DroppedChunkLocation.SampleCap) {
-            droppedChunkSample.Add(loc);
+          droppedChunkAreas.Add(loc);
+          // Real loss only if this dropped row is a non-zero maturity value.
+          if (kv.Value != 0f
+              && kv.Key.Kind.StartsWith(KnownValueKinds.ChunkMaturityPrefix, System.StringComparison.Ordinal)) {
+            if (droppedMaturityAreas.Add(loc)
+                && droppedMaturitySample.Count < DroppedChunkLocation.SampleCap) {
+              droppedMaturitySample.Add(loc);
+            }
           }
           continue;
         }
@@ -485,14 +501,16 @@ namespace Keystone.Mod.Persistence {
           DroppedChunkValues = droppedChunkValues + prunedChunkValues,
           RescuedChunkValues = rescuedChunkValues,
           DroppedChunkAreas = droppedChunkAreas.Count,
-          DroppedChunkSample = droppedChunkSample,
+          DroppedChunkAreasWithMaturity = droppedMaturityAreas.Count,
+          DroppedChunkSample = droppedMaturitySample,
       };
 
       KeystoneLog.Verbose(
           $"[Keystone] Restored {matched} matched + {recovered} recovered region stamps " +
           $"({droppedStamps} dropped); {translatedRegionValues.Count} region values, " +
           $"{translatedChunkValues.Count} chunk values rehydrated " +
-          $"({rescuedChunkValues} spatially rescued, {droppedChunkValues} dropped; " +
+          $"({rescuedChunkValues} spatially rescued, {droppedChunkValues} dropped across " +
+          $"{droppedChunkAreas.Count} chunk area(s), {droppedMaturityAreas.Count} of which lost maturity; " +
           $"region values: {droppedRegionValues} dropped at remap, " +
           $"{prunedRegionValues} swept post-rehydrate).");
 
@@ -692,10 +710,34 @@ namespace Keystone.Mod.Persistence {
         }
         snapshot.RegionValues[new RegionValueKey(canonicalId, kv.Key.Kind)] = kv.Value;
       }
+      // Footprint-orphan sweep. A chunk can be keyed under a region that is
+      // still live (so it canonicalises and would be written) while the
+      // chunk's own (X, Y) footprint no longer has any live surface at that
+      // region's Z -- terrain under part of a surviving region was removed
+      // and the chunk's value entry was never cleaned. The mid-game
+      // ChunkReconciler walks the *data* store, so a value-store-only chunk
+      // (e.g. a loaded chunk the rolling biome ticker hasn't re-touched)
+      // slips past it. If we serialised such a chunk, the next load would
+      // re-bind it by footprint, find no owner, drop it, and report it as
+      // "lost ecology maturity" -- the over-report this sweep exists to
+      // prevent. Dropping it here, at save, where we still have full live-
+      // region context (including each region's Z), makes saves self-cleaning
+      // and is exactly the predicate the load path uses
+      // (FindRegionByChunkFootprint == null). One precomputed owner index
+      // (O(surfaces)) gives O(1) lookups instead of an O(chunkSize^2) probe
+      // per chunk.
+      var footprintIndex = _regions.BuildChunkFootprintOwnerIndex(RegionEcologyField.ChunkSize);
       var droppedChunkValues = 0;
+      var sweptFootprintOrphans = 0;
       foreach (var kv in _chunkValues.SortedSnapshot()) {
         if (!canonicalIds.TryGetValue(kv.Key.RegionId, out var canonicalId)) {
           droppedChunkValues++;
+          continue;
+        }
+        var region = _regions.Get(kv.Key.RegionId);
+        if (region == null
+            || !footprintIndex.ContainsKey((kv.Key.ChunkX, kv.Key.ChunkY, region.Z))) {
+          sweptFootprintOrphans++;
           continue;
         }
         snapshot.ChunkValues[new ChunkValueKey(canonicalId, kv.Key.ChunkX, kv.Key.ChunkY, kv.Key.Kind)] = kv.Value;
@@ -705,6 +747,15 @@ namespace Keystone.Mod.Persistence {
             $"[Keystone] Save: dropped {droppedRegions} region stamps, " +
             $"{droppedRegionValues} region values, {droppedChunkValues} chunk values " +
             "whose RegionId had no surveyor surface (live state inconsistent with surveyor).");
+      }
+      if (sweptFootprintOrphans > 0) {
+        // Expected cleanup, not an error: terrain was removed under a
+        // surviving region and the stale chunk entry is being pruned before
+        // it can reach the save (and be mis-reported as lost on next load).
+        KeystoneLog.Verbose(
+            $"[Keystone] Save: swept {sweptFootprintOrphans} chunk value(s) whose footprint " +
+            "has no live region at its Z (terrain removed under a surviving region); not " +
+            "persisted, so they won't be reported as lost ecology on the next load.");
       }
 
       var payload = SnapshotCodec.Encode(snapshot);

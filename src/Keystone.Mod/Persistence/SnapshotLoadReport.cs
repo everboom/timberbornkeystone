@@ -64,10 +64,21 @@ namespace Keystone.Mod.Persistence {
   ///   <c>DroppedChunkValues</c>. Best-effort: counts the translation-time
   ///   drops, where coordinates are in hand; the defensive post-rehydrate
   ///   prune (normally zero) contributes to the value count but not here.</param>
+  /// <param name="DroppedChunkAreasWithMaturity">Subset of
+  ///   <see cref="DroppedChunkAreas"/> that carried non-zero accumulated
+  ///   <i>maturity</i> — the only drops that lose real, unrecoverable
+  ///   ecology history (the suitability channel re-derives within a few
+  ///   ticks, so suitability-only / empty drops are benign churn). This is
+  ///   the count the startup warning alarms on; it mirrors the mid-game
+  ///   reconciler's <c>HomelessDroppedWithMaturity</c>. Alarming on the raw
+  ///   <see cref="DroppedChunkValues"/> over-reported, because one destroyed
+  ///   chunk inflates to ~10-20 value rows (suitability + maturity across
+  ///   every biome).</param>
   /// <param name="DroppedChunkSample">Up to
   ///   <see cref="Keystone.Core.Persistence.DroppedChunkLocation.SampleCap"/>
-  ///   of those dropped-chunk locations, so the startup check can name
-  ///   where the reset happened rather than only a count.</param>
+  ///   of the maturity-bearing dropped-chunk locations, so the startup check
+  ///   can name where real ecology history was lost rather than only a
+  ///   count.</param>
   public readonly record struct SnapshotLoadReport(
       bool HasSnapshot,
       int SchemaVersion,
@@ -81,6 +92,7 @@ namespace Keystone.Mod.Persistence {
       int DroppedChunkValues,
       int RescuedChunkValues,
       int DroppedChunkAreas = 0,
+      int DroppedChunkAreasWithMaturity = 0,
       System.Collections.Generic.IReadOnlyList<Keystone.Core.Persistence.DroppedChunkLocation>? DroppedChunkSample = null) {
 
     /// <summary>Sentinel: no snapshot present (new game, save without

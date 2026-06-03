@@ -76,35 +76,48 @@ namespace Keystone.Mod.Diagnostics.StartupChecks {
       // the counts. The mid-game counterpart to this is the per-flush
       // warning in RegionUpdater.Flush (ChunkReconciler drops).
 
-      // Signal 1 -- lost ecology maturity. Chunk values carry the per-chunk
-      // biome Maturity/Suitability the player watches accrue; a drop is a
-      // patch of map whose ecology resets to bare. Its own, tighter check.
-      if (report.ChunkValueCount > 0 && report.DroppedChunkValues > 0) {
-        var droppedPct = report.DroppedChunkValues * 100.0 / report.ChunkValueCount;
-        if (report.DroppedChunkValues >= ChunkDropFloor || droppedPct >= ChunkDropWarnPct) {
-          // Player line gets the plain-English count of affected patches;
-          // the precise tile-span + Z sample (dev jargon) goes only into
-          // DetailedMessage and the Player.log line below, never the dialog
-          // body a release player reads.
-          var where = DroppedChunkLocation.Summarize(
-              report.DroppedChunkSample, report.DroppedChunkAreas, RegionEcologyField.ChunkSize);
-          yield return new StartupFinding(
-              StartupFindingSeverity.Warning,
-              $"About {report.DroppedChunkValues} saved ecology value(s) could not " +
-              "be matched to the loaded map and were reset" +
-              (report.DroppedChunkAreas > 0 ? $" in {report.DroppedChunkAreas} area(s) of the map" : "") +
-              ". Affected areas will rebuild their biome over the next few game-days.",
-              DetailedMessage:
-                  $"DroppedChunkValues={report.DroppedChunkValues} of " +
-                  $"{report.ChunkValueCount} ({droppedPct:F1}%) across " +
-                  $"{report.DroppedChunkAreas} chunk area(s); rescued " +
-                  $"{report.RescuedChunkValues} via spatial-footprint lookup. A drop " +
-                  "means no live region existed at a saved chunk's footprint+Z -- " +
-                  "terrain edited between save and load, or a version/mod-set change " +
-                  "altered region topology. A large count on an unchanged map points " +
-                  "at a load-path regression." +
-                  (where.Length > 0 ? $" Locations: {where}." : ""));
-        }
+      // Signal 1 -- lost ecology maturity. We alarm on the count of distinct
+      // chunk *areas* that lost accumulated maturity, NOT the raw dropped
+      // value-row count. Maturity is the long-term ecology history the player
+      // watches accrue; the suitability channel re-derives within a few ticks,
+      // so a suitability-only / empty drop is benign churn. Counting value rows
+      // over-reported badly: one destroyed chunk is ~10-20 rows (suitability +
+      // maturity across every biome), so a single legitimately-removed chunk
+      // tripped the old floor. (The mid-game reconciler already split maturity
+      // vs empty; this brings load into line with it.)
+      //
+      // Player.log retains the full report via the Verbose line in
+      // KeystonePersistence.PostLoadInner regardless of whether this warning
+      // fires, so devs investigating a player report always have the counts.
+      // The mid-game counterpart is the per-flush warning in RegionUpdater.Flush
+      // (ChunkReconciler drops). Note Save now sweeps footprint orphans before
+      // writing, so on a save written by this version a maturity drop at load
+      // means terrain genuinely changed *between* save and load (external edit
+      // or version/mod-set topology change), not a stale orphan we failed to
+      // clean up.
+      if (report.DroppedChunkAreasWithMaturity >= MaturityDropFloorAreas) {
+        // Player line gets the plain-English count of affected patches; the
+        // precise tile-span + Z sample (dev jargon) goes only into
+        // DetailedMessage and the Player.log line, never the dialog body a
+        // release player reads.
+        var where = DroppedChunkLocation.Summarize(
+            report.DroppedChunkSample, report.DroppedChunkAreasWithMaturity, RegionEcologyField.ChunkSize);
+        yield return new StartupFinding(
+            StartupFindingSeverity.Warning,
+            $"About {report.DroppedChunkAreasWithMaturity} area(s) of the map lost saved " +
+            "ecology maturity that couldn't be matched to the loaded terrain. They'll " +
+            "rebuild their biome over the next few game-days.",
+            DetailedMessage:
+                $"DroppedChunkAreasWithMaturity={report.DroppedChunkAreasWithMaturity} of " +
+                $"{report.DroppedChunkAreas} dropped chunk area(s) " +
+                $"({report.DroppedChunkValues} value row(s), incl. recomputable suitability) " +
+                $"out of {report.ChunkValueCount} saved; rescued {report.RescuedChunkValues} " +
+                "via spatial-footprint lookup. A maturity drop means no live region existed " +
+                "at a saved chunk's footprint+Z -- terrain removed between save and load, or a " +
+                "version/mod-set change altered region topology. Save sweeps footprint orphans " +
+                "before writing, so a large count here on an unchanged map points at an external " +
+                "terrain edit or a load-path regression." +
+                (where.Length > 0 ? $" Locations: {where}." : ""));
       }
 
       // Signal 2 -- region-level migration. The original percentage's real
@@ -131,20 +144,25 @@ namespace Keystone.Mod.Diagnostics.StartupChecks {
     }
 
     /// <summary>
-    /// Absolute floor of dropped chunk values above which the ecology-loss
-    /// warning fires regardless of percentage. Sized at roughly a small
-    /// multi-chunk cluster's worth of value entries (a chunk carries
-    /// several kinds, so a ~4-chunk cluster is on this order) -- low enough
-    /// to catch a whole cluster vanishing, high enough not to nag on the
-    /// normal case of the player terraforming a tile or two between save
-    /// and load. Player.log always carries the exact counts regardless.
+    /// Floor of distinct chunk <i>areas</i> that lost accumulated maturity,
+    /// at or above which the ecology-loss warning fires. A small multi-chunk
+    /// cluster -- low enough to catch a patch of matured terrain vanishing,
+    /// high enough not to nag when the player terraforms a tile or two of
+    /// matured ground between save and load. Player.log always carries the
+    /// exact counts regardless.
+    ///
+    /// <para><b>Unit change.</b> This used to be a floor of 8 dropped value
+    /// <i>rows</i> (with a companion percentage). That over-reported: one
+    /// destroyed chunk is ~10-20 rows (suitability + maturity per biome), so a
+    /// single removed chunk tripped it, and the recomputable suitability
+    /// channel counted as "lost ecology." The unit is now distinct chunk areas
+    /// that lost real maturity -- the honest measure of what the player feels,
+    /// matching the mid-game reconciler's maturity-vs-empty split. The
+    /// percentage check was dropped: a 3-area floor already handles small saves
+    /// (three patches of matured ground resetting is worth a one-line note
+    /// regardless of map size).</para>
     /// </summary>
-    private const int ChunkDropFloor = 8;
-
-    /// <summary>Fraction of saved chunk values whose loss warns even below
-    /// <see cref="ChunkDropFloor"/> -- catches proportionally large losses
-    /// on small saves.</summary>
-    private const double ChunkDropWarnPct = 2.0;
+    private const int MaturityDropFloorAreas = 3;
 
     /// <summary>
     /// Preserved-percentage threshold above which the region-level
