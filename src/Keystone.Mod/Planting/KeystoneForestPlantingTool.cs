@@ -1,4 +1,5 @@
 using Keystone.Mod.Visualization;
+using Timberborn.BlockSystem;
 using Timberborn.Forestry;
 using Timberborn.Localization;
 using Timberborn.Planting;
@@ -44,6 +45,7 @@ namespace Keystone.Mod.Planting {
         SelectionToolProcessorFactory selectionToolProcessorFactory,
         PlantingService plantingService,
         PlantingAreaValidator plantingAreaValidator,
+        IBlockService blockService,
         TerrainAreaService terrainAreaService,
         AreaHighlightingService areaHighlightingService,
         TemplateService templateService,
@@ -52,8 +54,8 @@ namespace Keystone.Mod.Planting {
         BiomeOverlayToggle biomeOverlayToggle,
         ILoc loc)
         : base(selectionToolProcessorFactory, plantingService, plantingAreaValidator,
-            terrainAreaService, areaHighlightingService, templateService, eventBus, uiLayout,
-            biomeOverlayToggle, loc) {
+            blockService, terrainAreaService, areaHighlightingService, templateService,
+            eventBus, uiLayout, biomeOverlayToggle, loc) {
     }
 
     /// <inheritdoc />

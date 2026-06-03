@@ -28,9 +28,16 @@ Forest Tool mod is unresolved.
   `[name] [−] [weight] [+]  [proportion bar] [NN%]`, where the bar + percent
   show that entry's share of the total weight and rescale whenever any weight
   changes; entries at weight 0 gray out. Above the rows are "Select all" /
-  "Clear all" bulk buttons; the last row is **Clearings** (weights how much
-  bare ground the brush leaves — a peer in the blend that replaced the old
-  "Allow gaps" toggle, not swept by the bulk buttons). The steppers/bulk
+  "Clear all" bulk buttons; the last weight row is **Clearings** (weights how
+  much bare ground the brush leaves — a peer in the blend that replaced the old
+  "Allow gaps" toggle, not swept by the bulk buttons). Below a divider sit the
+  tool-behavior toggles: **Overwrite existing plants** and its indented, opt-in
+  **Destroy existing plants** sub-toggle (disabled + grayed while overwrite is
+  off). "Destroy" not "cut" deliberately — it's the demolish path (the plant is
+  removed, nothing harvested), distinct from the forester's harvest-for-logs cut.
+  Toggle state lives on the tool, not the palette (it's planting *behavior*,
+  not selection policy); the panel pushes changes back via `OptionToggle`
+  setters. The steppers/bulk
   buttons are native `NineSliceButton`s with the game's button USS classes
   (orange "game" button + green hover, square `+`/`−` glyphs) — reachable
   because the mod compiles against the publicized `Timberborn.CoreUI` (see
@@ -59,6 +66,21 @@ one).
   unit-tested. This Mod layer is only Timberborn plumbing.
 - **Not biome-aware** — a pure manual mixer, by decision. The player sets
   per-species weights directly; the draw is proportional to them.
+- **Overwrite is tool-side — no Harmony.** Vanilla `PlantingService` never
+  rejects an occupied tile; it's the `PlantingAreaValidator.CanPlant` guard the
+  tool applies that "respects existing plants." Since we own that call, the
+  overwrite toggle just bypasses the guard for tiles blocked by *another plant*
+  (buildings/paths stay protected — `CanPlant` is false and there's no
+  `PlantableSpec`, so neither plant branch fires), and "Destroy existing" marks
+  that plant's `Demolishable` in our own `ActionCallback` (the demolish path is
+  pure removal — the Demolishing system has no yield/recovery, only an optional
+  science reward for ruins — so it destroys rather than harvests). The mark is fulfilled when
+  the tile clears (the spot re-evaluates on `OnBlockObjectUnset`). The
+  `Calloatti.NaturalResourcesTweaks` mod (`dump/naturalresourcestweaks-decompile.md`)
+  does the same effect with three global Harmony patches because it retrofits
+  the *vanilla* tool; owning our own tool lets us skip all three. We're also
+  stricter than NRT, which marks *any* `Demolishable` (it can bulldoze
+  buildings) — we only ever mark plants.
 - **Placeholder icon.** Both buttons currently share the dev
   `"KeystoneFlourishPlacement"` sprite; per-tool icons need the Unity asset
   pipeline.

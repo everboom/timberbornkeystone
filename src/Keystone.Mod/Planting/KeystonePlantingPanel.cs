@@ -13,8 +13,9 @@ namespace Keystone.Mod.Planting {
   /// <summary>
   /// Options window for a Keystone mixed-planting tool: a per-species weight
   /// (set with native &#8722;/+ steppers and shown as a live proportion bar +
-  /// percent), "Select all" / "Clear all" bulk buttons, and an "Allow gaps"
-  /// toggle.
+  /// percent), "Select all" / "Clear all" bulk buttons, and — below a divider —
+  /// the tool-behavior toggles ("Overwrite existing plants" and its opt-in
+  /// "Destroy existing plants" sub-toggle).
   /// A right-edge <c>square-large--green</c> nine-slice panel (the game's
   /// standalone-info-panel look) mounted via
   /// <see cref="UILayout.AddAbsoluteItem"/> so the global panel stylesheet
@@ -43,6 +44,33 @@ namespace Keystone.Mod.Planting {
   /// swept by the Select all / Clear all buttons).</para>
   /// </summary>
   public sealed class KeystonePlantingPanel {
+
+    #region Option toggle
+
+    /// <summary>One tool-behavior checkbox in the panel's options section: its
+    /// label loc key, initial on/off state, and the setter that pushes changes
+    /// back to the owning tool. (Kept tool-side rather than in the Core
+    /// <see cref="PlantingPalette"/> because it's planting <em>behavior</em>,
+    /// not species selection policy.)</summary>
+    public readonly struct OptionToggle {
+
+      /// <summary>Loc key for the checkbox label.</summary>
+      public readonly string LocKey;
+
+      /// <summary>Initial checked state.</summary>
+      public readonly bool Initial;
+
+      /// <summary>Invoked with the new value whenever the player toggles it.</summary>
+      public readonly Action<bool> OnChanged;
+
+      public OptionToggle(string locKey, bool initial, Action<bool> onChanged) {
+        LocKey = locKey;
+        Initial = initial;
+        OnChanged = onChanged;
+      }
+    }
+
+    #endregion
 
     #region Constants
 
@@ -82,8 +110,17 @@ namespace Keystone.Mod.Planting {
     private const float PercentGap = 6f;
 
     /// <summary>Opacity applied to a species' name + share readout while its
-    /// weight is 0 (excluded from the draw), so disabled rows read as grayed.</summary>
+    /// weight is 0 (excluded from the draw), so disabled rows read as grayed.
+    /// Also reused to gray the "Cut existing" toggle while overwrite is off.</summary>
     private const float DisabledRowOpacity = 0.4f;
+
+    // Options section (tool-behavior toggles below the weight rows): a thin
+    // rule separates them from the mix, and the "Destroy existing" sub-toggle is
+    // indented under "Overwrite" to read as dependent on it.
+    private const float OptionsDividerMargin = 8f;
+    private const float OptionsDividerHeight = 1f;
+    private const float DestroyToggleIndent = 18f;
+    private static readonly UnityEngine.Color OptionsDividerColor = new(1f, 1f, 1f, 0.12f);
 
     // Proportion bar: a recessed dark track with a bright-green fill whose
     // width is the species' share of the total weight.
@@ -145,12 +182,18 @@ namespace Keystone.Mod.Planting {
     /// <param name="clearingsLocKey">Loc key for the clearings (open-ground) row.</param>
     /// <param name="species">Species to list, as (template name, already-
     /// localized display name) pairs, in display order.</param>
+    /// <param name="overwrite">The "Overwrite existing plants" toggle.</param>
+    /// <param name="destroyExisting">The "Destroy existing plants" sub-toggle;
+    /// the panel keeps it disabled + grayed while <paramref name="overwrite"/>
+    /// is off (it has no effect there).</param>
     public void Build(
         string titleLocKey,
         string selectAllLocKey,
         string clearAllLocKey,
         string clearingsLocKey,
-        IReadOnlyList<(string Template, string DisplayName)> species) {
+        IReadOnlyList<(string Template, string DisplayName)> species,
+        OptionToggle overwrite,
+        OptionToggle destroyExisting) {
       // Absolute wrapper pinned to the right edge, content anchored top.
       // pickingMode Ignore on the wrapper so the empty margin doesn't eat
       // map clicks; the box itself (and its controls) still pick normally.
@@ -194,6 +237,8 @@ namespace Keystone.Mod.Planting {
 
       RefreshAllRows();   // initial bars / weights / percents / grayed state (needs the full total)
 
+      BuildOptionsSection(overwrite, destroyExisting);
+
       _uiLayout.AddAbsoluteItem(wrapper);
     }
 
@@ -212,6 +257,44 @@ namespace Keystone.Mod.Planting {
           () => SetAllWeightsAndRefresh(PlantingPalette.MinWeight));
       clearButton.style.marginLeft = BulkButtonGap;
       row.Add(clearButton);
+    }
+
+    /// <summary>Tool-behavior toggles below the weight rows, separated by a
+    /// thin rule: "Overwrite existing plants" and its indented, opt-in
+    /// "Destroy existing plants" sub-toggle. The sub-toggle is disabled + grayed
+    /// while overwrite is off (it does nothing there) but keeps its own value
+    /// so the player's choice survives toggling overwrite off and back on.
+    /// Each toggle's change writes straight through to the owning tool via the
+    /// <see cref="OptionToggle.OnChanged"/> setter.</summary>
+    private void BuildOptionsSection(OptionToggle overwrite, OptionToggle destroyExisting) {
+      var divider = new VisualElement { name = "KeystonePlantingOptionsDivider" };
+      divider.style.height = OptionsDividerHeight;
+      divider.style.marginTop = OptionsDividerMargin;
+      divider.style.marginBottom = OptionsDividerMargin;
+      divider.style.backgroundColor = OptionsDividerColor;
+      _root.Add(divider);
+
+      var overwriteToggle = _root.AddToggle(_loc.T(overwrite.LocKey));
+      overwriteToggle.value = overwrite.Initial;
+
+      var destroyToggle = _root.AddToggle(_loc.T(destroyExisting.LocKey));
+      destroyToggle.value = destroyExisting.Initial;
+      destroyToggle.style.marginLeft = DestroyToggleIndent;
+
+      // "Destroy existing" only means anything when overwrite is on; mirror that
+      // in the UI (interaction + opacity) without throwing away its value.
+      void SetDestroyInteractable(bool overwriteOn) {
+        destroyToggle.SetEnabled(overwriteOn);
+        destroyToggle.style.opacity = overwriteOn ? 1f : DisabledRowOpacity;
+      }
+
+      overwriteToggle.RegisterValueChangedCallback(evt => {
+        overwrite.OnChanged(evt.newValue);
+        SetDestroyInteractable(evt.newValue);
+      });
+      destroyToggle.RegisterValueChangedCallback(evt => destroyExisting.OnChanged(evt.newValue));
+
+      SetDestroyInteractable(overwrite.Initial);
     }
 
     /// <summary>One weight row: <c>[name] [&#8722;] [weight] [+]  [proportion

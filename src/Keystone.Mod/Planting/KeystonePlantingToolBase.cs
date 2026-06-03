@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Keystone.Core.Planting;
 using Keystone.Mod.Visualization;
+using Timberborn.BlockSystem;
+using Timberborn.Demolishing;
 using Timberborn.EntitySystem;
 using Timberborn.Localization;
 using Timberborn.NaturalResources;
@@ -21,8 +23,8 @@ namespace Keystone.Mod.Planting {
 
   /// <summary>
   /// Player-facing mixed-planting brush: drag-select an area and each tile
-  /// is queued for planting with a random pick from the enabled species
-  /// (or left empty, when "Allow gaps" is on). A Keystone reimplementation
+  /// is queued for planting with a weight-proportional pick from the palette
+  /// (or left as a clearing, per the Clearings weight). A Keystone reimplementation
   /// of the third-party "Forest Tool" concept (see
   /// <c>docs/private/foresttool.md</c>), extended to crops and built on
   /// the clean vanilla planting services rather than Forest Tool's static
@@ -49,6 +51,8 @@ namespace Keystone.Mod.Planting {
     private const string SelectAllLocKey = "Tool.Keystone.Planting.SelectAll";
     private const string ClearAllLocKey = "Tool.Keystone.Planting.ClearAll";
     private const string ClearingsLocKey = "Tool.Keystone.Planting.Clearings";
+    private const string OverwriteLocKey = "Tool.Keystone.Planting.Overwrite";
+    private const string DestroyExistingLocKey = "Tool.Keystone.Planting.DestroyExisting";
 
     private static readonly Color PreviewColor = new(0f, 0.8f, 0f, 1f);
 
@@ -58,6 +62,7 @@ namespace Keystone.Mod.Planting {
 
     private readonly PlantingService _plantingService;
     private readonly PlantingAreaValidator _plantingAreaValidator;
+    private readonly IBlockService _blockService;
     private readonly TerrainAreaService _terrainAreaService;
     private readonly AreaHighlightingService _areaHighlightingService;
     private readonly TemplateService _templateService;
@@ -73,6 +78,19 @@ namespace Keystone.Mod.Planting {
     private readonly PlantingPalette _palette = new();
     private readonly System.Random _rng = new();
 
+    /// <summary>When true, the brush also marks tiles already holding a plant
+    /// (never a building or path); the new planting waits until that tile is
+    /// cleared. When false (default) occupied tiles are skipped, matching the
+    /// vanilla planting tool. Driven by a panel toggle.</summary>
+    private bool _overwriteExisting;
+
+    /// <summary>When true (and <see cref="_overwriteExisting"/> is on), the
+    /// plant already on a brushed tile is destroyed (marked for demolition so
+    /// beavers remove it — not the forester's harvest-for-logs cut) to make
+    /// room for the new planting. Off by default — the destructive half of
+    /// overwrite is opt-in. Driven by a panel toggle.</summary>
+    private bool _destroyExisting;
+
     /// <summary>(template, localized display name) pairs, in display
     /// order. Built at <see cref="Load"/>; drives the options panel.</summary>
     private readonly List<(string Template, string DisplayName)> _species = new();
@@ -87,6 +105,7 @@ namespace Keystone.Mod.Planting {
         SelectionToolProcessorFactory selectionToolProcessorFactory,
         PlantingService plantingService,
         PlantingAreaValidator plantingAreaValidator,
+        IBlockService blockService,
         TerrainAreaService terrainAreaService,
         AreaHighlightingService areaHighlightingService,
         TemplateService templateService,
@@ -96,6 +115,7 @@ namespace Keystone.Mod.Planting {
         ILoc loc) {
       _plantingService = plantingService;
       _plantingAreaValidator = plantingAreaValidator;
+      _blockService = blockService;
       _terrainAreaService = terrainAreaService;
       _areaHighlightingService = areaHighlightingService;
       _templateService = templateService;
@@ -208,7 +228,12 @@ namespace Keystone.Mod.Planting {
     private void EnsurePanel() {
       if (_panel != null) return;
       _panel = new KeystonePlantingPanel(_uiLayout, Loc, _palette);
-      _panel.Build(PanelTitleLocKey, SelectAllLocKey, ClearAllLocKey, ClearingsLocKey, _species);
+      _panel.Build(
+          PanelTitleLocKey, SelectAllLocKey, ClearAllLocKey, ClearingsLocKey, _species,
+          overwrite: new KeystonePlantingPanel.OptionToggle(
+              OverwriteLocKey, _overwriteExisting, v => _overwriteExisting = v),
+          destroyExisting: new KeystonePlantingPanel.OptionToggle(
+              DestroyExistingLocKey, _destroyExisting, v => _destroyExisting = v));
     }
 
     #endregion
@@ -225,7 +250,20 @@ namespace Keystone.Mod.Planting {
     }
 
     /// <summary>Commit: per tile, draw a species (or a gap) from the
-    /// palette and write the corresponding planting mark.</summary>
+    /// palette and write the corresponding planting mark.
+    ///
+    /// <para><b>Overwrite.</b> Vanilla <see cref="PlantingService"/> never
+    /// rejects an occupied tile itself — the "respect existing plants"
+    /// behavior lives in the <see cref="PlantingAreaValidator.CanPlant"/>
+    /// guard the tool applies. So overwrite needs no Harmony: when
+    /// <see cref="_overwriteExisting"/> is on we bypass that guard for tiles
+    /// blocked by <em>another plant</em> (never a building or path, which
+    /// stay protected) and lay the mark anyway. The mark is fulfilled once
+    /// the tile clears (the planting spot re-evaluates on
+    /// <c>OnBlockObjectUnset</c>). <see cref="_destroyExisting"/> additionally
+    /// marks that plant's <see cref="Demolishable"/> so beavers remove it
+    /// (destroyed, not harvested), completing the swap. A tile already holding
+    /// the chosen species is left untouched.</para></summary>
     private void ActionCallback(IEnumerable<Vector3Int> inputBlocks, Ray ray) {
       foreach (var tile in _terrainAreaService.InMapLeveledCoordinates(inputBlocks, ray)) {
         var species = _palette.Choose((float)_rng.NextDouble());
@@ -233,8 +271,37 @@ namespace Keystone.Mod.Planting {
           // Gap (or nothing enabled): clear any existing mark so a
           // re-drag with gaps on can carve holes in a planted area.
           _plantingService.UnsetPlantingCoordinates(tile);
-        } else if (_plantingAreaValidator.CanPlant(tile, species)) {
-          _plantingService.SetPlantingCoordinates(tile, species);
+          continue;
+        }
+
+        var existingPlant = _blockService.GetBottomObjectComponentAt<PlantableSpec>(tile);
+
+        // Already the chosen species here — nothing to plant or cut.
+        if (existingPlant != null && existingPlant.TemplateName == species) {
+          continue;
+        }
+
+        // Plant when the tile is clear (vanilla rule), or — in overwrite mode
+        // — when the only thing in the way is another plant. Buildings and
+        // paths are never planted over (CanPlant stays false and the tile
+        // holds no PlantableSpec, so neither branch fires).
+        var occupiedByPlant = existingPlant != null;
+        if (!_plantingAreaValidator.CanPlant(tile, species)
+            && !(_overwriteExisting && occupiedByPlant)) {
+          continue;
+        }
+
+        _plantingService.SetPlantingCoordinates(tile, species);
+
+        // Opt-in destructive half: destroy the plant that's there so the new
+        // one can take over. Guarded by occupiedByPlant (a PlantableSpec is the
+        // bottom object here), so the Demolishable we mark is that plant's —
+        // never a structure's.
+        if (_overwriteExisting && _destroyExisting && occupiedByPlant) {
+          var demolishable = _blockService.GetBottomObjectComponentAt<Demolishable>(tile);
+          if (demolishable != null && !demolishable.IsMarked) {
+            demolishable.Mark();
+          }
         }
       }
       // Aggregate refresh event the planting UI listens for (matches the
