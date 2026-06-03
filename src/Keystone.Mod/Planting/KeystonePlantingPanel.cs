@@ -40,8 +40,9 @@ namespace Keystone.Mod.Planting {
   /// bar — the weighted-blend principle made legible. An entry at weight 0 has
   /// an empty bar and grays out; steppers are always visible. A final
   /// "clearings" row weights how much bare ground the brush leaves, competing
-  /// in the same blend (it replaced the old "Allow gaps" toggle and is not
-  /// swept by the Select all / Clear all buttons).</para>
+  /// in the same blend (it replaced the old "Allow gaps" toggle). Select all
+  /// spares it (selecting species shouldn't change how much bare ground you
+  /// asked for); Clear all includes it (the reset-everything action).</para>
   /// </summary>
   public sealed class KeystonePlantingPanel {
 
@@ -250,11 +251,11 @@ namespace Keystone.Mod.Planting {
 
       row.Add(MakeBulkButton(
           _loc.T(selectAllLocKey),
-          () => SetAllWeightsAndRefresh(PlantingPalette.DefaultWeight)));
+          SelectAllAndRefresh));
 
       var clearButton = MakeBulkButton(
           _loc.T(clearAllLocKey),
-          () => SetAllWeightsAndRefresh(PlantingPalette.MinWeight));
+          ClearAllAndRefresh);
       clearButton.style.marginLeft = BulkButtonGap;
       row.Add(clearButton);
     }
@@ -441,10 +442,22 @@ namespace Keystone.Mod.Planting {
 
     #region Weight wiring
 
-    /// <summary>Drive every species to <paramref name="weight"/> in the palette
-    /// and refresh the whole panel. Leaves the clearings weight alone.</summary>
-    private void SetAllWeightsAndRefresh(int weight) {
-      _palette.SetAllWeights(weight);
+    /// <summary>"Select all": drive every species to
+    /// <see cref="PlantingPalette.DefaultWeight"/>. Leaves the Clearings
+    /// weight as the player set it — selecting species shouldn't disturb how
+    /// much bare ground they asked for.</summary>
+    private void SelectAllAndRefresh() {
+      _palette.SetAllWeights(PlantingPalette.DefaultWeight);
+      RefreshAllRows();
+    }
+
+    /// <summary>"Clear all": zero every species <em>and</em> the Clearings
+    /// weight, so the panel reads as fully empty. (Select all deliberately
+    /// spares Clearings; Clear all is the "reset everything" action, so it
+    /// includes it.)</summary>
+    private void ClearAllAndRefresh() {
+      _palette.SetAllWeights(PlantingPalette.MinWeight);
+      _palette.SetGapWeight(PlantingPalette.MinWeight);
       RefreshAllRows();
     }
 

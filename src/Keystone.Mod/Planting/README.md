@@ -30,7 +30,7 @@ Forest Tool mod is unresolved.
   changes; entries at weight 0 gray out. Above the rows are "Select all" /
   "Clear all" bulk buttons; the last weight row is **Clearings** (weights how
   much bare ground the brush leaves — a peer in the blend that replaced the old
-  "Allow gaps" toggle, not swept by the bulk buttons). Below a divider sit the
+  "Allow gaps" toggle; Select all spares it, Clear all zeroes it too). Below a divider sit the
   tool-behavior toggles: **Overwrite existing plants** and its indented, opt-in
   **Destroy existing plants** sub-toggle (disabled + grayed while overwrite is
   off). "Destroy" not "cut" deliberately — it's the demolish path (the plant is

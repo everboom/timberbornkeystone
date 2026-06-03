@@ -27,7 +27,8 @@ policy.
   steppers, plus Select all / Clear all). A species at weight 3 is drawn three
   times as often as one at weight 1; weight 0 drops it. "Clearings" (the
   leave-empty outcome) is `GapWeight`, a peer in the same draw the player dials
-  independently — not swept by the bulk buttons. If a biome-weighted variant is
+  independently — Select all leaves it as-is, Clear all zeroes it (the panel
+  wires this asymmetry; `SetAllWeights` itself never touches `GapWeight`). If a biome-weighted variant is
   ever wanted, it slots in behind the same `Choose` seam without reshaping
   callers.
 - **No statics, injected draw.** The pick value is supplied by the caller, so
