@@ -37,6 +37,14 @@ Tool.Keystone.Planting.ClearAll,Clear all,Button that sets every species in the 
 Tool.Keystone.Planting.Clearings,Clearings,"Row in the mix that weights how much bare ground the brush leaves: raise it for more open space, 0 for a fully-planted area."
 Tool.Keystone.Planting.Overwrite,Overwrite existing plants,"When on, the brush also marks tiles that already hold a plant or tree (never buildings or paths); the new planting fills in once that tile is cleared. Off by default, matching the vanilla planting tool, which skips occupied tiles."
 Tool.Keystone.Planting.DestroyExisting,Destroy existing plants,"When on, any plant or tree on a brushed tile is destroyed — removed, not harvested for resources — so the new planting can take its place. Off by default: leave it off to queue plantings without killing what's already growing. Has no effect unless Overwrite is on."
+Tool.Keystone.ThinningCut.DisplayName,Thin Trees,Player-facing thinning-cut brush in the forester tree-cutting menu.
+Tool.Keystone.ThinningCut.Description,"Drag over an area to mark a share of its trees for cutting — set the percentage below and the brush marks roughly that fraction at random, leaving the rest standing. Re-drag the same area to roll a different mix. A quick way to thin a forest for variety or sunlight instead of clear-cutting it. Trees are still felled by your foresters through the normal cutting queue.",
+Tool.Keystone.ThinningCut.PanelTitle,Thinning,Header of the thinning-cut options panel.
+Tool.Keystone.ThinningCut.Percent,Cut percentage,"Slider for the share of eligible trees the brush marks for cutting (0–100%)."
+Tool.Keystone.ThinningCut.ClearExisting,Clear existing marks,"When on (the default), each drag first clears any cutting marks on the selected tree types in the area, so the area is set to the chosen percentage rather than piling marks up across drags. Turn off to only add marks."
+Tool.Keystone.ThinningCut.Species,Tree types,Header above the per-species toggles in the thinning-cut panel.
+Tool.Keystone.ThinningCut.SelectAll,Select all,Button that includes every tree type in the thinning-cut selection.
+Tool.Keystone.ThinningCut.ClearAll,Clear all,Button that excludes every tree type from the thinning-cut selection.
 Keystone.Settings.Flora.Header,Flora,Header above the flora section of the Keystone settings panel.
 Keystone.Settings.Flora.ClassBDensity,Decorative plants,Class B flourish density slider label.
 Keystone.Settings.Flora.ClassBDensity.Tooltip,"How many small plants — flowers, ferns, cattails, and the like — appear in each biome.
