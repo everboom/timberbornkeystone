@@ -28,9 +28,7 @@ policy.
   times as often as one at weight 1; weight 0 drops it. "Clearings" (the
   leave-empty outcome) is `GapWeight`, a peer in the same draw the player dials
   independently — Select all leaves it as-is, Clear all zeroes it (the panel
-  wires this asymmetry; `SetAllWeights` itself never touches `GapWeight`). If a biome-weighted variant is
-  ever wanted, it slots in behind the same `Choose` seam without reshaping
-  callers.
+  wires this asymmetry; `SetAllWeights` itself never touches `GapWeight`).
 - **No statics, injected draw.** The pick value is supplied by the caller, so
   the policy is unit-tested with explicit hashes (see
   `tests/Keystone.Core.Tests/Planting/`). Selection happens on a player click,
