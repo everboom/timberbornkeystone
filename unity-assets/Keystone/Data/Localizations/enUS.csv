@@ -37,9 +37,9 @@ Tool.Keystone.Planting.ClearAll,Clear all,Button that sets every species in the 
 Tool.Keystone.Planting.Clearings,Clearings,"Row in the mix that weights how much bare ground the brush leaves: raise it for more open space, 0 for a fully-planted area."
 Tool.Keystone.Planting.Overwrite,Overwrite existing plants,"When on, the brush also marks tiles that already hold a plant or tree (never buildings or paths); the new planting fills in once that tile is cleared. Off by default, matching the vanilla planting tool, which skips occupied tiles."
 Tool.Keystone.Planting.DestroyExisting,Destroy existing plants,"When on, any plant or tree on a brushed tile is destroyed — removed, not harvested for resources — so the new planting can take its place. Off by default: leave it off to queue plantings without killing what's already growing. Has no effect unless Overwrite is on."
-Tool.Keystone.Logging.DisplayName,Logging Planner,Player-facing logging-planner brush in the forester tree-cutting menu.
+Tool.Keystone.Logging.DisplayName,Cutting Planner,Player-facing cutting-planner brush in the forester tree-cutting menu.
 Tool.Keystone.Logging.Description,"Drag over an area to mark its trees for cutting — set the percentage below to choose how many: 100% clear-cuts the selected tree types, less thins them, marking roughly that fraction at random and leaving the rest standing. Re-drag the same area to roll a different mix. Trees are still felled by your foresters through the normal cutting queue.",
-Tool.Keystone.Logging.PanelTitle,Logging Planner,Header of the logging-planner options panel.
+Tool.Keystone.Logging.PanelTitle,Cutting Planner,Header of the cutting-planner options panel.
 Tool.Keystone.Logging.Percent,Cut percentage,"Slider for the share of eligible trees the brush marks for cutting; the live percentage shows to the right of the slider."
 Tool.Keystone.Logging.OverrideExisting,Override existing marks,"When on (the default), each drag first clears any cutting marks on the selected tree types in the area before re-marking, so the area is set to the chosen percentage rather than piling marks up across drags. Turn off to only add marks."
 Tool.Keystone.Logging.Species,Tree types,Header above the per-species toggles in the logging panel.
