@@ -11,12 +11,14 @@ using UnityEngine.UIElements;
 namespace Keystone.Mod.Cutting {
 
   /// <summary>
-  /// Options window for the <see cref="KeystoneThinningCutTool"/>: a percentage
-  /// slider ("mark this share of the eligible trees"), a "clear existing marks"
-  /// toggle, and a per-species filter (one toggle per tree species, plus
-  /// "Select all" / "Clear all"). Shares the dark-green right-edge nine-slice
-  /// frame + header with the biome-overlay legend and the planting panel via
-  /// <see cref="KeystonePanelStyle"/>; shown only while the tool is active.
+  /// Options window for the <see cref="KeystoneLoggingTool"/>. Top to
+  /// bottom: the per-species filter (one toggle per tree species, plus
+  /// "Select all" / "Clear all"), then — below a divider — the other options:
+  /// a percentage slider with a live <c>X%</c> readout to its right, and an
+  /// "Override existing marks" toggle. Shares the right-edge nine-slice frame,
+  /// header, geometry, and bulk-button look with the planting panel and biome
+  /// legend via <see cref="KeystonePanelStyle"/>; shown only while the tool is
+  /// active.
   ///
   /// <para>The panel holds no policy state — every control pushes straight
   /// through to the owning tool via the callbacks passed to
@@ -24,17 +26,14 @@ namespace Keystone.Mod.Cutting {
   /// only so the bulk buttons can flip them without firing per-toggle
   /// callbacks.</para>
   /// </summary>
-  public sealed class KeystoneThinningCutPanel {
+  public sealed class KeystoneLoggingPanel {
 
     #region Constants
 
-    private const float PanelRight = 20f;
-    private const float PanelWidth = 300f;
-    private const float Padding = 8f;
-    private const float SectionMarginTop = 8f;
     private const float DividerMargin = 8f;
     private const float DividerHeight = 1f;
-    private const float BulkButtonGap = 6f;
+    private const float BulkRowMarginTop = 2f;
+    private const float BulkRowMarginBottom = 8f;
 
     private static readonly UnityEngine.Color DividerColor = new(1f, 1f, 1f, 0.12f);
 
@@ -57,7 +56,7 @@ namespace Keystone.Mod.Cutting {
 
     /// <param name="uiLayout">Game UI layout the panel mounts into.</param>
     /// <param name="loc">Localization service for labels.</param>
-    public KeystoneThinningCutPanel(UILayout uiLayout, ILoc loc) {
+    public KeystoneLoggingPanel(UILayout uiLayout, ILoc loc) {
       _uiLayout = uiLayout;
       _loc = loc;
     }
@@ -70,68 +69,37 @@ namespace Keystone.Mod.Cutting {
     /// <param name="titleLocKey">Loc key for the panel header.</param>
     /// <param name="percentLocKey">Loc key for the percentage slider label.</param>
     /// <param name="initialPercent">Slider starting value (0–100).</param>
-    /// <param name="clearExistingLocKey">Loc key for the "clear existing" toggle.</param>
-    /// <param name="initialClearExisting">"Clear existing" starting state.</param>
+    /// <param name="overrideLocKey">Loc key for the "Override existing" toggle.</param>
+    /// <param name="initialOverride">"Override existing" starting state.</param>
     /// <param name="speciesLocKey">Loc key for the species section header.</param>
     /// <param name="selectAllLocKey">Loc key for the "Select all" button.</param>
     /// <param name="clearAllLocKey">Loc key for the "Clear all" button.</param>
     /// <param name="species">Tree species as (template, localized name) pairs.</param>
     /// <param name="onPercentChanged">Pushes a new slider value to the tool.</param>
-    /// <param name="onClearExistingChanged">Pushes the toggle to the tool.</param>
+    /// <param name="onOverrideChanged">Pushes the toggle to the tool.</param>
     /// <param name="onSpeciesToggled">Pushes one species (template, on) to the tool.</param>
     /// <param name="onSetAllSpecies">Pushes a bulk select(true)/clear(false).</param>
     public void Build(
         string titleLocKey,
         string percentLocKey,
         int initialPercent,
-        string clearExistingLocKey,
-        bool initialClearExisting,
+        string overrideLocKey,
+        bool initialOverride,
         string speciesLocKey,
         string selectAllLocKey,
         string clearAllLocKey,
         IReadOnlyList<(string Template, string DisplayName)> species,
         Action<int> onPercentChanged,
-        Action<bool> onClearExistingChanged,
+        Action<bool> onOverrideChanged,
         Action<string, bool> onSpeciesToggled,
         Action<bool> onSetAllSpecies) {
-      // Absolute wrapper pinned to the right edge, content vertically centered;
-      // pickingMode Ignore so the empty margin doesn't eat map clicks.
-      var wrapper = new VisualElement { name = "KeystoneThinningCutPanelWrapper" };
-      wrapper.style.position = Position.Absolute;
-      wrapper.style.right = 0;
-      wrapper.style.top = 0;
-      wrapper.style.bottom = 0;
-      wrapper.style.justifyContent = Justify.Center;
-      wrapper.style.alignItems = Align.FlexEnd;
-      wrapper.pickingMode = PickingMode.Ignore;
-
-      _root = wrapper.AddChild<NineSliceVisualElement>("KeystoneThinningCutPanelRoot")
-          .AddClass(KeystonePanelStyle.FrameBgClass)
-          .SetWidth(PanelWidth)
-          .SetPadding(Padding)
-          .SetMarginRight(PanelRight)
-          .SetDisplay(false);
+      _root = KeystonePanelStyle.BuildRightEdgePanel("KeystoneLoggingPanelRoot", out var wrapper);
 
       KeystonePanelStyle.AddHeader(_root, _loc.T(titleLocKey));
 
-      // Percentage slider (0–100). The label shows the live value.
-      // SliderValues is (Low, High, Default).
-      var slider = _root.AddSliderInt(
-          label: _loc.T(percentLocKey),
-          values: new SliderValues<int>(0, 100, initialPercent));
-      slider.RegisterChangeCallback(evt => onPercentChanged(evt.newValue));
-
-      // "Clear existing marks" (default on).
-      var clearToggle = _root.AddToggle(_loc.T(clearExistingLocKey));
-      clearToggle.value = initialClearExisting;
-      clearToggle.RegisterValueChangedCallback(evt => onClearExistingChanged(evt.newValue));
-
-      AddDivider();
-
-      // Species section header.
+      // --- Tree-type filter first ---
       var speciesHeader = _root.AddGameLabel(_loc.T(speciesLocKey));
       speciesHeader.AddToClassList("text--bold");
-      speciesHeader.style.marginTop = SectionMarginTop;
 
       BuildBulkRow(selectAllLocKey, clearAllLocKey, onSetAllSpecies);
 
@@ -143,18 +111,41 @@ namespace Keystone.Mod.Cutting {
         _speciesToggles[template] = toggle;
       }
 
+      AddDivider();
+
+      // --- Then the other options ---
+      // Percentage slider (0–100) with a live "X%" readout to its right.
+      // SliderValues is (Low, High, Default).
+      var slider = _root.AddSliderInt(
+          label: _loc.T(percentLocKey),
+          values: new SliderValues<int>(0, 100, initialPercent));
+      slider.AddEndLabel(value => value + "%");
+      slider.RegisterChangeCallback(evt => onPercentChanged(evt.newValue));
+
+      var overrideToggle = _root.AddToggle(_loc.T(overrideLocKey));
+      overrideToggle.value = initialOverride;
+      overrideToggle.RegisterValueChangedCallback(evt => onOverrideChanged(evt.newValue));
+
       _uiLayout.AddAbsoluteItem(wrapper);
     }
 
-    /// <summary>"Select all" / "Clear all" buttons, side by side. Each flips
-    /// every species toggle (without notify, to avoid N per-toggle callbacks)
-    /// and pushes a single bulk update to the tool.</summary>
+    /// <summary>"Select all" / "Clear all" buttons, side by side, using the
+    /// shared bulk-button look. Each flips every species toggle (without
+    /// notify, to avoid N per-toggle callbacks) and pushes a single bulk update
+    /// to the tool.</summary>
     private void BuildBulkRow(string selectAllLocKey, string clearAllLocKey,
                               Action<bool> onSetAllSpecies) {
       var row = _root.AddRow();
-      row.AddGameButton(_loc.T(selectAllLocKey), () => SetAll(true, onSetAllSpecies));
-      var clearButton = row.AddGameButton(_loc.T(clearAllLocKey), () => SetAll(false, onSetAllSpecies));
-      clearButton.style.marginLeft = BulkButtonGap;
+      row.style.marginTop = BulkRowMarginTop;
+      row.style.marginBottom = BulkRowMarginBottom;
+
+      row.Add(KeystonePanelStyle.MakeBulkButton(
+          _loc.T(selectAllLocKey), () => SetAll(true, onSetAllSpecies)));
+
+      var clearButton = KeystonePanelStyle.MakeBulkButton(
+          _loc.T(clearAllLocKey), () => SetAll(false, onSetAllSpecies));
+      clearButton.style.marginLeft = KeystonePanelStyle.BulkButtonGap;
+      row.Add(clearButton);
     }
 
     private void SetAll(bool active, Action<bool> onSetAllSpecies) {
@@ -165,7 +156,7 @@ namespace Keystone.Mod.Cutting {
     }
 
     private void AddDivider() {
-      var divider = new VisualElement { name = "KeystoneThinningCutDivider" };
+      var divider = new VisualElement { name = "KeystoneLoggingDivider" };
       divider.style.height = DividerHeight;
       divider.style.marginTop = DividerMargin;
       divider.style.marginBottom = DividerMargin;

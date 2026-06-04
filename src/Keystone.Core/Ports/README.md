@@ -27,7 +27,7 @@ read-side ports above are the inverse (the adapter answers, Core reads).
 
 | Port | Surface |
 |---|---|
-| `ICuttingAreaWriter` | Batched write over the host's tree-cutting **area registry** (`Timberborn.Forestry.TreeCuttingArea`): `MarkForCutting(coords)` / `UnmarkForCutting(coords)`. Backs the thinning-cut brush (`Keystone.Core.Cutting.ThinningSelector`). Distinct from the read-side `ICuttingMarkQuery`, which reads a single tree's `Cuttable.IsMarked`; this writes the coordinate registry the cut pipeline actually consumes (the canonical designation path, not per-tree `Cuttable.Mark()`). |
+| `ICuttingAreaWriter` | Batched write over the host's tree-cutting **area registry** (`Timberborn.Forestry.TreeCuttingArea`): `MarkForCutting(coords)` / `UnmarkForCutting(coords)`. Backs the logging brush (`Keystone.Core.Cutting.LoggingSelector`). Distinct from the read-side `ICuttingMarkQuery`, which reads a single tree's `Cuttable.IsMarked`; this writes the coordinate registry the cut pipeline actually consumes (the canonical designation path, not per-tree `Cuttable.Mark()`). |
 
 `IClock` lives next to its value types in `Keystone.Core.Time` rather
 than here.

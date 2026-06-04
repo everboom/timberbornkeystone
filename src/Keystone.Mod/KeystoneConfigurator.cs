@@ -375,16 +375,16 @@ namespace Keystone.Mod {
       Bind<KeystoneForestPlantingTool>().AsSingleton();
       Bind<KeystonePlantingMenuInitializer>().AsSingleton();
 
-      // Thinning-cut brush -- the cut-side mirror of the planting brush:
+      // Logging brush -- the cut-side mirror of the planting brush:
       // drag-select an area and mark a player-set fraction of the trees in it
-      // for cutting (per-tile seeded selection via Core ThinningSelector,
+      // for cutting (per-tile seeded selection via Core LoggingSelector,
       // written through ICuttingAreaWriter over the vanilla TreeCuttingArea).
       // Injected into the vanilla "TreeCutting" menu. DEV-MODE ONLY for the same
       // reason as the planting brush -- it overlaps Cordial's Cutter Tool and
       // the design is still in flux (issue #30). See docs/private/cuttertool.md
       // and src/Keystone.Mod/Cutting/README.md.
-      Bind<KeystoneThinningCutTool>().AsSingleton();
-      Bind<KeystoneThinningCutMenuInitializer>().AsSingleton();
+      Bind<KeystoneLoggingTool>().AsSingleton();
+      Bind<KeystoneLoggingMenuInitializer>().AsSingleton();
 
       MultiBind<TemplateModule>().ToProvider<KeystoneTemplateModuleProvider>().AsSingleton();
       MultiBind<BottomBarModule>().ToProvider<KeystoneBottomBarModuleProvider>().AsSingleton();

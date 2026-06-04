@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Keystone.Core.Planting;
+using Keystone.Mod.Adapters;
 using Keystone.Mod.Visualization;
 using Timberborn.BlockSystem;
 using Timberborn.Demolishing;
@@ -274,18 +275,26 @@ namespace Keystone.Mod.Planting {
           continue;
         }
 
-        var existingPlant = _blockService.GetBottomObjectComponentAt<PlantableSpec>(tile);
-
-        // Already the chosen species here — nothing to plant or cut.
-        if (existingPlant != null && existingPlant.TemplateName == species) {
+        // Best-effort "already the chosen species" check: skip a tile that
+        // already holds exactly what we'd plant. Uses PlantableSpec when the
+        // occupant exposes one; a wild plant without one isn't matched here and
+        // just falls through to the overwrite/destroy path below.
+        var existingPlantable = _blockService.GetBottomObjectComponentAt<PlantableSpec>(tile);
+        if (existingPlantable != null && existingPlantable.TemplateName == species) {
           continue;
         }
 
+        // Any crop / bush / tree occupying the tile — detected by its
+        // natural-element runtime components (NaturalResource / Crop /
+        // Gatherable / Growable / Yielder), so it catches wild-spawned plants
+        // that carry no PlantableSpec, not just the tool's own plantable
+        // species. Buildings and paths have none of these components, so they
+        // stay protected (and CanPlant stays false for them).
+        var existing = _blockService.GetBottomObjectAt(tile);
+        var occupiedByPlant = existing != null && BlockObjectClassification.IsNaturalComponent(existing);
+
         // Plant when the tile is clear (vanilla rule), or — in overwrite mode
-        // — when the only thing in the way is another plant. Buildings and
-        // paths are never planted over (CanPlant stays false and the tile
-        // holds no PlantableSpec, so neither branch fires).
-        var occupiedByPlant = existingPlant != null;
+        // — when the only thing in the way is a plant.
         if (!_plantingAreaValidator.CanPlant(tile, species)
             && !(_overwriteExisting && occupiedByPlant)) {
           continue;
@@ -293,10 +302,12 @@ namespace Keystone.Mod.Planting {
 
         _plantingService.SetPlantingCoordinates(tile, species);
 
-        // Opt-in destructive half: destroy the plant that's there so the new
-        // one can take over. Guarded by occupiedByPlant (a PlantableSpec is the
-        // bottom object here), so the Demolishable we mark is that plant's —
-        // never a structure's.
+        // Opt-in destructive half: mark the existing crop/bush/tree for
+        // demolition so beavers remove it (destroyed, not harvested). Best-
+        // effort — a plant with no Demolishable (or one already marked) is left
+        // standing; the planting still waits for the tile to clear. Guarded by
+        // occupiedByPlant, which is a natural component and never a structure,
+        // so we never mark a building.
         if (_overwriteExisting && _destroyExisting && occupiedByPlant) {
           var demolishable = _blockService.GetBottomObjectComponentAt<Demolishable>(tile);
           if (demolishable != null && !demolishable.IsMarked) {

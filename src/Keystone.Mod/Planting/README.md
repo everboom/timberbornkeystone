@@ -69,18 +69,26 @@ one).
 - **Overwrite is tool-side — no Harmony.** Vanilla `PlantingService` never
   rejects an occupied tile; it's the `PlantingAreaValidator.CanPlant` guard the
   tool applies that "respects existing plants." Since we own that call, the
-  overwrite toggle just bypasses the guard for tiles blocked by *another plant*
-  (buildings/paths stay protected — `CanPlant` is false and there's no
-  `PlantableSpec`, so neither plant branch fires), and "Destroy existing" marks
-  that plant's `Demolishable` in our own `ActionCallback` (the demolish path is
-  pure removal — the Demolishing system has no yield/recovery, only an optional
-  science reward for ruins — so it destroys rather than harvests). The mark is fulfilled when
-  the tile clears (the spot re-evaluates on `OnBlockObjectUnset`). The
+  overwrite toggle just bypasses the guard for tiles blocked by *another plant*,
+  and "Destroy existing" marks that plant's `Demolishable` in our own
+  `ActionCallback` (the demolish path is pure removal — the Demolishing system
+  has no yield/recovery, only an optional science reward for ruins — so it
+  destroys rather than harvests). The mark is fulfilled when the tile clears
+  (the spot re-evaluates on `OnBlockObjectUnset`).
+- **What counts as "an existing plant."** Occupancy is detected by the bottom
+  block object's natural-element runtime components
+  (`BlockObjectClassification.IsNaturalComponent` — `NaturalResource` / `Crop` /
+  `Gatherable` / `Growable` / `Yielder`), **not** by `PlantableSpec`. That
+  matters: it catches *any* crop/bush/tree — including wild-spawned ones that
+  carry no `PlantableSpec` — so the destroy toggle clears them too. Buildings
+  and paths have none of those components, so they stay protected. Destroy is
+  best-effort: a plant with no `Demolishable` (or one already marked) is left
+  standing rather than throwing. The
   `Calloatti.NaturalResourcesTweaks` mod (`dump/naturalresourcestweaks-decompile.md`)
   does the same effect with three global Harmony patches because it retrofits
   the *vanilla* tool; owning our own tool lets us skip all three. We're also
   stricter than NRT, which marks *any* `Demolishable` (it can bulldoze
-  buildings) — we only ever mark plants.
+  buildings) — we only ever mark naturals.
 - **Placeholder icon.** Both buttons currently share the dev
   `"KeystoneFlourishPlacement"` sprite; per-tool icons need the Unity asset
   pipeline.

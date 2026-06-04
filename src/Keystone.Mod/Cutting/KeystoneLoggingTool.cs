@@ -21,7 +21,7 @@ using UnityEngine;
 namespace Keystone.Mod.Cutting {
 
   /// <summary>
-  /// Player-facing <b>thinning-cut brush</b>: drag-select an area and mark a
+  /// Player-facing <b>logging brush</b>: drag-select an area and mark a
   /// player-set <em>fraction</em> of the trees in it for cutting ("thin 30% of
   /// the pines here"). The cut-side mirror of the Keystone planting brush, and
   /// a leaner take on Cordial's Cutter Tool (<c>docs/private/cuttertool.md</c>):
@@ -32,7 +32,7 @@ namespace Keystone.Mod.Cutting {
   /// <see cref="TreeCuttingArea"/>) — the same designation path the vanilla
   /// forester area tool uses — so the existing forester pipeline fells the
   /// trees. Nothing is force-removed. Per-tile selection is delegated to the
-  /// Core <see cref="ThinningSelector"/>.</para>
+  /// Core <see cref="LoggingSelector"/>.</para>
   ///
   /// <para><b>Per-tile + seed.</b> Each tile's include/exclude is a pure
   /// function of its coordinate and a per-drag <see cref="_seed"/>, so the
@@ -43,14 +43,14 @@ namespace Keystone.Mod.Cutting {
   /// <para><b>Species filter is Mod-side.</b> Resolving a tile's species (the
   /// tree on it, or its planting mark as fallback) needs game state, so it
   /// lives here, not in Core. Tiles whose species the player deselected are
-  /// dropped before <see cref="ThinningSelector"/> is consulted.</para>
+  /// dropped before <see cref="LoggingSelector"/> is consulted.</para>
   ///
   /// <para><b>Dev-mode only.</b> Surfaced only when
-  /// <see cref="KeystoneThinningCutMenuInitializer"/>'s dev-mode check passes,
+  /// <see cref="KeystoneLoggingMenuInitializer"/>'s dev-mode check passes,
   /// for the same reason as the planting brush — it overlaps Cordial's Cutter
   /// Tool, and the design is still settling (issue #30).</para>
   /// </summary>
-  public sealed class KeystoneThinningCutTool : ITool, ILoadableSingleton, IToolDescriptor {
+  public sealed class KeystoneLoggingTool : ITool, ILoadableSingleton, IToolDescriptor {
 
     #region Constants
 
@@ -62,17 +62,19 @@ namespace Keystone.Mod.Cutting {
     /// and Cordial's Cutter Tool use).</summary>
     private const string CursorKey = "CutTreeCursor";
 
-    private const string TitleLocKey = "Tool.Keystone.ThinningCut.DisplayName";
-    private const string DescriptionLocKey = "Tool.Keystone.ThinningCut.Description";
-    private const string PanelTitleLocKey = "Tool.Keystone.ThinningCut.PanelTitle";
-    private const string PercentLocKey = "Tool.Keystone.ThinningCut.Percent";
-    private const string ClearExistingLocKey = "Tool.Keystone.ThinningCut.ClearExisting";
-    private const string SpeciesLocKey = "Tool.Keystone.ThinningCut.Species";
-    private const string SelectAllLocKey = "Tool.Keystone.ThinningCut.SelectAll";
-    private const string ClearAllLocKey = "Tool.Keystone.ThinningCut.ClearAll";
+    private const string TitleLocKey = "Tool.Keystone.Logging.DisplayName";
+    private const string DescriptionLocKey = "Tool.Keystone.Logging.Description";
+    private const string PanelTitleLocKey = "Tool.Keystone.Logging.PanelTitle";
+    private const string PercentLocKey = "Tool.Keystone.Logging.Percent";
+    private const string OverrideExistingLocKey = "Tool.Keystone.Logging.OverrideExisting";
+    private const string SpeciesLocKey = "Tool.Keystone.Logging.Species";
+    private const string SelectAllLocKey = "Tool.Keystone.Logging.SelectAll";
+    private const string ClearAllLocKey = "Tool.Keystone.Logging.ClearAll";
 
-    /// <summary>Slider starting value (percent of eligible trees to mark).</summary>
-    private const int DefaultPercent = 50;
+    /// <summary>Slider starting value (percent of eligible trees to mark).
+    /// Defaults to 100 — a full clear-cut of the selected species — which the
+    /// player dials down to thin.</summary>
+    private const int DefaultPercent = 100;
 
     /// <summary>Tile tint for trees the current seed/percentage will mark.</summary>
     private static readonly Color WillCutColor = new(0.95f, 0.2f, 0.15f, 1f);
@@ -110,22 +112,22 @@ namespace Keystone.Mod.Cutting {
     private double _fraction = DefaultPercent / 100d;
 
     /// <summary>When true (default), each drag first clears the active-species
-    /// cutting marks in the area, so the drag <em>sets</em> the area to ~X%
-    /// rather than accumulating across drags (and lowering the slider removes
-    /// marks). Driven by a panel toggle.</summary>
-    private bool _clearExisting = true;
+    /// cutting marks in the area before re-marking, so the drag <em>overrides</em>
+    /// what's there (sets the area to ~X%) rather than accumulating across drags
+    /// — and lowering the slider removes marks. Driven by a panel toggle.</summary>
+    private bool _overrideExisting = true;
 
     /// <summary>Per-drag selection seed; fixed across one drag's preview and
     /// commit, bumped afterward so re-dragging the same area rerolls.</summary>
     private int _seed;
 
-    private KeystoneThinningCutPanel _panel;
+    private KeystoneLoggingPanel _panel;
 
     #endregion
 
     #region Construction
 
-    public KeystoneThinningCutTool(
+    public KeystoneLoggingTool(
         SelectionToolProcessorFactory selectionToolProcessorFactory,
         ICuttingAreaWriter cuttingAreaWriter,
         IBlockService blockService,
@@ -225,15 +227,15 @@ namespace Keystone.Mod.Cutting {
     /// <summary>Lazily build + mount the options panel on first entry.</summary>
     private void EnsurePanel() {
       if (_panel != null) return;
-      _panel = new KeystoneThinningCutPanel(_uiLayout, _loc);
+      _panel = new KeystoneLoggingPanel(_uiLayout, _loc);
       _panel.Build(
           PanelTitleLocKey,
           PercentLocKey, DefaultPercent,
-          ClearExistingLocKey, _clearExisting,
+          OverrideExistingLocKey, _overrideExisting,
           SpeciesLocKey, SelectAllLocKey, ClearAllLocKey,
           _species,
           onPercentChanged: percent => _fraction = percent / 100d,
-          onClearExistingChanged: v => _clearExisting = v,
+          onOverrideChanged: v => _overrideExisting = v,
           onSpeciesToggled: SetSpeciesActive,
           onSetAllSpecies: SetAllSpeciesActive);
     }
@@ -249,7 +251,7 @@ namespace Keystone.Mod.Cutting {
     private void PreviewCallback(IEnumerable<Vector3Int> inputBlocks, Ray ray) {
       foreach (var tile in _terrainAreaService.InMapLeveledCoordinates(inputBlocks, ray)) {
         if (!IsEligible(tile)) continue;
-        var color = ThinningSelector.ShouldMark(tile.x, tile.y, tile.z, _fraction, _seed)
+        var color = LoggingSelector.ShouldMark(tile.x, tile.y, tile.z, _fraction, _seed)
             ? WillCutColor
             : SparedColor;
         _areaHighlightingService.DrawTile(tile, color);
@@ -267,16 +269,16 @@ namespace Keystone.Mod.Cutting {
         if (IsEligible(tile)) eligible.Add(tile);
       }
 
-      // Clear first (scoped to the active species, since `eligible` already is)
-      // so re-dragging — or lowering the slider — removes marks rather than only
-      // adding them.
-      if (_clearExisting) {
+      // Override: clear the active-species marks in the area first (since
+      // `eligible` already is active-species), so re-dragging — or lowering the
+      // slider — removes marks rather than only adding them.
+      if (_overrideExisting) {
         _cuttingAreaWriter.UnmarkForCutting(ToTuples(eligible));
       }
 
       var toMark = new List<Vector3Int>();
       foreach (var tile in eligible) {
-        if (ThinningSelector.ShouldMark(tile.x, tile.y, tile.z, _fraction, _seed)) {
+        if (LoggingSelector.ShouldMark(tile.x, tile.y, tile.z, _fraction, _seed)) {
           toMark.Add(tile);
         }
       }

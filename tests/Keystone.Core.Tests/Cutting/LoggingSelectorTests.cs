@@ -4,13 +4,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Keystone.Core.Tests.Cutting {
 
   /// <summary>
-  /// Tests for <see cref="ThinningSelector"/> — the pure per-tile thinning-cut
+  /// Tests for <see cref="LoggingSelector"/> — the pure per-tile logging
   /// selection predicate. Pins the design decisions the percentage brush was
   /// built around: per-tile (area-independent) verdicts, seed-driven reroll,
   /// expected-fraction coverage, and cross-session determinism.
   /// </summary>
   [TestClass]
-  public class ThinningSelectorTests {
+  public class LoggingSelectorTests {
 
     #region Boundaries
 
@@ -19,9 +19,9 @@ namespace Keystone.Core.Tests.Cutting {
     [TestMethod]
     public void ShouldMark_FractionZeroOrLess_NeverMarks() {
       // Arrange / Act / Assert
-      Assert.IsFalse(ThinningSelector.ShouldMark(0, 0, 0, 0d, 0));
-      Assert.IsFalse(ThinningSelector.ShouldMark(7, 13, 2, 0d, 999));
-      Assert.IsFalse(ThinningSelector.ShouldMark(7, 13, 2, -0.5d, 999));
+      Assert.IsFalse(LoggingSelector.ShouldMark(0, 0, 0, 0d, 0));
+      Assert.IsFalse(LoggingSelector.ShouldMark(7, 13, 2, 0d, 999));
+      Assert.IsFalse(LoggingSelector.ShouldMark(7, 13, 2, -0.5d, 999));
     }
 
     /// <summary>Fraction &gt;= 1 always marks — "100% clear-cuts the selection"
@@ -29,12 +29,12 @@ namespace Keystone.Core.Tests.Cutting {
     [TestMethod]
     public void ShouldMark_FractionOneOrMore_AlwaysMarks() {
       // Arrange / Act / Assert
-      Assert.IsTrue(ThinningSelector.ShouldMark(0, 0, 0, 1d, 0));
-      Assert.IsTrue(ThinningSelector.ShouldMark(7, 13, 2, 1d, 999));
-      Assert.IsTrue(ThinningSelector.ShouldMark(7, 13, 2, 1.5d, 999));
+      Assert.IsTrue(LoggingSelector.ShouldMark(0, 0, 0, 1d, 0));
+      Assert.IsTrue(LoggingSelector.ShouldMark(7, 13, 2, 1d, 999));
+      Assert.IsTrue(LoggingSelector.ShouldMark(7, 13, 2, 1.5d, 999));
     }
 
-    /// <summary><see cref="ThinningSelector.Sample"/> stays in <c>[0, 1)</c>
+    /// <summary><see cref="LoggingSelector.Sample"/> stays in <c>[0, 1)</c>
     /// across a spread of coordinates and seeds (so it's a valid threshold
     /// input and never marks at fraction exactly 0 / always at exactly 1).</summary>
     [TestMethod]
@@ -42,7 +42,7 @@ namespace Keystone.Core.Tests.Cutting {
       // Arrange / Act / Assert
       for (var x = -20; x <= 20; x++) {
         for (var y = -20; y <= 20; y++) {
-          var s = ThinningSelector.Sample(x, y, x & 3, x * 31 + y);
+          var s = LoggingSelector.Sample(x, y, x & 3, x * 31 + y);
           Assert.IsTrue(s >= 0f && s < 1f, $"sample {s} out of [0,1) at ({x},{y})");
         }
       }
@@ -58,11 +58,11 @@ namespace Keystone.Core.Tests.Cutting {
     [TestMethod]
     public void ShouldMark_SameInputs_Deterministic() {
       // Arrange
-      var first = ThinningSelector.ShouldMark(5, 7, 0, 0.5d, 42);
+      var first = LoggingSelector.ShouldMark(5, 7, 0, 0.5d, 42);
 
       // Act / Assert
       for (var i = 0; i < 100; i++) {
-        Assert.AreEqual(first, ThinningSelector.ShouldMark(5, 7, 0, 0.5d, 42));
+        Assert.AreEqual(first, LoggingSelector.ShouldMark(5, 7, 0, 0.5d, 42));
       }
     }
 
@@ -70,18 +70,18 @@ namespace Keystone.Core.Tests.Cutting {
     /// sample, so a tile's selection depends only on its own (x, y, z) + seed —
     /// the basis for area-independent, flicker-free verdicts and for stacked
     /// columns / rerolls not aliasing together. Asserted on the continuous
-    /// <see cref="ThinningSelector.Sample"/> rather than the coarse boolean,
+    /// <see cref="LoggingSelector.Sample"/> rather than the coarse boolean,
     /// which can coincidentally agree across the 0.5 threshold.</summary>
     [TestMethod]
     public void Sample_RespondsToEveryAxisAndSeed() {
       // Arrange
-      var baseSample = ThinningSelector.Sample(0, 0, 0, 0);
+      var baseSample = LoggingSelector.Sample(0, 0, 0, 0);
 
       // Act / Assert: perturbing any single input changes the sample.
-      Assert.AreNotEqual(baseSample, ThinningSelector.Sample(1, 0, 0, 0), "x must affect the hash");
-      Assert.AreNotEqual(baseSample, ThinningSelector.Sample(0, 1, 0, 0), "y must affect the hash");
-      Assert.AreNotEqual(baseSample, ThinningSelector.Sample(0, 0, 1, 0), "z must affect the hash");
-      Assert.AreNotEqual(baseSample, ThinningSelector.Sample(0, 0, 0, 1), "seed must affect the hash");
+      Assert.AreNotEqual(baseSample, LoggingSelector.Sample(1, 0, 0, 0), "x must affect the hash");
+      Assert.AreNotEqual(baseSample, LoggingSelector.Sample(0, 1, 0, 0), "y must affect the hash");
+      Assert.AreNotEqual(baseSample, LoggingSelector.Sample(0, 0, 1, 0), "z must affect the hash");
+      Assert.AreNotEqual(baseSample, LoggingSelector.Sample(0, 0, 0, 1), "seed must affect the hash");
     }
 
     #endregion
@@ -103,7 +103,7 @@ namespace Keystone.Core.Tests.Cutting {
       var marked = 0;
       for (var x = 0; x < Side; x++) {
         for (var y = 0; y < Side; y++) {
-          if (ThinningSelector.ShouldMark(x, y, 0, Fraction, Seed)) marked++;
+          if (LoggingSelector.ShouldMark(x, y, 0, Fraction, Seed)) marked++;
         }
       }
 
@@ -132,8 +132,8 @@ namespace Keystone.Core.Tests.Cutting {
       var flipped = 0;
       for (var x = 0; x < Side; x++) {
         for (var y = 0; y < Side; y++) {
-          var a = ThinningSelector.ShouldMark(x, y, 0, Fraction, 7);
-          var b = ThinningSelector.ShouldMark(x, y, 0, Fraction, 8);
+          var a = LoggingSelector.ShouldMark(x, y, 0, Fraction, 7);
+          var b = LoggingSelector.ShouldMark(x, y, 0, Fraction, 8);
           if (a != b) flipped++;
         }
       }

@@ -1,7 +1,7 @@
 namespace Keystone.Core.Cutting {
 
   /// <summary>
-  /// Pure per-tile selection policy for the Keystone thinning-cut brush:
+  /// Pure per-tile selection policy for the Keystone logging brush:
   /// decides whether one already-eligible tile falls within the player's
   /// "mark X% of these for cutting" fraction, as a deterministic function of
   /// the tile's coordinate and a per-drag seed.
@@ -20,7 +20,7 @@ namespace Keystone.Core.Cutting {
   /// after each completed drag. Within one drag it is fixed (so preview and
   /// commit agree); the next drag over the same tiles uses a new seed and
   /// selects a different ~X% subset. That is what lets the player redraw the
-  /// same area a few times to get a thinning pattern they like.</para>
+  /// same area a few times to get a cut pattern they like.</para>
   ///
   /// <para><b>Expected fraction, not exact.</b> Each tile is an independent
   /// threshold test at probability <c>fraction</c>, so over N
@@ -46,7 +46,7 @@ namespace Keystone.Core.Cutting {
   /// combination of the coordinates dithers into visible diagonal stripes
   /// instead of looking random.</para>
   /// </summary>
-  public static class ThinningSelector {
+  public static class LoggingSelector {
 
     #region Selection
 

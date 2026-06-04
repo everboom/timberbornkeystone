@@ -1,6 +1,6 @@
 # Keystone.Core.Cutting
 
-Pure simulation-side policy for Keystone's **thinning-cut brush** — the
+Pure simulation-side policy for Keystone's **logging brush** — the
 player-facing tool that drag-selects an area and marks a *fraction* of the
 trees in it for cutting (e.g. "thin 30% of the pines here"). Conceptually the
 cut-side mirror of the planting brush (`Keystone.Core.Planting`), and a leaner
@@ -12,7 +12,7 @@ the testable selection policy.
 
 ## Key type
 
-- **`ThinningSelector`** — a static, pure per-tile predicate. `ShouldMark(x, y,
+- **`LoggingSelector`** — a static, pure per-tile predicate. `ShouldMark(x, y,
   z, fraction, seed)` decides whether one already-eligible tile is in the marked
   ~`fraction`, deterministically from the tile's coordinate and a per-drag
   `seed`. `Sample(x, y, z, seed)` exposes the underlying uniform `[0, 1)` value

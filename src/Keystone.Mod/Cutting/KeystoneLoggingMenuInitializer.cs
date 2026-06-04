@@ -7,7 +7,7 @@ using Timberborn.ToolSystem;
 namespace Keystone.Mod.Cutting {
 
   /// <summary>
-  /// Appends the Keystone thinning-cut brush button into the vanilla
+  /// Appends the Keystone logging brush button into the vanilla
   /// <b>TreeCutting</b> tool group, the way the planting brush injects into the
   /// planting menus. By <see cref="PostLoad"/> the bottom bar has built the
   /// vanilla group buttons; we locate the group that owns the base-game
@@ -19,7 +19,7 @@ namespace Keystone.Mod.Cutting {
   /// and the tool overlaps Cordial's Cutter Tool
   /// (<c>docs/private/cuttertool.md</c>).</para>
   /// </summary>
-  public sealed class KeystoneThinningCutMenuInitializer : IPostLoadableSingleton {
+  public sealed class KeystoneLoggingMenuInitializer : IPostLoadableSingleton {
 
     #region Constants
 
@@ -34,17 +34,17 @@ namespace Keystone.Mod.Cutting {
     private readonly ToolButtonService _toolButtonService;
     private readonly ToolButtonFactory _toolButtonFactory;
     private readonly ToolGroupService _toolGroupService;
-    private readonly KeystoneThinningCutTool _tool;
+    private readonly KeystoneLoggingTool _tool;
 
     #endregion
 
     #region Construction
 
-    public KeystoneThinningCutMenuInitializer(
+    public KeystoneLoggingMenuInitializer(
         ToolButtonService toolButtonService,
         ToolButtonFactory toolButtonFactory,
         ToolGroupService toolGroupService,
-        KeystoneThinningCutTool tool) {
+        KeystoneLoggingTool tool) {
       _toolButtonService = toolButtonService;
       _toolButtonFactory = toolButtonFactory;
       _toolGroupService = toolGroupService;
@@ -63,14 +63,14 @@ namespace Keystone.Mod.Cutting {
       var groupButton = FindGroupButton();
       if (groupButton == null) {
         KeystoneLog.Warn(
-            "[Keystone] KeystoneThinningCutMenuInitializer: could not locate the vanilla " +
-            "'TreeCutting' menu (no built-in tree-cutting tool was found). Thinning-cut " +
+            "[Keystone] KeystoneLoggingMenuInitializer: could not locate the vanilla " +
+            "'TreeCutting' menu (no built-in tree-cutting tool was found). Logging " +
             "button not added; another mod may have altered the menu.");
         return;
       }
 
       var button = _toolButtonFactory.Create(_tool, IconName, groupButton.ToolButtonsElement);
-      _toolGroupService.AssignToGroup(_toolGroupService.GetGroup(KeystoneThinningCutTool.GroupId), _tool);
+      _toolGroupService.AssignToGroup(_toolGroupService.GetGroup(KeystoneLoggingTool.GroupId), _tool);
       groupButton.AddTool(button);
       // ToolButtonFactory registered the button, but the service's PostLoad pass
       // has already run (we're in a later PostLoad), so wire it up here.

@@ -12,7 +12,7 @@ namespace Keystone.Core.Ports {
   /// <para><b>First write-side port.</b> The read-side ports
   /// (<see cref="ICuttingMarkQuery" />, <see cref="IPlantingMarkQuery" />, …)
   /// flow Mod → Core: an adapter answers questions about game state. This one
-  /// flows Core → Mod: the thinning-cut tool decides which tiles to mark or
+  /// flows Core → Mod: the logging tool decides which tiles to mark or
   /// unmark and pushes those decisions out through here. It is the concrete
   /// instance of the symmetric write-side seam the architecture doc
   /// anticipated ("place a flora here", "tag this tile contaminated").</para>
