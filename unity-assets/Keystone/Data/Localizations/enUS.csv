@@ -182,3 +182,5 @@ Keystone.BiomeOverlay.Hide,Hide biome overlay,Tooltip when the biome overlay tog
 Keystone.Settings.UI.Header,UI,Header above the UI section of the Keystone settings panel.
 Keystone.Settings.UI.BiomeOverlayOpacity,Biome overlay opacity (%),Biome overlay opacity slider label.
 Keystone.Settings.UI.BiomeOverlayOpacity.Tooltip,"How opaque the biome overlay boxes appear when the overlay is active. 25% lets the terrain show through clearly, 100% is fully opaque. Default 75%.",Tooltip for the biome overlay opacity slider.
+Keystone.Settings.UI.TilledSoilTexture,Lighter tilled-soil texture,Toggle label: use Keystone's lighter tilled-soil texture on planting-marked tiles.
+Keystone.Settings.UI.TilledSoilTexture.Tooltip,"When on, tiles marked for planting use Keystone's lighter tilled-soil texture instead of the dark vanilla one. Takes effect immediately. Off by default.",Tooltip for the tilled-soil texture toggle.

@@ -816,6 +816,101 @@ in the contamination plume.
 
 ---
 
+## Terrain ground recoloring (`TerrainMaterialMap`)
+
+How the ground itself gets recolored — contamination plumes, the
+dry/desert vs. irrigated look, **and the "marked for planting" tilled-soil
+tint** — is **not** decals or overlay meshes. It's per-tile data channels
+baked into the terrain shader (`Shader Graphs/TerrainURP`), all owned by one
+singleton: `Timberborn.TerrainSystemRendering.TerrainMaterialMap`.
+
+### The three channels
+
+Each is a `Texture2DArray` in `RG16`, **one slice per Z-level** (fully 3D —
+works on overhangs and stacked terrain), bound as a **global** shader texture
+via `Shader.SetGlobalTexture`, so every terrain material samples the same maps:
+
+| Shader global | Written by | Drives |
+|---|---|---|
+| `_DesertIntensityMap` | `SoilMoistureService.SetDesertIntensity` | dry ↔ irrigated; shader blends `_DryFieldTex` / `_WetFieldTex` / `_DesertTex` |
+| `_ContaminationMap` | `SoilContaminationService.SetSoilContamination` | badwater tint (`_Contamination_Color`, scale, noise, softness) |
+| `_CutoutAndFieldMap` | `ITerrainService.FieldOrCutoutChanged` | **R = is-field (tilled-soil look)**, G = is-cutout |
+
+Dry/irrigated mapping (`SoilMoistureService.UpdateDesertIntensity`):
+`moisture == 0` → desertIntensity `1` (full desert); `0 < moisture ≤ threshold`
+→ `(1 − moisture/threshold) × maxDesertIntensity`; `> threshold` → `0` (lush).
+Recomputed on every moisture change and at load.
+
+### The "marked for planting" tint is the field flag
+
+`PlantingService.SetPlantingCoordinates` → `ITerrainService.SetField(coords)`
+flips `_CutoutAndFieldMap.R` to 1 → the terrain shader blends in the tilled
+field albedo. `UnsetPlantingCoordinates` → `UnsetField` reverts it; both
+crop and tree planting marks go through this, and it's re-applied for every
+marked coordinate on load. This is the **persistent** marker (survives closing
+the tool, saved with the terrain) — distinct from the transient drag-time
+`AreaHighlightingService.DrawTile` overlay quads and from the
+`PlantablePreview` grayscale ghost (which `PlantingModeService` hides whenever
+the planting tool is closed).
+
+### Update mechanics
+
+Setters are **threshold-gated** (`ChangeThreshold ≈ 1/255`) and enqueue a
+change rather than writing immediately. Changes drain on `Tick()` /
+`LateUpdateSingleton()`, write into a small buffer `Texture2D`, then
+`Graphics.CopyTexture` into **only the dirty Z-slices** (a change on level 3
+re-uploads one slice, not the map). `PixelData` is **RG16 = (old, new)**: the
+texture carries both values so the shader can **fade the transition over a
+tick** (contamination/dryness ease in rather than pop).
+
+### Modding levers (and the alpha trap)
+
+Textures and blend params come from one **singleton** spec,
+`TerrainMaterialMapSpec` (`ISpecService.GetSingleSpec`), so they're
+**overridable by a blueprint overlay — data-only, no Harmony**: `DesertTexture`,
+`DryFieldTexture`, `WetFieldTexture`, `BlendingNoise`, `BlendingNoiseScale`,
+`BlendingNoiseMultiplier`, `BlendingSoftness`, `BlendingMargin`,
+`AltitudeCeiling`, `AltitudeMultiplier`, `DesertAltitudeMultiplier`,
+`CutoutMargin`.
+
+- **"Give the field texture an alpha to fade it" does NOT work.** The terrain
+  shader is opaque; the field albedo is a **masked lerp into the base ground**,
+  with the blend weight coming from the field map (binary R) modulated by the
+  blend noise/margin — *not* from the texture's alpha channel. Alpha in the
+  field texture isn't read as a blend weight.
+- **Real lever:** swap `WetFieldTexture` / `DryFieldTexture` for a subtler
+  asset (closer to base ground) via the spec override. To tune prominence
+  while keeping fields legible you author a custom texture (Unity SDK); the
+  spec override itself is data-only.
+- **Zero-asset experiment:** tweak `BlendingSoftness` / `BlendingMargin` /
+  `BlendingNoiseMultiplier` to feather edges — but these are **global** and
+  shared with the dry/wet moisture blend, so they also change the moisture
+  look. Test and observe.
+- **All knobs are global / single-spec:** one texture for *all* fields (tree
+  planting marks **and** crop fields). There is no per-tile or per-purpose
+  alpha. To soften only Keystone's own marks you'd intercept `SetField`
+  (skip it, or Harmony) rather than touch the texture — but check
+  `CellIsField` consumers first, since the field flag is terrain state other
+  systems may read.
+
+### The field R is a coverage threshold, not opacity (measured)
+
+Tested in-game by writing a fractional R (`0.5`) into the field channel: the
+tilled tint did **not** fade uniformly — it broke into **blotches**. So the
+terrain shader uses R as a **threshold against `_BlendingNoise`** (field shows
+where `noise < R`), *not* as a linear `lerp` weight. Lowering R reduces
+*coverage* (dithered patches), never *opacity*. There is therefore **no
+data-side route to a uniform alpha**: the only knob that yields a uniform,
+less-prominent field at full coverage is the field **albedo texture** itself
+(swap `_WetFieldTex` / `_DryFieldTex` for something closer to base ground via
+the `TerrainMaterialMapSpec` overlay). A genuine uniform-alpha blend would
+require editing the shader's fragment logic — but the terrain shader is
+**metadata-only in the asset dump** (`Shader Graphs_TerrainURP.json` has empty
+`m_SubPrograms`; no recoverable HLSL/bytecode) and the `.shadergraph` source is
+unpublished, so that path is a from-scratch shader reimplementation, not an edit.
+
+---
+
 ## Timberborn.SingletonSystem
 
 ### Exported types

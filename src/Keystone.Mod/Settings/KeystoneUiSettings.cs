@@ -21,6 +21,16 @@ namespace Keystone.Mod.Settings {
                 .CreateLocalized("Keystone.Settings.UI.BiomeOverlayOpacity")
                 .SetLocalizedTooltip("Keystone.Settings.UI.BiomeOverlayOpacity.Tooltip"));
 
+    /// <summary>When on, replaces the vanilla dark tilled-soil (wet-field)
+    /// albedo on tiles marked for planting with Keystone's lighter texture.
+    /// Off by default while the look is being finalised. Read live by
+    /// <see cref="Keystone.Mod.FieldTint.KeystoneFieldTextureOverride"/>.</summary>
+    public ModSetting<bool> CustomTilledSoilTexture { get; } =
+        new(defaultValue: false,
+            ModSettingDescriptor
+                .CreateLocalized("Keystone.Settings.UI.TilledSoilTexture")
+                .SetLocalizedTooltip("Keystone.Settings.UI.TilledSoilTexture.Tooltip"));
+
     /// <inheritdoc />
     public override int Order => 5;
 

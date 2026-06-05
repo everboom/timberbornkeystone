@@ -20,6 +20,7 @@ using Keystone.Mod.Diagnostics;
 using Keystone.Mod.Diagnostics.SelfTests;
 using Keystone.Mod.Diagnostics.StartupChecks;
 using Keystone.Mod.Ecology;
+using Keystone.Mod.FieldTint;
 using Keystone.Mod.HarmonyPatches;
 using Keystone.Mod.Flora;
 using Keystone.Mod.Materials;
@@ -156,6 +157,12 @@ namespace Keystone.Mod {
       // (and the injected settings owner) before any Reproducible marks
       // spots.
       Bind<NaturalReproductionRateAccessor>().AsSingleton();
+
+      // Overrides the terrain's wet-field (tilled-soil) albedo with Keystone's
+      // edited texture, via the global the stock terrain shader samples. Pure
+      // texture swap — no custom shader. (Keeper from the FieldTint shader
+      // experiment; the rest is archived under tmp/research-backups/.)
+      Bind<KeystoneFieldTextureOverride>().AsSingleton();
 
       // Biome values (per-chunk, time-accumulating). Cross-chunk
       // stress (Badwater radius) will be added later as a separate
