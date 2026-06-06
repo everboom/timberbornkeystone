@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Keystone.Core.Flourish;
 using Keystone.Core.Ports;
 using Keystone.Core.Tiles;
 using Keystone.Mod.Decoration;
@@ -37,9 +38,10 @@ namespace Keystone.Mod.Overgrowth {
   /// <see cref="IPersistentEntity"/>; the decoration GameObject itself is a
   /// non-persisted <see cref="KeystoneDecorationRegistry"/> object,
   /// re-spawned from the saved <see cref="_decorationId"/> in
-  /// <see cref="InitializeEntity"/> on load. (Alive/dying is moisture-
-  /// derived by the controller and not persisted; the terminal dead state
-  /// comes in the kill/replace slice.)</para>
+  /// <see cref="InitializeEntity"/> on load. Reversible alive/dying is
+  /// moisture-derived by the controller (not persisted); the terminal
+  /// <see cref="IsDead"/> state IS persisted. (Reseed is the remaining
+  /// slice.)</para>
   ///
   /// <para><b>Trigger.</b> Dev-triggered via <see cref="OvergrowthTestTool"/>
   /// (<see cref="Apply()"/> / <see cref="Clear"/>); the biome-driven
@@ -54,7 +56,8 @@ namespace Keystone.Mod.Overgrowth {
   /// refinement (see issue #33).</para>
   /// </summary>
   public sealed class KeystoneOvergrowth
-      : TickableComponent, IInitializableEntity, IDeletableEntity, IPersistentEntity {
+      : TickableComponent, IRegisteredComponent,
+        IInitializableEntity, IDeletableEntity, IPersistentEntity {
 
     #region Constants
 
@@ -83,6 +86,7 @@ namespace Keystone.Mod.Overgrowth {
     private static readonly ComponentKey ComponentKey = new("KeystoneOvergrowth");
     private static readonly PropertyKey<string> DecorationIdKey = new("DecorationId");
     private static readonly PropertyKey<float> MaturityKey = new("Maturity");
+    private static readonly PropertyKey<bool> DeadKey = new("Dead");
 
     #endregion
 
@@ -91,6 +95,7 @@ namespace Keystone.Mod.Overgrowth {
     private readonly KeystoneDecorationRegistry _decorations;
     private readonly IDayNightCycle _dayNightCycle;
     private readonly IMoistureQuery _moisture;
+    private readonly IWaterQuery _water;
 
     #endregion
 
@@ -109,9 +114,16 @@ namespace Keystone.Mod.Overgrowth {
     /// future reseed. Persisted.</summary>
     private float _maturity;
 
+    /// <summary>Terminal dead state — set by <see cref="Kill"/> (Dry-biome
+    /// attrition). Once dead, the controller pins <c>#Dead</c>, maturity
+    /// stops accruing, and the decay ticker eventually clears it. Cleared
+    /// only by <see cref="Clear"/> (back to barren). Persisted.</summary>
+    private bool _dead;
+
     private readonly List<KeystoneDecoration> _spawned = new();
     private float _lastCheckDay;
     private int _tickCounter;
+    private bool _tickFailureLogged;
 
     #endregion
 
@@ -120,10 +132,12 @@ namespace Keystone.Mod.Overgrowth {
     public KeystoneOvergrowth(
         KeystoneDecorationRegistry decorations,
         IDayNightCycle dayNightCycle,
-        IMoistureQuery moisture) {
+        IMoistureQuery moisture,
+        IWaterQuery water) {
       _decorations = decorations;
       _dayNightCycle = dayNightCycle;
       _moisture = moisture;
+      _water = water;
     }
 
     #endregion
@@ -137,6 +151,19 @@ namespace Keystone.Mod.Overgrowth {
     /// <summary>Accrued maturity points (accumulated healthy time). Read
     /// by the future reseed gate; exposed for diagnostics.</summary>
     public float Maturity => _maturity;
+
+    /// <summary>True once the overgrowth has been terminally killed (Dry
+    /// attrition). The decoration shows <c>#Dead</c> and awaits removal by
+    /// the decay ticker.</summary>
+    public bool IsDead => _dead;
+
+    /// <summary>Terminally kill the overgrowth (called by the Dry-biome
+    /// attrition path). No-op if not overgrown or already dead. The
+    /// controller flips to <c>#Dead</c> on its next tick; maturity stops.</summary>
+    public void Kill() {
+      if (!_decorated || _dead) return;
+      _dead = true;
+    }
 
     /// <summary>False for water-based trees (mangrove and any future
     /// aquatic species): overgrowth is a land-recovery signal, so trees
@@ -173,6 +200,7 @@ namespace Keystone.Mod.Overgrowth {
     /// and reset accrued maturity.</summary>
     public void Clear() {
       _decorated = false;
+      _dead = false;
       _maturity = 0f;
       DespawnAll();
     }
@@ -208,22 +236,41 @@ namespace Keystone.Mod.Overgrowth {
     /// per game-day when it's dry (drying out); floored at 0.
     /// Non-overgrown trees early-out at zero cost.</summary>
     public override void Tick() {
-      if (!_decorated) return;
-      if (++_tickCounter < MaturityCheckIntervalTicks) return;
-      _tickCounter = 0;
-
-      var currentDay = _dayNightCycle.PartialDayNumber;
-      var intervalDays = currentDay - _lastCheckDay;
-      _lastCheckDay = currentDay;
-      if (intervalDays <= 0f) return;
-
+      if (!_decorated || _dead) return;
       var blockObject = GetComponent<BlockObject>();
       if (blockObject == null) return;
       var c = blockObject.Coordinates;
-      var moist = _moisture.IsMoistAt(new SurfaceCoord(c.x, c.y, c.z));
+      var surface = new SurfaceCoord(c.x, c.y, c.z);
 
-      _maturity += (moist ? MaturityGainPerDay : -MaturityLossPerDay) * intervalDays;
-      if (_maturity < 0f) _maturity = 0f;
+      try {
+        // Badwater self-kill — every tick, instant, the SAME predicate +
+        // threshold Class B (KeystoneFlourish) uses. Standing in
+        // contaminated water kills the overgrowth outright; this also
+        // stops it accruing maturity as if badwater were healthy moisture.
+        if (FlourishVisuals.ShouldDieFromBadwater(
+                FlourishLifeStatus.Alive,
+                _water.WaterDepthAt(surface),
+                _water.WaterContaminationAt(surface),
+                FlourishVisuals.BadwaterContaminationThreshold)) {
+          Kill();
+          return;
+        }
+
+        // Throttled maturity update (a few times per game-day).
+        if (++_tickCounter < MaturityCheckIntervalTicks) return;
+        _tickCounter = 0;
+        var currentDay = _dayNightCycle.PartialDayNumber;
+        var intervalDays = currentDay - _lastCheckDay;
+        _lastCheckDay = currentDay;
+        if (intervalDays <= 0f) return;
+
+        var moist = _moisture.IsMoistAt(surface);
+        _maturity += (moist ? MaturityGainPerDay : -MaturityLossPerDay) * intervalDays;
+        if (_maturity < 0f) _maturity = 0f;
+      } catch (System.Exception ex) {
+        LifecycleGuard.HandleErrorOnce(
+            "KeystoneOvergrowth.Tick", "Per-entity tick errors", ex, ref _tickFailureLogged);
+      }
     }
 
     /// <summary>Tear down the overlay when the host entity is deleted so
@@ -246,6 +293,7 @@ namespace Keystone.Mod.Overgrowth {
       var saver = entitySaver.GetComponent(ComponentKey);
       saver.Set(DecorationIdKey, _decorationId);
       saver.Set(MaturityKey, _maturity);
+      saver.Set(DeadKey, _dead);
     }
 
     /// <inheritdoc />
@@ -257,6 +305,9 @@ namespace Keystone.Mod.Overgrowth {
       }
       if (loader.Has(MaturityKey)) {
         _maturity = loader.Get(MaturityKey);
+      }
+      if (loader.Has(DeadKey)) {
+        _dead = loader.Get(DeadKey);
       }
     }
 
@@ -274,7 +325,7 @@ namespace Keystone.Mod.Overgrowth {
       if (blockObject == null) return;
 
       var decoration = _decorations.Spawn(
-          _decorationId, blockObject.Coordinates, new FloraLifecycleMoistureController());
+          _decorationId, blockObject.Coordinates, new OvergrowthLifecycleController(() => _dead));
       if (decoration != null) {
         _spawned.Add(decoration);
       }

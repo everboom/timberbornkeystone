@@ -25,11 +25,15 @@ namespace Keystone.Core.Biomes {
     /// inspection into the handler.</summary>
     public static readonly IReadOnlyList<string> KnownHabitats = new[] { "Dry" };
 
-    /// <summary>Class strings recognised by the attrition system today.
-    /// Class A passes parsing but is skipped at handler execution time
-    /// pending its own design pass; see the spec docstring on
-    /// <c>AttritionEntry.Classes</c>.</summary>
-    public static readonly IReadOnlyList<string> KnownClasses = new[] { "A", "B", "C" };
+    /// <summary>Target tokens recognised in an attrition entry's
+    /// <c>Classes</c> list. <c>"A"</c>/<c>"B"</c>/<c>"C"</c> match
+    /// Keystone-stamped entities by <c>KeystoneVariant.Class</c> (Class A
+    /// passes parsing but is skipped at handler execution time pending its
+    /// own design pass). <c>"Overgrowth"</c> is NOT a spawn class — it's a
+    /// target token meaning "also kill the overgrowth on the tree at this
+    /// tile" (handled separately by the handler, not via a variant stamp).
+    /// See the spec docstring on <c>AttritionEntry.Classes</c>.</summary>
+    public static readonly IReadOnlyList<string> KnownClasses = new[] { "A", "B", "C", "Overgrowth" };
 
     /// <summary>Parse and validate <paramref name="entry"/>. Returns
     /// <c>true</c> with <paramref name="recipe"/> filled on success.

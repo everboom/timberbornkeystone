@@ -79,12 +79,17 @@ namespace Keystone.Mod.Recipes {
     /// logged once and the entry is dropped.</summary>
     [Serialize] public string Action { get; init; } = "Kill";
 
-    /// <summary>Content classes the rule targets for Keystone-stamped
-    /// entities. Strings; subset of <c>{"A", "B", "C"}</c>. <b>Class A
-    /// is parsed but not yet wired</b>: the spawn handler reconciles
-    /// every cycle, so a deleted Class A would just respawn on the
-    /// next pass. Attrition for Class A needs to coordinate with the
-    /// spawn handler's "seen" set; that's a separate design round.
+    /// <summary>Target tokens the rule applies to. <c>"A"</c>/<c>"B"</c>/
+    /// <c>"C"</c> match Keystone-stamped entities by
+    /// <c>KeystoneVariant.Class</c>. <b>Class A is parsed but not yet
+    /// wired</b>: the spawn handler reconciles every cycle, so a deleted
+    /// Class A would just respawn on the next pass.
+    /// <para><c>"Overgrowth"</c> is a special token (not a spawn class):
+    /// it means "also terminally kill the overgrowth on the tree at this
+    /// tile," on the same filter/probability. Combine freely with entity
+    /// classes, e.g. <c>["B", "C", "Overgrowth"]</c> — the Dry-biome rule
+    /// uses this so drought reclaims overgrowth alongside irrigated
+    /// flourishes.</para>
     /// <para>Class D (vanilla flora) is addressed via
     /// <see cref="VanillaSpecies"/> instead — vanilla entities don't
     /// carry a <c>KeystoneVariant.Class</c> stamp so they can't be

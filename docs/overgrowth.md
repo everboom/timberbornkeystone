@@ -54,20 +54,25 @@ fauna — so overgrowth is a new rule *family*, not a class.)
   These gate the reseed transition; drought erodes recovery progress.
 - **Death** and **cleanup** are delegated to existing systems (below).
 
-## Death & cleanup — reuse existing systems, extended to a new target
+## Death & cleanup — reuse existing systems, extended to a new target (DONE)
 
 The overgrowth is a component on the tree + a registry decoration, **not** a
-Keystone entity, so both systems below need a small new code path to
-*recognise overgrowth as a target* — reusing their policy/cadence, not
-reimplementing it.
+Keystone entity, so each path below adds a small code path to *recognise
+overgrowth as a target* — reusing the existing policy/cadence.
 
-- **Kill = the Dry-biome attrition effect**, extended to also target
-  overgrowth on the same probability ramp it uses for irrigated flourishes
-  (slow the first day or two, then rapid). `AttritionHandler` / `AttritionEntry`
-  gains a way to target overgrowth.
-- **Cleanup = the decay ticker** (`KeystoneFlourishDecayTicker`, ~10%/day),
-  extended to also remove **dead** overgrowths. Requires `KeystoneOvergrowth`
-  to become `IRegisteredComponent` so the ticker can enumerate it.
+- **Badwater → instant self-kill.** `KeystoneOvergrowth.Tick()` runs the
+  **same** predicate Class B uses (`FlourishVisuals.ShouldDieFromBadwater`
+  + `BadwaterContaminationThreshold`), every tick: standing in contaminated
+  water (depth > 0, contamination > 0.1) → `Kill()` outright. Also stops
+  badwater from reading as healthy "moisture" for maturity.
+- **Dry biome → attrition kill.** The Dry attrition rule lists the
+  **`"Overgrowth"` token in its `Classes`** (`["B","C","Overgrowth"]`);
+  `AttritionHandler` Kills the overgrowth on the tree at that tile on the
+  same filter/probability it kills irrigated flourishes. (A token in the
+  existing `Classes` list — uniform with B/C targeting, no special flag.)
+- **Cleanup = decay ticker.** `KeystoneOvergrowthDecayTicker` mirrors
+  `KeystoneFlourishDecayTicker` (~10%/day) but `Clear()`s dead overgrowth
+  (`KeystoneOvergrowth` is `IRegisteredComponent` for enumeration).
 - After cleanup the tree returns to **barren** and can **overgrow again** if
   biome maturity later recovers (cyclical — drought *interrupts* recovery,
   doesn't permanently disqualify the tree); maturity points start fresh.

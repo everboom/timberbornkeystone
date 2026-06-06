@@ -27,7 +27,7 @@
     "Attritions": [
       {
         "Biome": "Dry", "Level": "L1",
-        "Action": "Kill", "Classes": ["B", "C"],
+        "Action": "Kill", "Classes": ["B", "C", "Overgrowth"],
         "Probability": 0.25, "Filter": "",
         "ExcludeHabitats": ["Dry"]
       }

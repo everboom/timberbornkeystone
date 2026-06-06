@@ -69,6 +69,12 @@ namespace Keystone.Mod.Recipes {
 
     #region Fields
 
+    /// <summary>Target token in an attrition recipe's <c>Classes</c> list
+    /// meaning "also kill the overgrowth on the tree at this tile". Not a
+    /// <c>KeystoneVariant.Class</c> value — handled separately from the
+    /// entity targeting.</summary>
+    private const string OvergrowthClass = "Overgrowth";
+
     private readonly FlourishCatalog _catalog;
     private readonly RecipeFilterRegistry _filters;
     private readonly IBlockService _blockService;
@@ -141,7 +147,8 @@ namespace Keystone.Mod.Recipes {
 
       _tileScratch.Clear();
       CollectAttritionTargets(surface, recipes, _tileScratch);
-      if (_tileScratch.Count == 0) return;
+      var anyOvergrowthRecipe = AnyRecipeTargetsOvergrowth(recipes);
+      if (_tileScratch.Count == 0 && !anyOvergrowthRecipe) return;
 
       // Resolve the chunk's ecology field once per surface. Used only
       // by recipes with channel-based probability scaling; recipes
@@ -173,6 +180,15 @@ namespace Keystone.Mod.Recipes {
             // can't re-touch the destroyed entity.
             _tileScratch[ei] = (null!, classId, vanillaBlueprintName);
           }
+        }
+
+        // Overgrowth target: the "Overgrowth" token in the recipe's
+        // Classes means "also kill the overgrowth on the tree at this
+        // surface" — same filter + probability as the entity rolls, but it
+        // Kills the KeystoneOvergrowth rather than destroying an entity
+        // (no variant stamp, so it's handled here, not the entity loop).
+        if (ContainsString(recipe.TargetClasses, OvergrowthClass)) {
+          TryKillOvergrowth(surface, probability);
         }
       }
     }
@@ -230,6 +246,30 @@ namespace Keystone.Mod.Recipes {
       if (field == null) return 0f;
       var sample = field.Sample(recipe.ScaleBy.Value, surface.X, surface.Y);
       return recipe.EffectiveProbability(sample);
+    }
+
+    /// <summary>True if any recipe in the bucket targets overgrowth, so
+    /// <see cref="OnUnit"/> doesn't early-return on an empty entity
+    /// scratch (a tree-with-overgrowth carries no targetable entity).</summary>
+    private static bool AnyRecipeTargetsOvergrowth(IReadOnlyList<AttritionRecipe> recipes) {
+      for (var i = 0; i < recipes.Count; i++) {
+        if (ContainsString(recipes[i].TargetClasses, OvergrowthClass)) return true;
+      }
+      return false;
+    }
+
+    /// <summary>Roll <paramref name="probability"/> against the overgrowth
+    /// on the tree at <paramref name="surface"/> (if present, overgrown,
+    /// and not already dead) and <see cref="Keystone.Mod.Overgrowth.KeystoneOvergrowth.Kill"/>
+    /// it on a hit. The overgrowth decay ticker later removes the dead
+    /// overgrowth (tree returns to barren).</summary>
+    private void TryKillOvergrowth(SurfaceCoord surface, float probability) {
+      var tile = new Vector3Int(surface.X, surface.Y, surface.Z);
+      var overgrowth = _blockService
+          .GetFirstObjectWithComponentAt<Keystone.Mod.Overgrowth.KeystoneOvergrowth>(tile);
+      if (overgrowth == null || !overgrowth.IsOvergrown || overgrowth.IsDead) return;
+      if (_rng.NextDouble() >= probability) return;
+      overgrowth.Kill();
     }
 
     #endregion

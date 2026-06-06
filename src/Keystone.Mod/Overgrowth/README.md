@@ -40,20 +40,29 @@ only if per-blueprint overgrowth *config* is ever needed.
 
 ## Status / roadmap
 
-- **Done: mechanism + persistence**, dev-triggered, undergrowth-only,
-  all land trees (every `TreeComponentSpec`, water trees excluded). The
-  lifecycle-managed decoration overlay attaches, persists (is-decorated +
-  which composition), and re-spawns the same composition on load.
-- **Next: kill + replace slice.** Terminal `#Dead` state (persisted),
-  time-alive / time-dead counters, a rolling-sweep that randomly kills
-  (after a min age) and, after a further min-dead age, replaces the
-  overgrowth — random, never a deterministic timer. Then: biome-driven
-  activation (which trees overgrow), the trunk ivy, the regrow half of #33.
-- **Decisions settled** (see #33): **persist** the state (chosen over
-  re-derive) — terminal/sticky dead state needs it. **⚠ Gate:** because
-  this persists Keystone data onto *vanilla* trees, the
-  remove-Keystone-then-load test must pass before ship (orphan-component
-  data on removal — unverified).
+- **Done:**
+  - Overlay mechanism + persistence (is-decorated, composition, re-spawn
+    on load); save-portable (removal strips orphan data, trees intact).
+  - Biome-driven `OvergrowthHandler` on the chunk pass — Live recipes on
+    Deterministic levels (capped), Dead on Stochastic (accumulate); all
+    land trees (water trees self-filter); Grassland content authored.
+  - **Maturity points** (`+1`/day alive, `−2`/day drying, floored, persisted)
+    + tile-panel readout.
+  - **Terminal death** (`Kill()` → persisted dead state; controller pins
+    `#Dead`, maturity stops) + **decay cleanup** (`KeystoneOvergrowthDecayTicker`,
+    ~10%/day, `Clear()`s dead overgrowth → tree barren, can re-overgrow).
+  - **Death triggers:** (1) per-tick **badwater self-kill** — same predicate
+    + threshold as Class B (`FlourishVisuals.ShouldDieFromBadwater`); (2)
+    **Dry-biome attrition** kills it via the `"Overgrowth"` token in an
+    attrition rule's `Classes` (Dry L1 uses `["B","C","Overgrowth"]`), on
+    the same cadence it kills irrigated flourishes.
+- **Next:**
+  - **Reseed** (C3): overgrown dead + `Maturity ≥ threshold` → spawn a
+    Grassland Class-D seedling, carry overgrowth over.
+  - Then: Forest content, the trunk ivy, a dedicated overgrowth composition.
+- **Decisions settled** (see #33): **persist** the state — terminal dead
+  state needs it; verified save-portable (removing Keystone strips the
+  orphan data, trees load intact).
 
 ## Performance rule
 

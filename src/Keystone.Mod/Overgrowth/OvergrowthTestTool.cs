@@ -14,9 +14,10 @@ namespace Keystone.Mod.Overgrowth {
   /// Dev tool: clicking a tile toggles overgrowth on the tree there —
   /// every (non-water) tree carries a <see cref="KeystoneOvergrowth"/>
   /// via the <c>AddDecorator&lt;TreeComponentSpec, _&gt;</c> registration.
-  /// First click drapes flourishes around the trunk; second click clears
-  /// them. Lets us validate the overlay + lifecycle mechanism by hand
-  /// before the biome-driven <c>OvergrowthHandler</c> exists.
+  /// Successive clicks cycle the lifecycle: barren → overgrown → dead
+  /// (<c>#Dead</c> visual) → barren — so the overlay, terminal death, and
+  /// decay cleanup are testable by hand alongside the biome-driven
+  /// <c>OvergrowthHandler</c>.
   /// </summary>
   public sealed class OvergrowthTestTool : ITool, IInputProcessor, IToolDescriptor {
 
@@ -100,11 +101,15 @@ namespace Keystone.Mod.Overgrowth {
             $"[Keystone] OvergrowthTestTool: no overgrowth-capable entity at {tile}.");
         return;
       }
-      if (overgrowth.IsOvergrown) {
+      // Cycle: barren -> overgrown -> dead (#Dead visual) -> barren.
+      if (!overgrowth.IsOvergrown) {
+        overgrowth.Apply();
+      } else if (!overgrowth.IsDead) {
+        overgrowth.Kill();
+        KeystoneLog.Verbose($"[Keystone] OvergrowthTestTool: killed overgrowth at {tile}.");
+      } else {
         overgrowth.Clear();
         KeystoneLog.Verbose($"[Keystone] OvergrowthTestTool: cleared overgrowth at {tile}.");
-      } else {
-        overgrowth.Apply();
       }
     }
 

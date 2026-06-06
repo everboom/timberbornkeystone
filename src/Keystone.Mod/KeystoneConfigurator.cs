@@ -487,6 +487,10 @@ namespace Keystone.Mod {
       // land that never recovers. Reuses EntityComponentRegistry +
       // KeystoneFlourish.CurrentLifeStatus; no parallel tracking.
       Bind<Keystone.Mod.Flourish.KeystoneFlourishDecayTicker>().AsSingleton();
+      // Overgrowth decay sweep (issue #33): same ~10%/day removal as the
+      // flourish decay ticker, but clears dead overgrowth (tree back to
+      // barren) instead of deleting an entity.
+      Bind<Keystone.Mod.Overgrowth.KeystoneOvergrowthDecayTicker>().AsSingleton();
     }
 
     /// <summary>
