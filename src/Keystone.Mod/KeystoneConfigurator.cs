@@ -24,6 +24,7 @@ using Keystone.Mod.FieldTint;
 using Keystone.Mod.HarmonyPatches;
 using Keystone.Mod.Flora;
 using Keystone.Mod.Materials;
+using Keystone.Mod.Overgrowth;
 using Keystone.Mod.Planting;
 using Keystone.Mod.Flourish;
 using Keystone.Mod.Growth;
@@ -281,6 +282,7 @@ namespace Keystone.Mod {
       Bind<KeystoneBiomeLevels>().AsTransient();
       Bind<KeystoneDryNaturalResource>().AsTransient();
       Bind<KeystoneRockTint>().AsTransient();
+      Bind<KeystoneOvergrowth>().AsTransient();
       Bind<Keystone.Mod.Wellbeing.KeystoneNatureSource>().AsTransient();
       Bind<Keystone.Mod.Wellbeing.KeystoneNatureSourceDescriber>().AsTransient();
       Bind<KeystoneGrowthBonus>().AsTransient();
@@ -364,6 +366,14 @@ namespace Keystone.Mod {
       Bind<StumpPlacementTool>().AsSingleton();
       // Dead-tree + fitted-ivy flourish smoke test (KeystoneDeadPine1).
       Bind<DeadTreePlacementTool>().AsSingleton();
+
+      // Overgrowth augmentation (issue #33): drape trees in flourishes
+      // without touching their specs. KeystoneOvergrowth is attached to
+      // every tree via the AddDecorator<TreeComponentSpec, _> in
+      // KeystoneTemplateModuleProvider (vanilla + faction trees; water
+      // trees self-filter). Dev-triggered via OvergrowthTestTool until
+      // the biome driver lands.
+      Bind<OvergrowthTestTool>().AsSingleton();
 
       // Toolbar group hosting all four dev tools under a single
       // expandable button.
@@ -451,11 +461,16 @@ namespace Keystone.Mod {
       Bind<ClassCSpawnHandler>().AsSingleton();
       Bind<ClassDSpawnHandler>().AsSingleton();
       Bind<AttritionHandler>().AsSingleton();
+      // Overgrowth augmentation handler (issue #33). Extends
+      // SpawnHandlerBase to reuse the per-level Mode dispatch; drapes
+      // existing trees instead of spawning. Lives in Keystone.Mod.Overgrowth.
+      Bind<Keystone.Mod.Overgrowth.OvergrowthHandler>().AsSingleton();
       MultiBind<IRuleHandler>().ToExisting<ClassASpawnHandler>();
       MultiBind<IRuleHandler>().ToExisting<ClassBSpawnHandler>();
       MultiBind<IRuleHandler>().ToExisting<ClassCSpawnHandler>();
       MultiBind<IRuleHandler>().ToExisting<ClassDSpawnHandler>();
       MultiBind<IRuleHandler>().ToExisting<AttritionHandler>();
+      MultiBind<IRuleHandler>().ToExisting<Keystone.Mod.Overgrowth.OvergrowthHandler>();
 
       // Chunk-driven rules scheduler. The single per-cycle entry point
       // that visits every (region, chunk) pair in randomised order,
@@ -494,6 +509,11 @@ namespace Keystone.Mod {
         // KeystoneBiomeLevels: the spec carries per-biome level
         // ranges; the catalog drains it into BiomeLevelTable.
         builder.AddDecorator<KeystoneBiomeLevelsSpec, KeystoneBiomeLevels>();
+        // KeystoneOvergrowth: additive flourish overlay on every tree
+        // (issue #33). Decorates the universal TreeComponentSpec so it
+        // lands on all trees — vanilla and any faction's — with no
+        // hardcoded list; water-based trees self-filter at runtime.
+        builder.AddDecorator<Timberborn.Forestry.TreeComponentSpec, KeystoneOvergrowth>();
         // KeystoneDryNaturalResource: habitat marker for dry-loving
         // flourishes (Dry biome content). Marker only — no runtime
         // behaviour today; see the spec's docstring for forward-

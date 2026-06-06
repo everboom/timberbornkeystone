@@ -5,6 +5,7 @@ using Keystone.Mod.Diagnostics;
 using Keystone.Mod.Fauna;
 using Keystone.Mod.Flora;
 using Keystone.Mod.Flourish;
+using Keystone.Mod.Overgrowth;
 using Timberborn.BlueprintSystem;
 using Timberborn.BottomBarSystem;
 using Timberborn.ToolButtonSystem;
@@ -65,6 +66,7 @@ namespace Keystone.Mod.Toolbar {
     private readonly FishSmokeTestTool _fishSmokeTestTool;
     private readonly StumpPlacementTool _stumpTool;
     private readonly DeadTreePlacementTool _deadTreeTool;
+    private readonly OvergrowthTestTool _overgrowthTool;
 
     public KeystoneToolGroup(
         ISpecService specs,
@@ -80,7 +82,8 @@ namespace Keystone.Mod.Toolbar {
         FaunaPlacementTool faunaTool,
         FishSmokeTestTool fishSmokeTestTool,
         StumpPlacementTool stumpTool,
-        DeadTreePlacementTool deadTreeTool) {
+        DeadTreePlacementTool deadTreeTool,
+        OvergrowthTestTool overgrowthTool) {
       _specs = specs;
       _groupFactory = groupFactory;
       _buttonFactory = buttonFactory;
@@ -95,6 +98,7 @@ namespace Keystone.Mod.Toolbar {
       _fishSmokeTestTool = fishSmokeTestTool;
       _stumpTool = stumpTool;
       _deadTreeTool = deadTreeTool;
+      _overgrowthTool = overgrowthTool;
     }
 
     public IEnumerable<BottomBarElement> GetElements() {
@@ -133,6 +137,7 @@ namespace Keystone.Mod.Toolbar {
       AppendChild(groupButton, _fishSmokeTestTool);       // Fish visual smoke test (KeystoneFish1, water-gated)
       AppendChild(groupButton, _stumpTool);               // Harvested Birch stump (tests stump replacement)
       AppendChild(groupButton, _deadTreeTool);            // Dead pine + fitted ivy flourish (KeystoneDeadPine1)
+      AppendChild(groupButton, _overgrowthTool);          // Overgrowth toggle on existing trees (Pine; issue #33)
 
       yield return BottomBarElement.CreateMultiLevel(
           groupButton.Root, groupButton.ToolButtonsElement);

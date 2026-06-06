@@ -65,6 +65,8 @@ namespace Keystone.Mod.Recipes {
     private readonly Dictionary<(BiomeKind Biome, string LevelId), List<ClassERecipe>> _classEByBiomeLevel = new();
     private readonly List<AttritionRecipe> _attrition = new();
     private readonly Dictionary<(BiomeKind Biome, string LevelId), List<AttritionRecipe>> _attritionByBiomeLevel = new();
+    private readonly List<OvergrowthRecipe> _overgrowth = new();
+    private readonly Dictionary<(BiomeKind Biome, string LevelId), List<OvergrowthRecipe>> _overgrowthByBiomeLevel = new();
     private bool _postLoadCompleted;
 
     /// <summary>True once <see cref="PostLoad"/> has run. Read by the
@@ -118,6 +120,8 @@ namespace Keystone.Mod.Recipes {
       _classEByBiomeLevel.Clear();
       _attrition.Clear();
       _attritionByBiomeLevel.Clear();
+      _overgrowth.Clear();
+      _overgrowthByBiomeLevel.Clear();
 
       var bookCount = 0;
       var entryCount = 0;
@@ -142,6 +146,12 @@ namespace Keystone.Mod.Recipes {
             attritionCount++;
           } else {
             attritionSkipped++;
+          }
+        }
+
+        foreach (var overgrowth in book.Overgrowths) {
+          if (TryParseOvergrowth(overgrowth, bookBlueprintName, out var recipe)) {
+            AddOvergrowth(recipe);
           }
         }
 
@@ -400,6 +410,64 @@ namespace Keystone.Mod.Recipes {
     public IReadOnlyList<AttritionRecipe> AttritionFor(BiomeKind biome, string levelId) {
       if (_attritionByBiomeLevel.TryGetValue((biome, levelId), out var list)) return list;
       return Array.Empty<AttritionRecipe>();
+    }
+
+    /// <summary>Parse a Mod-side <see cref="OvergrowthEntry"/> into a Core
+    /// <see cref="OvergrowthRecipe"/>. Requires a known biome, a level, a
+    /// known <c>Target</c> (Live/Dead), and a non-empty composition;
+    /// warns and skips otherwise. Overgrowth is biome-specific (the
+    /// recovery biomes), so there's no "any biome" expansion.</summary>
+    private static bool TryParseOvergrowth(
+        OvergrowthEntry entry, string sourceBookName, out OvergrowthRecipe recipe) {
+      recipe = null!;
+      if (string.IsNullOrEmpty(entry.Composition)) {
+        KeystoneLog.Warn(
+            $"[Keystone] FlourishCatalog: overgrowth entry in book '{sourceBookName}' " +
+            "has empty Composition. Entry skipped.");
+        return false;
+      }
+      if (string.IsNullOrEmpty(entry.Level)) {
+        KeystoneLog.Warn(
+            $"[Keystone] FlourishCatalog: overgrowth entry '{entry.Composition}' in book " +
+            $"'{sourceBookName}' has empty Level. Entry skipped.");
+        return false;
+      }
+      if (!Enum.TryParse<BiomeKind>(entry.Biome, ignoreCase: true, out var biome)) {
+        KeystoneLog.Warn(
+            $"[Keystone] FlourishCatalog: overgrowth entry '{entry.Composition}' in book " +
+            $"'{sourceBookName}' has Biome='{entry.Biome}' which is not a known BiomeKind. Entry skipped.");
+        return false;
+      }
+      if (!Enum.TryParse<OvergrowthTarget>(entry.Target, ignoreCase: true, out var target)) {
+        KeystoneLog.Warn(
+            $"[Keystone] FlourishCatalog: overgrowth entry '{entry.Composition}' in book " +
+            $"'{sourceBookName}' has Target='{entry.Target}' (expected Live or Dead). Entry skipped.");
+        return false;
+      }
+      recipe = new OvergrowthRecipe(
+          biome, entry.Level, target, entry.Composition, entry.Filter ?? "", NormaliseWeight(entry.Weight));
+      return true;
+    }
+
+    private void AddOvergrowth(OvergrowthRecipe recipe) {
+      _overgrowth.Add(recipe);
+      var key = (recipe.Biome, recipe.LevelId);
+      if (!_overgrowthByBiomeLevel.TryGetValue(key, out var list)) {
+        list = new List<OvergrowthRecipe>();
+        _overgrowthByBiomeLevel[key] = list;
+      }
+      list.Add(recipe);
+    }
+
+    /// <summary>All registered overgrowth rules, in registration order.</summary>
+    public IReadOnlyList<OvergrowthRecipe> AllOvergrowth => _overgrowth;
+
+    /// <summary>Overgrowth rules registered against the given
+    /// <paramref name="biome"/> at the given <paramref name="levelId"/>.
+    /// Returns an empty list when no rules target the bucket.</summary>
+    public IReadOnlyList<OvergrowthRecipe> OvergrowthFor(BiomeKind biome, string levelId) {
+      if (_overgrowthByBiomeLevel.TryGetValue((biome, levelId), out var list)) return list;
+      return Array.Empty<OvergrowthRecipe>();
     }
 
     /// <summary>Every <see cref="BiomeKind"/> in enum-declaration order,

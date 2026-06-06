@@ -11,7 +11,9 @@
       { "LevelId": "L1", "LowerMaturity":  0.5, "UpperMaturity":       2.5, "Density": 0.08 },
       { "LevelId": "L2", "LowerMaturity":  2.5, "UpperMaturity":      30.0, "Density": 0.10 },
       { "LevelId": "L3", "LowerMaturity":  7.5, "UpperMaturity": 1000000.0, "Density": 0.005, "Mode": "Stochastic", "FaunaCapacityAtSaturation": 8, "FaunaMinScore": 0.5 },
-      { "LevelId": "L4", "LowerMaturity": 12.5, "UpperMaturity": 1000000.0, "Density": 0.005, "Mode": "Stochastic" }
+      { "LevelId": "L4", "LowerMaturity": 12.5, "UpperMaturity": 1000000.0, "Density": 0.005, "Mode": "Stochastic" },
+      { "LevelId": "OvergrowDead", "LowerMaturity": 1.0, "UpperMaturity": 1000000.0, "Density": 0.25, "Mode": "Stochastic" },
+      { "LevelId": "OvergrowLive", "LowerMaturity": 1.0, "UpperMaturity":       2.0, "Density": 0.25 }
     ]
   },
   "KeystoneRecipeBookSpec": {
@@ -52,6 +54,10 @@
       { "Class": "D", "BlueprintName": "Maple",         "Biome": "Grassland", "Level": "L4", "Category": "Trees", "Weight": 2.0 },
       { "Class": "D", "BlueprintName": "ChestnutTree",  "Biome": "Grassland", "Level": "L4", "Category": "Trees", "Weight": 2.0 },
       { "Class": "D", "BlueprintName": "Oak",           "Biome": "Grassland", "Level": "L4", "Category": "Trees", "Weight": 1.0 }
+    ],
+    "Overgrowths": [
+      { "Biome": "Grassland", "Level": "OvergrowDead", "Target": "Dead", "Composition": "KeystoneGrasslandMini1", "Weight": 1 },
+      { "Biome": "Grassland", "Level": "OvergrowLive", "Target": "Live", "Composition": "KeystoneGrasslandMini1", "Weight": 1 }
     ]
   }
 }

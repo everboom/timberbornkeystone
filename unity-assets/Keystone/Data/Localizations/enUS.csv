@@ -28,6 +28,8 @@ Tool.Keystone.Stump.DisplayName,Dev: Place Birch Stump,
 Tool.Keystone.Stump.Description,"Places a mature Birch, kills it, and removes its yield — leaving a harvested stump. Used to test stump-replacement logic in Class B/D spawn handlers.",
 Tool.Keystone.DeadTree.DisplayName,Dev: Place Dead Pine + Ivy,
 Tool.Keystone.DeadTree.Description,"Force-places the KeystoneDeadPine1 flourish — a vanilla dead-pine trunk wrapped in the Keystone PineIvy mesh — at the clicked tile, bypassing biome/score gates. Smoke test for the dead-tree + fitted-ivy composition.",
+Tool.Keystone.Overgrowth.DisplayName,Dev: Toggle Tree Overgrowth,
+Tool.Keystone.Overgrowth.Description,"Click a tree (Pine for now) to toggle overgrowth: drapes placeholder flourishes around the trunk base, click again to clear. Validates the overgrowth augmentation mechanism before the biome driver exists. The tree itself is untouched.",
 Tool.Keystone.PlantCrops.DisplayName,Plant Mixed Crops,Player-facing planting brush in the field/crop menu.
 Tool.Keystone.PlantCrops.Description,"Drag to mark an area for planting. Each tile is sown with a weighted-random pick from the crop types below — raise a type's weight to plant more of it, drop it to zero to leave it out — an easy way to lay out a varied field instead of one crop at a time. Crops are still planted by your farmers through the normal planting queue.",
 Tool.Keystone.PlantCrops.PanelTitle,Crop mix,Header of the mixed-crop options panel.

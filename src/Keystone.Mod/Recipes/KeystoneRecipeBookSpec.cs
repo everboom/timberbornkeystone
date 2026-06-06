@@ -47,6 +47,14 @@ namespace Keystone.Mod.Recipes {
     /// See <see cref="AttritionEntry"/>.</summary>
     [Serialize] public ImmutableArray<AttritionEntry> Attritions { get; init; } = ImmutableArray<AttritionEntry>.Empty;
 
+    /// <summary>Overgrowth rules contributed by this book (GitHub issue
+    /// #33). Each entry drapes an <i>existing</i> tree (live or dead) in
+    /// a flourish composition over time; <c>OvergrowthHandler</c> applies
+    /// them per-cycle in dominant-biome chunks at the active level. A new
+    /// rule family alongside <see cref="Attritions"/> — not a spawn class.
+    /// See <see cref="OvergrowthEntry"/>.</summary>
+    [Serialize] public ImmutableArray<OvergrowthEntry> Overgrowths { get; init; } = ImmutableArray<OvergrowthEntry>.Empty;
+
   }
 
   /// <summary>One attrition rule inside a <see cref="KeystoneRecipeBookSpec"/>.
@@ -269,6 +277,45 @@ namespace Keystone.Mod.Recipes {
     /// in the clearance voxels above -- including dead flourishes and
     /// live Class B -- blocks the spawn.</para></summary>
     [Serialize] public int Height { get; init; }
+
+  }
+
+  /// <summary>One overgrowth rule inside a <see cref="KeystoneRecipeBookSpec"/>
+  /// (GitHub issue #33). Drapes an existing tree of the given
+  /// <see cref="Target"/> state in a flourish <see cref="Composition"/>.
+  /// The rate is owned by the level's <c>Mode</c> (Deterministic for Live
+  /// = capped coverage; Stochastic for Dead = accumulates), so this entry
+  /// carries no probability — only <see cref="Weight"/> for the pick
+  /// among recipes sharing a bucket.</summary>
+  public record OvergrowthEntry {
+
+    /// <summary>Biome whose maturity + level state gates this rule.
+    /// String name of a <see cref="Keystone.Core.Biomes.BiomeKind"/>
+    /// (the recovery biomes — Grassland / Forest).</summary>
+    [Serialize] public string Biome { get; init; } = "";
+
+    /// <summary>Level identifier; its maturity band + <c>Mode</c> drive
+    /// when and how the rule fires. Live-target rules belong on
+    /// Deterministic levels, Dead-target on Stochastic levels.</summary>
+    [Serialize] public string Level { get; init; } = "L1";
+
+    /// <summary>Which tree state this rule overgrows: <c>"Live"</c> or
+    /// <c>"Dead"</c> (case-insensitive). Catalog parses to
+    /// <c>OvergrowthTarget</c>; unknown values are skipped with a warning.</summary>
+    [Serialize] public string Target { get; init; } = "Dead";
+
+    /// <summary>Keystone flourish composition blueprint to drape on the
+    /// tree (the overgrowth overlay). Required; catalog warns and skips
+    /// entries with an empty composition.</summary>
+    [Serialize] public string Composition { get; init; } = "";
+
+    /// <summary>Optional spatial-eligibility filter (same registry as
+    /// spawn recipes). Empty = no filter.</summary>
+    [Serialize] public string Filter { get; init; } = "";
+
+    /// <summary>Relative pick weight among overgrowth recipes sharing a
+    /// <c>(biome, level)</c> bucket. Non-positive normalises to 1.0.</summary>
+    [Serialize] public float Weight { get; init; }
 
   }
 
