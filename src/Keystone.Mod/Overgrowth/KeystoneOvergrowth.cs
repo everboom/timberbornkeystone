@@ -1,11 +1,14 @@
 using System.Collections.Generic;
+using Keystone.Core.Ports;
+using Keystone.Core.Tiles;
 using Keystone.Mod.Decoration;
 using Keystone.Mod.Diagnostics;
-using Timberborn.BaseComponentSystem;
 using Timberborn.BlockSystem;
 using Timberborn.EntitySystem;
 using Timberborn.NaturalResourcesMoisture;
 using Timberborn.Persistence;
+using Timberborn.TickSystem;
+using Timberborn.TimeSystem;
 using Timberborn.WorldPersistence;
 
 namespace Keystone.Mod.Overgrowth {
@@ -21,20 +24,27 @@ namespace Keystone.Mod.Overgrowth {
   /// modified, so all its native behaviour (growth, cutting,
   /// reproduction) is untouched.
   ///
-  /// <para><b>Persistence.</b> The <i>logical</i> state (is-decorated +
-  /// which composition) persists via <see cref="IPersistentEntity"/>; the
-  /// decoration GameObject itself is a non-persisted
-  /// <see cref="KeystoneDecorationRegistry"/> object, re-spawned from the
-  /// saved <see cref="_decorationId"/> in <see cref="InitializeEntity"/>
-  /// on load. So an overgrown tree comes back overgrown with the same
-  /// composition after reload. (Alive/dying is moisture-derived by the
-  /// controller and not persisted; the terminal dead state + age counters
-  /// come in the kill/replace slice.)</para>
+  /// <para><b>Maturity.</b> While overgrown, the component accrues
+  /// <see cref="Maturity"/> — accumulated healthy time — at
+  /// <see cref="MaturityGainPerDay"/> per game-day when the tile is moist
+  /// (the overgrowth is alive) and sheds it at <see cref="MaturityLossPerDay"/>
+  /// per game-day when it's drying (slow accrue, fast loss; floored at 0).
+  /// This gates the future reseed step. Throttled tick, early-out when not
+  /// overgrown — same shape as <c>KeystoneGrowthBonus</c>.</para>
   ///
-  /// <para><b>Trigger.</b> Dev-triggered for now via
-  /// <see cref="OvergrowthTestTool"/> (<see cref="Apply()"/> /
-  /// <see cref="Clear"/>); the biome-driven <see cref="OvergrowthHandler"/>
-  /// calls <see cref="Apply(string)"/> with the recipe's composition.</para>
+  /// <para><b>Persistence.</b> The logical state (is-decorated, which
+  /// composition, accrued maturity) persists via
+  /// <see cref="IPersistentEntity"/>; the decoration GameObject itself is a
+  /// non-persisted <see cref="KeystoneDecorationRegistry"/> object,
+  /// re-spawned from the saved <see cref="_decorationId"/> in
+  /// <see cref="InitializeEntity"/> on load. (Alive/dying is moisture-
+  /// derived by the controller and not persisted; the terminal dead state
+  /// comes in the kill/replace slice.)</para>
+  ///
+  /// <para><b>Trigger.</b> Dev-triggered via <see cref="OvergrowthTestTool"/>
+  /// (<see cref="Apply()"/> / <see cref="Clear"/>); the biome-driven
+  /// <see cref="OvergrowthHandler"/> calls <see cref="Apply(string)"/> with
+  /// the recipe's composition.</para>
   ///
   /// <para><b>Rendering note.</b> The host tree renders from the custom
   /// flora matrix (not its Unity Transform), so the overlay can't read
@@ -44,7 +54,7 @@ namespace Keystone.Mod.Overgrowth {
   /// refinement (see issue #33).</para>
   /// </summary>
   public sealed class KeystoneOvergrowth
-      : BaseComponent, IInitializableEntity, IDeletableEntity, IPersistentEntity {
+      : TickableComponent, IInitializableEntity, IDeletableEntity, IPersistentEntity {
 
     #region Constants
 
@@ -57,14 +67,30 @@ namespace Keystone.Mod.Overgrowth {
     /// composition (+ ivy) later.</summary>
     private const string PlaceholderDonor = "KeystoneGrasslandMini1";
 
+    /// <summary>Tick-counter cadence for the maturity update — a few
+    /// times per game day (matches <c>KeystoneGrowthBonus</c>). The rate
+    /// uses elapsed game-days, so the cadence only batches the work.</summary>
+    private const int MaturityCheckIntervalTicks = 800;
+
+    /// <summary>Maturity gained per game-day while alive + irrigated
+    /// (~1 point/day, so maturity reads as "healthy days").</summary>
+    private const float MaturityGainPerDay = 1.0f;
+
+    /// <summary>Maturity shed per game-day while drying — twice the gain
+    /// rate (the mod's slow-accrue / fast-loss grammar).</summary>
+    private const float MaturityLossPerDay = 2.0f;
+
     private static readonly ComponentKey ComponentKey = new("KeystoneOvergrowth");
     private static readonly PropertyKey<string> DecorationIdKey = new("DecorationId");
+    private static readonly PropertyKey<float> MaturityKey = new("Maturity");
 
     #endregion
 
     #region Injected services
 
     private readonly KeystoneDecorationRegistry _decorations;
+    private readonly IDayNightCycle _dayNightCycle;
+    private readonly IMoistureQuery _moisture;
 
     #endregion
 
@@ -79,14 +105,25 @@ namespace Keystone.Mod.Overgrowth {
     /// so the same one returns after reload.</summary>
     private string _decorationId = PlaceholderDonor;
 
+    /// <summary>Accrued maturity (accumulated healthy time); gates the
+    /// future reseed. Persisted.</summary>
+    private float _maturity;
+
     private readonly List<KeystoneDecoration> _spawned = new();
+    private float _lastCheckDay;
+    private int _tickCounter;
 
     #endregion
 
     #region Construction
 
-    public KeystoneOvergrowth(KeystoneDecorationRegistry decorations) {
+    public KeystoneOvergrowth(
+        KeystoneDecorationRegistry decorations,
+        IDayNightCycle dayNightCycle,
+        IMoistureQuery moisture) {
       _decorations = decorations;
+      _dayNightCycle = dayNightCycle;
+      _moisture = moisture;
     }
 
     #endregion
@@ -96,6 +133,10 @@ namespace Keystone.Mod.Overgrowth {
     /// <summary>True when this tree is logically overgrown (persisted).
     /// Drives the dev-tool toggle and re-hydration on load.</summary>
     public bool IsOvergrown => _decorated;
+
+    /// <summary>Accrued maturity points (accumulated healthy time). Read
+    /// by the future reseed gate; exposed for diagnostics.</summary>
+    public float Maturity => _maturity;
 
     /// <summary>False for water-based trees (mangrove and any future
     /// aquatic species): overgrowth is a land-recovery signal, so trees
@@ -128,9 +169,11 @@ namespace Keystone.Mod.Overgrowth {
     /// with the recipe's composition.</summary>
     public void Apply() => Apply(PlaceholderDonor);
 
-    /// <summary>Remove the overgrowth from this entity (logical + visual).</summary>
+    /// <summary>Remove the overgrowth from this entity (logical + visual),
+    /// and reset accrued maturity.</summary>
     public void Clear() {
       _decorated = false;
+      _maturity = 0f;
       DespawnAll();
     }
 
@@ -146,6 +189,41 @@ namespace Keystone.Mod.Overgrowth {
       if (_decorated && CanOvergrow) {
         SpawnDecoration();
       }
+    }
+
+    /// <summary>Tick-system init: stagger the throttle by tile so trees
+    /// don't all update on the same frame, and seed the elapsed-time
+    /// baseline.</summary>
+    public override void StartTickable() {
+      _lastCheckDay = _dayNightCycle.PartialDayNumber;
+      var blockObject = GetComponent<BlockObject>();
+      _tickCounter = blockObject != null
+          ? (blockObject.Coordinates.GetHashCode() & 0x7FFF) % MaturityCheckIntervalTicks
+          : 0;
+    }
+
+    /// <summary>Throttled maturity update. While overgrown: accrue
+    /// <see cref="MaturityGainPerDay"/> per game-day when the tile is
+    /// moist (overgrowth alive), or shed <see cref="MaturityLossPerDay"/>
+    /// per game-day when it's dry (drying out); floored at 0.
+    /// Non-overgrown trees early-out at zero cost.</summary>
+    public override void Tick() {
+      if (!_decorated) return;
+      if (++_tickCounter < MaturityCheckIntervalTicks) return;
+      _tickCounter = 0;
+
+      var currentDay = _dayNightCycle.PartialDayNumber;
+      var intervalDays = currentDay - _lastCheckDay;
+      _lastCheckDay = currentDay;
+      if (intervalDays <= 0f) return;
+
+      var blockObject = GetComponent<BlockObject>();
+      if (blockObject == null) return;
+      var c = blockObject.Coordinates;
+      var moist = _moisture.IsMoistAt(new SurfaceCoord(c.x, c.y, c.z));
+
+      _maturity += (moist ? MaturityGainPerDay : -MaturityLossPerDay) * intervalDays;
+      if (_maturity < 0f) _maturity = 0f;
     }
 
     /// <summary>Tear down the overlay when the host entity is deleted so
@@ -165,7 +243,9 @@ namespace Keystone.Mod.Overgrowth {
       // Presence of the component block means "decorated"; absence means
       // not (keeps non-overgrown trees out of the save entirely).
       if (!_decorated) return;
-      entitySaver.GetComponent(ComponentKey).Set(DecorationIdKey, _decorationId);
+      var saver = entitySaver.GetComponent(ComponentKey);
+      saver.Set(DecorationIdKey, _decorationId);
+      saver.Set(MaturityKey, _maturity);
     }
 
     /// <inheritdoc />
@@ -174,6 +254,9 @@ namespace Keystone.Mod.Overgrowth {
       _decorated = true;
       if (loader.Has(DecorationIdKey)) {
         _decorationId = loader.Get(DecorationIdKey) ?? PlaceholderDonor;
+      }
+      if (loader.Has(MaturityKey)) {
+        _maturity = loader.Get(MaturityKey);
       }
     }
 

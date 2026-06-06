@@ -542,6 +542,15 @@ namespace Keystone.Mod.Debug {
         _buffer.AppendLine(
             $"    rock: tint={rock.CurrentVariantLabel()}{classLabel}");
       }
+      var overgrowth = bo.GetComponent<Keystone.Mod.Overgrowth.KeystoneOvergrowth>();
+      if (overgrowth != null) {
+        _buffer.AppendLine(overgrowth.IsOvergrown
+            ? string.Format(CultureInfo.InvariantCulture,
+                "    overgrowth: ON, maturity {0:F2}", overgrowth.Maturity)
+            : (overgrowth.CanOvergrow
+                ? "    overgrowth: off"
+                : "    overgrowth: off (water tree)"));
+      }
     }
 
     /// <summary>Run the Nature source's inspection scan and emit a
