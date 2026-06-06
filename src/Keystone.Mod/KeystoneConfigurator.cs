@@ -362,6 +362,8 @@ namespace Keystone.Mod {
       Bind<CrossFactionFloraPlacementTool>().AsSingleton();
       Bind<VanillaFloraPlacementTool>().AsSingleton();
       Bind<StumpPlacementTool>().AsSingleton();
+      // Dead-tree + fitted-ivy flourish smoke test (KeystoneDeadPine1).
+      Bind<DeadTreePlacementTool>().AsSingleton();
 
       // Toolbar group hosting all four dev tools under a single
       // expandable button.

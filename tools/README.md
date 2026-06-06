@@ -35,6 +35,33 @@ reproducible. `--stage Seedling|Mature` picks the mesh stage. `--force`
 overwrites existing files. See `python tools/generate-flourish-blueprints.py --help`
 for the full surface.
 
+```bash
+# Dead-tree centerpiece: a vanilla PineMatureDead trunk wrapped in the
+# Keystone PineIvy mesh, plus scattered undergrowth + rocks around it
+python tools/generate-flourish-blueprints.py \
+    --prefix KeystoneDeadPine --dead-tree Pine \
+    --plants Dandelion BlueberryBush \
+    --decorations Pebble_Round_1 Pebble_Square_2 --decorations-per-blueprint 1-2 \
+    --count 5 --seed 1
+```
+
+**`--dead-tree <Species>`** adds a *centerpiece*: the vanilla
+`{Species}MatureDead` trunk at tile centre (identical across all
+lifecycle phases — already dead) plus its fitted Keystone ivy
+(`TreeIvy/{Species}Ivy`, vanilla pivot, overlapping the trunk). One tree
+gets one ivy, always together. Known species: `Pine Birch Maple Oak
+Chestnut Mangrove`. Composes with `--plants`/`--decorations`, which then
+scatter *around* the trunk (kept clear of centre by
+`CENTERPIECE_CLEARANCE`). A tree-only blueprint (no `--plants`) is valid.
+`--ivy-variants` wires the ivy through `{Species}IvyDry` / `{Species}IvyDead`
+on `#Dying` / `#Dead` — enable only once those meshes are authored.
+
+**Auto-registration.** Generated blueprints are appended (idempotently)
+to the `KeystoneNaturalResources` TemplateCollection so the game loads
+them — the collection is a hand-maintained explicit list, not
+auto-discovery. Pass `--no-register` to skip, or `--collection <path>`
+to target a different collection.
+
 The mesh catalog (which plant names are recognized and what mesh paths they
 resolve to) is the `CATALOG` dict at the top of the script. To add a new
 vanilla mesh: look it up in `dump/mesh-paths.csv` and add an entry to

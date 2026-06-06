@@ -90,6 +90,35 @@ CATALOG = {
     "Pine":          "NaturalResources/Trees/Pine/Mesh/Pine",
 }
 
+# Centerpiece catalog: vanilla tree-mesh stems for the dead-tree
+# centerpiece composition (--dead-tree). The script appends "MatureDead"
+# to get the always-dead trunk mesh, which sits at tile centre and is
+# IDENTICAL across all three lifecycle phases (an already-dead tree
+# doesn't wilt further). The matching ivy mesh is a Keystone-original
+# authored with the vanilla pivot (NO decoration offset), one per tree
+# species, fitted to that trunk. Tree and ivy are always placed together
+# -- each tree gets its own ivy.
+DEAD_TREES = {
+    "Pine":      "NaturalResources/Trees/Pine/Mesh/Pine",
+    "Birch":     "NaturalResources/Trees/Birch/Mesh/Birch",
+    "Maple":     "NaturalResources/Trees/Maple/Mesh/Maple",
+    "Oak":       "NaturalResources/Trees/Oak/Mesh/Oak",
+    "Chestnut":  "NaturalResources/Trees/ChestnutTree/Mesh/ChestnutTree",
+    "Mangrove":  "NaturalResources/Trees/Mangrove/Mesh/Mangrove",
+}
+
+# Directory holding the Keystone-original per-tree ivy meshes. The ivy
+# mesh for a species is "{TREE_IVY_DIR}/{Species}Ivy" (e.g. PineIvy),
+# with optional "{Species}IvyDry" / "{Species}IvyDead" lifecycle
+# variants enabled by --ivy-variants.
+TREE_IVY_DIR = "NaturalResources/TreeIvy"
+
+# How far scattered plants/decorations must stay from tile centre when a
+# dead-tree centerpiece is present, so undergrowth reads as "around the
+# trunk" rather than clipping into it. The trunk mesh is wide, so this is
+# larger than MIN_PLANT_DISTANCE.
+CENTERPIECE_CLEARANCE = 0.30
+
 # Tunable constraints. Adjust here if a specific biome needs different feel.
 MIN_PLANT_DISTANCE = 0.20
 MIN_COG_OFFSET = 0.10
@@ -298,7 +327,7 @@ def generate_composition(plant_specs, total, rng):
 ANCHOR_JITTER = 0.05
 
 
-def generate_positions(composition, rng, max_attempts=1000):
+def generate_positions(composition, rng, max_attempts=1000, avoid_center=False):
     """Generate per-plant (x, z) tuples respecting MIN_PLANT_DISTANCE,
     COG offset window, and per-plant anchors.
 
@@ -307,6 +336,12 @@ def generate_positions(composition, rng, max_attempts=1000):
     plants get random positions in [-POSITION_RANGE, +POSITION_RANGE],
     avoiding all already-placed positions. The COG check covers the
     combined set.
+
+    `avoid_center=True` (set when a dead-tree centerpiece occupies the
+    tile centre) additionally rejects free-plant positions within
+    CENTERPIECE_CLEARANCE of the origin, so scattered undergrowth sits
+    around the trunk rather than inside it. Anchored plants are exempt --
+    an explicit anchor is taken as deliberate.
 
     Returns (positions, cog_x, cog_z) where positions is in the same
     order as `composition`.
@@ -351,6 +386,8 @@ def generate_positions(composition, rng, max_attempts=1000):
                 x = rng.uniform(-POSITION_RANGE, POSITION_RANGE)
                 z = rng.uniform(-POSITION_RANGE, POSITION_RANGE)
                 ok = True
+                if avoid_center and math.hypot(x, z) < CENTERPIECE_CLEARANCE:
+                    continue
                 for p in positions:
                     if p is None:
                         continue
@@ -409,7 +446,8 @@ def generate_decoration_composition(decoration_specs, total, rng):
     return composition
 
 
-def generate_decoration_positions(decoration_composition, plant_positions, rng, max_attempts=200):
+def generate_decoration_positions(decoration_composition, plant_positions, rng,
+                                  max_attempts=200, avoid_center=False):
     """Generate (x, z) for each decoration, avoiding plants by
     MIN_DECORATION_TO_PLANT and avoiding other decorations by a
     per-pair distance computed from radii via _required_pair_distance.
@@ -431,6 +469,8 @@ def generate_decoration_positions(decoration_composition, plant_positions, rng, 
             x = rng.uniform(-DECORATION_POSITION_RANGE, DECORATION_POSITION_RANGE)
             z = rng.uniform(-DECORATION_POSITION_RANGE, DECORATION_POSITION_RANGE)
             ok = True
+            if avoid_center and math.hypot(x, z) < CENTERPIECE_CLEARANCE:
+                continue
             for p in plant_positions:
                 if math.hypot(x - p[0], z - p[1]) < MIN_DECORATION_TO_PLANT:
                     ok = False
@@ -489,7 +529,7 @@ def generate_decoration_rotations(total, mode, rng):
 def build_blueprint(name, composition, positions, scales,
                     decoration_composition, decoration_positions, decoration_scales,
                     decoration_rotations, decoration_variant,
-                    default_stage, aquatic, dry, no_lifecycle):
+                    default_stage, aquatic, dry, no_lifecycle, centerpiece=None):
     """Assemble the full blueprint dict for one mini.
 
     Habitat is one of three mutually exclusive flags (defaults: land):
@@ -522,6 +562,10 @@ def build_blueprint(name, composition, positions, scales,
     """
     if aquatic and dry:
         raise SystemExit("error: --aquatic and --dry are mutually exclusive.")
+    if centerpiece is not None and no_lifecycle:
+        raise SystemExit(
+            "error: --dead-tree needs the lifecycle structure (#Alive/#Dying/"
+            "#Dead) so the ivy can wilt; it is incompatible with --no-lifecycle.")
     if no_lifecycle and len(composition) > 0:
         raise SystemExit(
             "error: --no-lifecycle requires --plants to be empty. "
@@ -613,6 +657,29 @@ def build_blueprint(name, composition, positions, scales,
                     },
                     "Rotation": {"X": 0.0,        "Y": d["rot_y"],  "Z": 0.0},
                     "Scale":    {"X": d["scale"], "Y": d["scale"],  "Z": d["scale"]},
+                },
+            }
+        # Centerpiece: dead trunk + fitted ivy, both at tile centre,
+        # full scale, vanilla pivot (no decoration offset -- the ivy is
+        # authored like vanilla flora). The trunk mesh is identical in
+        # every phase; the ivy mesh is keyed by lifecycle (same mesh in
+        # all three phases unless --ivy-variants supplied Dry/Dead
+        # meshes). Rotation stays (0,0,0) like every other Keystone mesh.
+        if centerpiece is not None:
+            children[centerpiece["tree_label"]] = {
+                "TimbermeshSpec": {"Model": centerpiece["tree_mesh"]},
+                "TransformSpec": {
+                    "Position": {"X": 0.0, "Y": 0.0, "Z": 0.0},
+                    "Rotation": {"X": 0.0, "Y": 0.0, "Z": 0.0},
+                    "Scale":    {"X": 1.0, "Y": 1.0, "Z": 1.0},
+                },
+            }
+            children[centerpiece["ivy_label"]] = {
+                "TimbermeshSpec": {"Model": centerpiece["ivy"][mesh_key]},
+                "TransformSpec": {
+                    "Position": {"X": 0.0, "Y": 0.0, "Z": 0.0},
+                    "Rotation": {"X": 0.0, "Y": 0.0, "Z": 0.0},
+                    "Scale":    {"X": 1.0, "Y": 1.0, "Z": 1.0},
                 },
             }
         return children
@@ -800,6 +867,36 @@ def main():
                              'authored meshes don\'t). Requires center-pivot '
                              'decoration meshes -- corner-pivot pebbles will '
                              'orbit instead of rotating in place.')
+    parser.add_argument("--dead-tree", default=None,
+                        help='Add a dead-tree CENTERPIECE: the vanilla '
+                             '"{Species}MatureDead" trunk mesh at tile centre '
+                             '(identical in all lifecycle phases -- already dead) '
+                             'plus its fitted Keystone ivy mesh '
+                             '("TreeIvy/{Species}Ivy", vanilla pivot, overlapping '
+                             'the trunk). One tree + its own ivy, always together. '
+                             f'Known species: {sorted(DEAD_TREES)}. Composes with '
+                             '--plants/--decorations (which then scatter AROUND the '
+                             'trunk, kept clear of centre by CENTERPIECE_CLEARANCE). '
+                             'A tree-only blueprint (no --plants) is valid.')
+    parser.add_argument("--ivy-variants", action="store_true",
+                        help='Wire the ivy through its lifecycle: #Dying uses '
+                             '"{Species}IvyDry", #Dead uses "{Species}IvyDead". '
+                             'Off by default (all three phases use the base '
+                             '"{Species}Ivy") -- enable ONLY once you have authored '
+                             'and exported the Dry/Dead ivy meshes, else the '
+                             'blueprint references meshes that do not exist.')
+    parser.add_argument("--collection",
+                        default="unity-assets/Keystone/Data/TemplateCollections/"
+                                "KeystoneNaturalResources/KeystoneNaturalResources.blueprint.json",
+                        help="TemplateCollection blueprint to register generated "
+                             "blueprints in (so they load). Default: the "
+                             "KeystoneNaturalResources collection.")
+    parser.add_argument("--no-register", action="store_true",
+                        help="Skip adding the generated blueprints to the "
+                             "TemplateCollection. By default each new blueprint is "
+                             "appended (idempotently) to --collection -- required "
+                             "for the game to load it; the collection is a hand-"
+                             "maintained explicit list, not auto-discovery.")
     parser.add_argument("--no-lifecycle", action="store_true",
                         help='Emit an INANIMATE blueprint shape: no '
                              'KeystoneFlourishSpec, no Watered spec, no Dry '
@@ -823,6 +920,29 @@ def main():
     unknown = sorted({s["name"] for s in plant_specs} - set(CATALOG))
     if unknown:
         sys.exit(f"Unknown plant(s): {unknown}. Known: {sorted(CATALOG)}")
+
+    # Dead-tree centerpiece: vanilla MatureDead trunk + fitted ivy, both
+    # at tile centre. Pre-bake the per-phase ivy mesh paths here so
+    # build_blueprint stays purely structural.
+    centerpiece = None
+    if args.dead_tree is not None:
+        species = args.dead_tree
+        if species not in DEAD_TREES:
+            sys.exit(f"Unknown --dead-tree '{species}'. Known: {sorted(DEAD_TREES)}")
+        if args.no_lifecycle:
+            sys.exit("error: --dead-tree is incompatible with --no-lifecycle "
+                     "(the ivy needs the #Alive/#Dying/#Dead structure to wilt).")
+        ivy_base = f"{TREE_IVY_DIR}/{species}Ivy"
+        if args.ivy_variants:
+            ivy = {"alive": ivy_base, "dry": f"{ivy_base}Dry", "dead": f"{ivy_base}Dead"}
+        else:
+            ivy = {"alive": ivy_base, "dry": ivy_base, "dead": ivy_base}
+        centerpiece = {
+            "tree_label": f"{species}DeadTree",
+            "tree_mesh": f"{DEAD_TREES[species]}MatureDead",
+            "ivy_label": f"{species}Ivy",
+            "ivy": ivy,
+        }
 
     # --no-lifecycle and --plants are mutually exclusive: inanimate
     # blueprints have no lifecycle for plants to participate in.
@@ -881,6 +1001,9 @@ def main():
     print()
 
     output_root = Path(args.output_dir)
+    # Collection entries for blueprints written this run; registered at
+    # the end (unless --no-register).
+    generated_entries = []
     for i in range(args.count):
         idx = args.start_index + i
         name = f"{args.prefix}{idx}"
@@ -897,7 +1020,8 @@ def main():
         if plant_specs:
             per_blueprint = rng.randint(pmin, pmax)
             composition = generate_composition(plant_specs, per_blueprint, rng)
-            positions, cog_x, cog_z = generate_positions(composition, rng)
+            positions, cog_x, cog_z = generate_positions(
+                composition, rng, avoid_center=centerpiece is not None)
             scales = generate_scales(per_blueprint, rng)
         else:
             composition = []
@@ -909,7 +1033,8 @@ def main():
         # deterministic for a given seed regardless of decoration count.
         deco_count = rng.randint(dmin, dmax) if decoration_specs else 0
         deco_composition = generate_decoration_composition(decoration_specs, deco_count, rng)
-        deco_positions = generate_decoration_positions(deco_composition, positions, rng)
+        deco_positions = generate_decoration_positions(
+            deco_composition, positions, rng, avoid_center=centerpiece is not None)
         deco_scales = generate_decoration_scales(len(deco_positions), rng)
         deco_rotations = generate_decoration_rotations(
             len(deco_positions), args.decoration_rotation, rng)
@@ -918,19 +1043,61 @@ def main():
             name, composition, positions, scales,
             deco_composition, deco_positions, deco_scales, deco_rotations,
             decoration_variant,
-            args.stage, args.aquatic, args.dry, args.no_lifecycle)
+            args.stage, args.aquatic, args.dry, args.no_lifecycle, centerpiece)
 
         folder.mkdir(parents=True, exist_ok=True)
         target.write_text(json.dumps(blueprint, indent=2), encoding="utf-8")
+        # Collection entries omit the ".json" suffix, matching the
+        # existing list (e.g. "NaturalResources/Foo/Foo.blueprint").
+        generated_entries.append(f"NaturalResources/{name}/{name}.blueprint")
 
-        comp_str = " + ".join(p["name"] for p in composition) or "(inanimate)"
+        comp_parts = [p["name"] for p in composition]
+        if centerpiece is not None:
+            comp_parts.insert(0, f"{args.dead_tree} dead-tree+ivy")
+        comp_str = " + ".join(comp_parts) or "(inanimate)"
         deco_str = f"  +deco {len(deco_positions)}" if deco_positions else ""
         cog_str = (f"COG ({cog_x:+.2f}, {cog_z:+.2f})"
                    if composition else "                 ")
         print(f"  {name:32s} {comp_str:32s} {cog_str}{deco_str}")
 
     print()
+    if args.no_register:
+        print("Skipped collection registration (--no-register). The game will "
+              "NOT load these blueprints until they're listed in a "
+              "TemplateCollection.")
+    else:
+        added = register_in_collection(Path(args.collection), generated_entries)
+        if added:
+            print(f"Registered {added} new blueprint(s) in {args.collection}")
+        else:
+            print(f"Collection already up to date ({args.collection})")
+
     print(f"Done. {args.count} blueprint(s) under {output_root}")
+
+
+def register_in_collection(collection_path, entries):
+    """Append each entry to the collection's Blueprints list if absent.
+    Idempotent: re-running with the same names adds nothing. Preserves
+    the file's 2-space JSON formatting. Returns the count added."""
+    if not collection_path.exists():
+        sys.exit(f"error: --collection file not found: {collection_path}. "
+                 "Pass --collection or --no-register.")
+    data = json.loads(collection_path.read_text(encoding="utf-8"))
+    try:
+        blueprints = data["TemplateCollectionSpec"]["Blueprints"]
+    except (KeyError, TypeError):
+        sys.exit(f"error: {collection_path} has no "
+                 "TemplateCollectionSpec.Blueprints array to register into.")
+    existing = set(blueprints)
+    added = 0
+    for entry in entries:
+        if entry not in existing:
+            blueprints.append(entry)
+            existing.add(entry)
+            added += 1
+    if added:
+        collection_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    return added
 
 
 if __name__ == "__main__":

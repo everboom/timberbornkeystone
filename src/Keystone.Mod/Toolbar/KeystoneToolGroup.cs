@@ -64,6 +64,7 @@ namespace Keystone.Mod.Toolbar {
     private readonly FaunaPlacementTool _faunaTool;
     private readonly FishSmokeTestTool _fishSmokeTestTool;
     private readonly StumpPlacementTool _stumpTool;
+    private readonly DeadTreePlacementTool _deadTreeTool;
 
     public KeystoneToolGroup(
         ISpecService specs,
@@ -78,7 +79,8 @@ namespace Keystone.Mod.Toolbar {
         VanillaFloraPlacementTool vanillaFloraTool,
         FaunaPlacementTool faunaTool,
         FishSmokeTestTool fishSmokeTestTool,
-        StumpPlacementTool stumpTool) {
+        StumpPlacementTool stumpTool,
+        DeadTreePlacementTool deadTreeTool) {
       _specs = specs;
       _groupFactory = groupFactory;
       _buttonFactory = buttonFactory;
@@ -92,6 +94,7 @@ namespace Keystone.Mod.Toolbar {
       _faunaTool = faunaTool;
       _fishSmokeTestTool = fishSmokeTestTool;
       _stumpTool = stumpTool;
+      _deadTreeTool = deadTreeTool;
     }
 
     public IEnumerable<BottomBarElement> GetElements() {
@@ -129,6 +132,7 @@ namespace Keystone.Mod.Toolbar {
       AppendChild(groupButton, _faunaTool);               // Fauna smoke test (KeystoneDeer)
       AppendChild(groupButton, _fishSmokeTestTool);       // Fish visual smoke test (KeystoneFish1, water-gated)
       AppendChild(groupButton, _stumpTool);               // Harvested Birch stump (tests stump replacement)
+      AppendChild(groupButton, _deadTreeTool);            // Dead pine + fitted ivy flourish (KeystoneDeadPine1)
 
       yield return BottomBarElement.CreateMultiLevel(
           groupButton.Root, groupButton.ToolButtonsElement);
