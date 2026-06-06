@@ -33,6 +33,7 @@ namespace Keystone.Mod.Overgrowth {
 
     private readonly FlourishCatalog _catalog;
     private readonly IBlockService _blockService;
+    private readonly OvergrowthReseeder _reseeder;
 
     #endregion
 
@@ -42,10 +43,12 @@ namespace Keystone.Mod.Overgrowth {
         FlourishCatalog catalog,
         RecipeFilterRegistry filters,
         IPlantingMarkQuery marks,
-        IBlockService blockService)
+        IBlockService blockService,
+        OvergrowthReseeder reseeder)
         : base(filters, marks) {
       _catalog = catalog;
       _blockService = blockService;
+      _reseeder = reseeder;
     }
 
     #endregion
@@ -78,17 +81,39 @@ namespace Keystone.Mod.Overgrowth {
       var tile = new Vector3Int(surface.X, surface.Y, surface.Z);
       var overgrowth = _blockService.GetFirstObjectWithComponentAt<KeystoneOvergrowth>(tile);
       if (overgrowth == null) return;
-      if (overgrowth.IsOvergrown || !overgrowth.CanOvergrow) return;
 
-      // Match the recipe's target tree state. Trees carry
-      // LivingNaturalResource; a missing one (non-standard tree) is
-      // treated as not-dead.
+      // Trees carry LivingNaturalResource; a missing one (non-standard
+      // tree) is treated as not-dead.
       var living = overgrowth.GetComponent<LivingNaturalResource>();
       var isDead = living != null && living.IsDead;
+
+      if (recipe.Target == OvergrowthTarget.Reseed) {
+        ReseedIfReady(overgrowth, isDead, biome, recipe);
+        return;
+      }
+
+      // Overgrow (Live / Dead): drape a fresh composition on a barren tree
+      // of the matching state.
+      if (overgrowth.IsOvergrown || !overgrowth.CanOvergrow) return;
       if (recipe.Target == OvergrowthTarget.Dead && !isDead) return;
       if (recipe.Target == OvergrowthTarget.Live && isDead) return;
 
       overgrowth.Apply(recipe.Composition);
+    }
+
+    /// <summary>Reseed gate (the terminal dead-tree stage): the host tree
+    /// must be <b>dead</b>, its overgrowth <b>alive</b> (not terminally
+    /// killed) and <b>matured</b> past the recipe's threshold. (Biome
+    /// maturity is already gated by the recipe's level band, so reaching
+    /// here means the biome is recovering.) A killed overgrowth means
+    /// recovery stalled — it decays back to barren rather than reseeding.</summary>
+    private void ReseedIfReady(
+        KeystoneOvergrowth overgrowth, bool hostTreeDead, BiomeKind biome, OvergrowthRecipe recipe) {
+      if (!hostTreeDead) return;
+      if (!overgrowth.IsOvergrown || overgrowth.IsDead) return;
+      if (overgrowth.Maturity < recipe.MaturityThreshold) return;
+      var sourceLevel = string.IsNullOrEmpty(recipe.SourceLevel) ? recipe.LevelId : recipe.SourceLevel;
+      _reseeder.TryReseed(overgrowth, biome, sourceLevel, recipe.Composition);
     }
 
     #endregion

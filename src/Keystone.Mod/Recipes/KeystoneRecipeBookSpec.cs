@@ -304,14 +304,18 @@ namespace Keystone.Mod.Recipes {
     /// Deterministic levels, Dead-target on Stochastic levels.</summary>
     [Serialize] public string Level { get; init; } = "L1";
 
-    /// <summary>Which tree state this rule overgrows: <c>"Live"</c> or
-    /// <c>"Dead"</c> (case-insensitive). Catalog parses to
-    /// <c>OvergrowthTarget</c>; unknown values are skipped with a warning.</summary>
+    /// <summary>Which tree state this rule acts on: <c>"Live"</c>,
+    /// <c>"Dead"</c>, or <c>"Reseed"</c> (case-insensitive). Catalog parses
+    /// to <c>OvergrowthTarget</c>; unknown values are skipped with a
+    /// warning. <c>"Reseed"</c> replaces a mature overgrown dead tree with
+    /// a new living seedling (see <see cref="MaturityThreshold"/> /
+    /// <see cref="SourceLevel"/>).</summary>
     [Serialize] public string Target { get; init; } = "Dead";
 
     /// <summary>Keystone flourish composition blueprint to drape on the
     /// tree (the overgrowth overlay). Required; catalog warns and skips
-    /// entries with an empty composition.</summary>
+    /// entries with an empty composition. For <c>"Reseed"</c> this is the
+    /// composition carried onto the new seedling.</summary>
     [Serialize] public string Composition { get; init; } = "";
 
     /// <summary>Optional spatial-eligibility filter (same registry as
@@ -321,6 +325,18 @@ namespace Keystone.Mod.Recipes {
     /// <summary>Relative pick weight among overgrowth recipes sharing a
     /// <c>(biome, level)</c> bucket. Non-positive normalises to 1.0.</summary>
     [Serialize] public float Weight { get; init; }
+
+    /// <summary><c>"Reseed"</c> only: the overgrowth's accrued maturity
+    /// must reach this value before the dead tree is reseeded. Lets the
+    /// reseed transition lag the overgrow transition so deadwood sits
+    /// overgrown for a while before regrowing. Ignored by Live/Dead.</summary>
+    [Serialize] public float MaturityThreshold { get; init; }
+
+    /// <summary><c>"Reseed"</c> only: the level whose Class D spawn table
+    /// the replacement species is drawn from (weighted by the same
+    /// weights, so e.g. Grassland stays birch-heavy). Empty falls back to
+    /// <see cref="Level"/>. Ignored by Live/Dead.</summary>
+    [Serialize] public string SourceLevel { get; init; } = "";
 
   }
 

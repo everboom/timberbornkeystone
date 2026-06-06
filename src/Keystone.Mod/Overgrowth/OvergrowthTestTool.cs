@@ -1,4 +1,5 @@
 using System;
+using Keystone.Core.Biomes;
 using Keystone.Mod.Diagnostics;
 using Timberborn.BlockSystem;
 using Timberborn.CursorToolSystem;
@@ -11,13 +12,21 @@ using UnityEngine;
 namespace Keystone.Mod.Overgrowth {
 
   /// <summary>
-  /// Dev tool: clicking a tile toggles overgrowth on the tree there —
-  /// every (non-water) tree carries a <see cref="KeystoneOvergrowth"/>
+  /// Dev tool: clicking a tile drives the overgrowth lifecycle on the tree
+  /// there — every (non-water) tree carries a <see cref="KeystoneOvergrowth"/>
   /// via the <c>AddDecorator&lt;TreeComponentSpec, _&gt;</c> registration.
-  /// Successive clicks cycle the lifecycle: barren → overgrown → dead
-  /// (<c>#Dead</c> visual) → barren — so the overlay, terminal death, and
-  /// decay cleanup are testable by hand alongside the biome-driven
-  /// <c>OvergrowthHandler</c>.
+  /// Successive clicks cycle: barren → overgrown → <b>reseeded</b> (the dead
+  /// tree replaced by a new Class D seedling that drops the felled wood and
+  /// comes out overgrown). Lets the full arc — overlay, then the
+  /// delete + spawn + wood-drop reseed mechanism — be exercised by hand,
+  /// without waiting for biome maturity / a dead tree to occur naturally.
+  ///
+  /// <para>The reseed step here bypasses the natural eligibility gates
+  /// (host-tree-dead, overgrowth maturity, biome maturity) that
+  /// <c>OvergrowthHandler</c> enforces in real play — the dev tool reseeds
+  /// any overgrown tree so the mechanism is reachable on demand. Terminal
+  /// death (<c>#Dead</c>) and decay cleanup are driven by the biome systems
+  /// (badwater / Dry attrition / decay ticker), not this tool.</para>
   /// </summary>
   public sealed class OvergrowthTestTool : ITool, IInputProcessor, IToolDescriptor {
 
@@ -26,6 +35,13 @@ namespace Keystone.Mod.Overgrowth {
     private const string DisplayNameKey = "Tool.Keystone.Overgrowth.DisplayName";
     private const string DescriptionKey = "Tool.Keystone.Overgrowth.Description";
 
+    /// <summary>Biome / source level / composition the dev reseed draws
+    /// from. Grassland L4 is the tree table (Birch-heavy); the composition
+    /// is the current placeholder overgrowth donor.</summary>
+    private const BiomeKind DevReseedBiome = BiomeKind.Grassland;
+    private const string DevReseedSourceLevel = "L4";
+    private const string DevReseedComposition = "KeystoneGrasslandMini1";
+
     #endregion
 
     #region Injected services
@@ -33,6 +49,7 @@ namespace Keystone.Mod.Overgrowth {
     private readonly InputService _inputService;
     private readonly CursorCoordinatesPicker _cursorCoordinatesPicker;
     private readonly IBlockService _blockService;
+    private readonly OvergrowthReseeder _reseeder;
     private readonly ILoc _loc;
 
     #endregion
@@ -43,10 +60,12 @@ namespace Keystone.Mod.Overgrowth {
         InputService inputService,
         CursorCoordinatesPicker cursorCoordinatesPicker,
         IBlockService blockService,
+        OvergrowthReseeder reseeder,
         ILoc loc) {
       _inputService = inputService;
       _cursorCoordinatesPicker = cursorCoordinatesPicker;
       _blockService = blockService;
+      _reseeder = reseeder;
       _loc = loc;
     }
 
@@ -101,15 +120,15 @@ namespace Keystone.Mod.Overgrowth {
             $"[Keystone] OvergrowthTestTool: no overgrowth-capable entity at {tile}.");
         return;
       }
-      // Cycle: barren -> overgrown -> dead (#Dead visual) -> barren.
+      // Cycle: barren -> overgrown -> reseeded (new seedling, overgrown).
       if (!overgrowth.IsOvergrown) {
         overgrowth.Apply();
-      } else if (!overgrowth.IsDead) {
-        overgrowth.Kill();
-        KeystoneLog.Verbose($"[Keystone] OvergrowthTestTool: killed overgrowth at {tile}.");
       } else {
-        overgrowth.Clear();
-        KeystoneLog.Verbose($"[Keystone] OvergrowthTestTool: cleared overgrowth at {tile}.");
+        var reseeded = _reseeder.TryReseed(
+            overgrowth, DevReseedBiome, DevReseedSourceLevel, DevReseedComposition);
+        KeystoneLog.Verbose(
+            $"[Keystone] OvergrowthTestTool: reseed at {tile} " +
+            (reseeded ? "succeeded." : "failed (see reseeder log)."));
       }
     }
 

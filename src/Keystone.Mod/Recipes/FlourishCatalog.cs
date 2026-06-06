@@ -441,11 +441,13 @@ namespace Keystone.Mod.Recipes {
       if (!Enum.TryParse<OvergrowthTarget>(entry.Target, ignoreCase: true, out var target)) {
         KeystoneLog.Warn(
             $"[Keystone] FlourishCatalog: overgrowth entry '{entry.Composition}' in book " +
-            $"'{sourceBookName}' has Target='{entry.Target}' (expected Live or Dead). Entry skipped.");
+            $"'{sourceBookName}' has Target='{entry.Target}' (expected Live, Dead, or Reseed). " +
+            "Entry skipped.");
         return false;
       }
       recipe = new OvergrowthRecipe(
-          biome, entry.Level, target, entry.Composition, entry.Filter ?? "", NormaliseWeight(entry.Weight));
+          biome, entry.Level, target, entry.Composition, entry.Filter ?? "",
+          NormaliseWeight(entry.Weight), entry.MaturityThreshold, entry.SourceLevel ?? "");
       return true;
     }
 

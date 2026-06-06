@@ -13,6 +13,16 @@ namespace Keystone.Core.Biomes {
     /// overgrows, on the way to being reseeded into a new living tree.</summary>
     Dead,
 
+    /// <summary>Reseed: replace an <i>already-overgrown, dead</i> tree
+    /// whose overgrowth has matured (<see cref="OvergrowthRecipe.MaturityThreshold"/>)
+    /// with a fresh living seedling drawn from the biome's Class D table
+    /// (<see cref="OvergrowthRecipe.SourceLevel"/>), carrying the
+    /// overgrowth straight onto the new tree and dropping the felled
+    /// tree's wood for hauling. The terminal stage of the dead-tree arc
+    /// (GitHub issue #33). Paired with <c>Stochastic</c> levels so mature
+    /// overgrown deadwood is reclaimed gradually.</summary>
+    Reseed,
+
   }
 
   /// <summary>
@@ -34,18 +44,27 @@ namespace Keystone.Core.Biomes {
   /// recovery biomes — Grassland / Forest).</param>
   /// <param name="LevelId">Level identifier; its maturity band + Mode
   /// drive when and how the rule fires.</param>
-  /// <param name="Target">Which tree state to overgrow (Live / Dead).</param>
+  /// <param name="Target">Which tree state to act on (Live / Dead / Reseed).</param>
   /// <param name="Composition">Keystone flourish composition blueprint to
-  /// drape on the tree (the overgrowth overlay).</param>
+  /// drape on the tree (the overgrowth overlay). For <see cref="OvergrowthTarget.Reseed"/>
+  /// this is the composition carried onto the new seedling.</param>
   /// <param name="Filter">Optional spatial-eligibility filter.</param>
   /// <param name="Weight">Relative pick weight within the bucket's
   /// weighted-random sampler. Catalog normalises non-positive to 1.0.</param>
+  /// <param name="MaturityThreshold">Reseed only: the overgrowth's accrued
+  /// <c>Maturity</c> must reach this before the dead tree is reseeded.
+  /// Ignored by Live/Dead targets.</param>
+  /// <param name="SourceLevel">Reseed only: the level whose Class D table
+  /// the replacement species is drawn from (weighted). Empty falls back to
+  /// <paramref name="LevelId"/>. Ignored by Live/Dead targets.</param>
   public sealed record OvergrowthRecipe(
       BiomeKind Biome,
       string LevelId,
       OvergrowthTarget Target,
       string Composition,
       string Filter,
-      float Weight);
+      float Weight,
+      float MaturityThreshold = 0f,
+      string SourceLevel = "");
 
 }

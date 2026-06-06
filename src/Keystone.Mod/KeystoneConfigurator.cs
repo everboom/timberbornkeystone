@@ -461,6 +461,10 @@ namespace Keystone.Mod {
       Bind<ClassCSpawnHandler>().AsSingleton();
       Bind<ClassDSpawnHandler>().AsSingleton();
       Bind<AttritionHandler>().AsSingleton();
+      // Overgrowth reseed mechanism (issue #33): replaces a mature
+      // overgrown dead tree with a Class D seedling + drops the felled
+      // wood. Injected into OvergrowthHandler (below) and the dev tool.
+      Bind<Keystone.Mod.Overgrowth.OvergrowthReseeder>().AsSingleton();
       // Overgrowth augmentation handler (issue #33). Extends
       // SpawnHandlerBase to reuse the per-level Mode dispatch; drapes
       // existing trees instead of spawning. Lives in Keystone.Mod.Overgrowth.

@@ -13,7 +13,8 @@
       { "LevelId": "L3", "LowerMaturity":  7.5, "UpperMaturity": 1000000.0, "Density": 0.005, "Mode": "Stochastic", "FaunaCapacityAtSaturation": 8, "FaunaMinScore": 0.5 },
       { "LevelId": "L4", "LowerMaturity": 12.5, "UpperMaturity": 1000000.0, "Density": 0.005, "Mode": "Stochastic" },
       { "LevelId": "OvergrowDead", "LowerMaturity": 1.0, "UpperMaturity": 1000000.0, "Density": 0.25, "Mode": "Stochastic" },
-      { "LevelId": "OvergrowLive", "LowerMaturity": 1.0, "UpperMaturity":       2.0, "Density": 0.25 }
+      { "LevelId": "OvergrowLive", "LowerMaturity": 1.0, "UpperMaturity":       2.0, "Density": 0.25 },
+      { "LevelId": "Reseed",       "LowerMaturity": 2.0, "UpperMaturity": 1000000.0, "Density": 0.10, "Mode": "Stochastic" }
     ]
   },
   "KeystoneRecipeBookSpec": {
@@ -57,7 +58,8 @@
     ],
     "Overgrowths": [
       { "Biome": "Grassland", "Level": "OvergrowDead", "Target": "Dead", "Composition": "KeystoneGrasslandMini1", "Weight": 1 },
-      { "Biome": "Grassland", "Level": "OvergrowLive", "Target": "Live", "Composition": "KeystoneGrasslandMini1", "Weight": 1 }
+      { "Biome": "Grassland", "Level": "OvergrowLive", "Target": "Live", "Composition": "KeystoneGrasslandMini1", "Weight": 1 },
+      { "Biome": "Grassland", "Level": "Reseed", "Target": "Reseed", "Composition": "KeystoneGrasslandMini1", "SourceLevel": "L4", "MaturityThreshold": 2.0, "Weight": 1 }
     ]
   }
 }

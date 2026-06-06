@@ -24,7 +24,7 @@ reverses, and the overgrowth visibly dries and dies.
 | Transition | Gate |
 |---|---|
 | **Barren → Overgrown** | Grassland/Forest **biome maturity ≥ threshold** at the tile, then a random roll. Applies to **living and dead** trees (living-tree decoration is in, but rate-limited — see Perf). |
-| **Overgrown → Reseeded** | **Dead trees only.** Requires **both** (a) overgrowth **maturity points ≥ threshold** and (b) sufficient biome maturity. Effect: delete the dead tree, spawn a new seedling from the **Grassland Class-D spawn table** (birch-heavy, others by existing weights — no special "same species" rule), and enable overgrowth on it immediately. |
+| **Overgrown → Reseeded** | **Dead trees only**, and only while the overgrowth is **alive** (a killed overgrowth decays to barren instead). Requires **both** (a) overgrowth **maturity points ≥ threshold** and (b) sufficient biome maturity. Effect: delete the dead tree, spawn a new seedling from the **Class-D spawn table** (birch-heavy, others by existing weights — no special "same species" rule), enable overgrowth on it immediately, **and drop the felled tree's wood onto the new seedling's own `GoodStack` for a lumberjack to haul** (mimics a real cut). |
 
 **Rate = the existing per-level `BiomeLevel.Mode`** (no new rate machinery):
 - **Living trees → `Deterministic`** levels — hash-gated, coverage **capped** at
@@ -122,8 +122,26 @@ handler's roll.
   `KeystoneOvergrowth` → `IRegisteredComponent`.
 - **C2**: the `OvergrowthHandler` succession state machine on `ChunkRulesApplier`
   — biome-maturity-gated overgrow + maturity-gated reseed flag.
-- **C3**: the actual reseed — Grassland Class-D seedling spawn at the dead
-  tree's tile + carry-over overgrowth (hits the spawn pipeline; riskiest).
+- **C3 (DONE)**: the actual reseed. A new `Reseed` target on the overgrowth
+  recipe family; `OvergrowthHandler` gates on (host tree dead) + (overgrowth
+  alive, not killed) + (`Maturity ≥ MaturityThreshold`) + (biome maturity, via
+  the recipe's level band), then calls `OvergrowthReseeder`:
+  1. read the dead tree's `Cuttable.Yielder.Yield` (full wood for a grown
+     drought-killed tree; 0 for a dead sapling),
+  2. `EntityService.Delete` the dead tree (frees the tile synchronously; fires
+     the standard removal events),
+  3. weighted Class-D pick from the recipe's `SourceLevel` table →
+     `ClassDSpawnHandler.TrySpawnClassD` at the same tile,
+  4. `Apply()` the overgrowth onto the new seedling (overgrown from the start),
+  5. `GoodStack.EnableGoodStack(yield)` on the **new seedling's own** stack +
+     register with `GoodStackService<LumberjackFlagSpec>` so a lumberjack
+     hauls it (the retriever has no alive/dead host check — wood is haulable
+     off a living seedling).
+
+  No free-standing log-pile entity is created (vanilla has none — felled wood
+  always sits on a host); the new seedling *is* the host, which collapses the
+  seedling-vs-wood tile conflict. Grassland content authored; **needs a Unity
+  Mod Builder rebuild** to reach the game.
 
 ## Open / tune in-game
 
