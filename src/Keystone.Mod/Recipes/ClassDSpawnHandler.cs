@@ -32,11 +32,13 @@ namespace Keystone.Mod.Recipes {
   ///         so a cut tree doesn't re-spawn from the same level.
   ///         Vanilla <c>ReproducibleSpec</c> handles regrowth instead;
   ///         Keystone only fires once per (tile, level).</item>
-  ///   <item>Class B entities at the target tile yield to Class D
-  ///         (succession): any Keystone Class B
-  ///         (<c>KeystoneVariant.Class == "B"</c>) found at the spawn
-  ///         tile is demolished immediately before the spawn (via
-  ///         <see cref="EntityService.Delete"/>).</item>
+  ///   <item>A Class D spawn clears only dead Keystone flourishes
+  ///         (biome recovery) and fully-harvested vanilla stumps from
+  ///         the target tile before spawning. <b>Live Class B
+  ///         flourishes are NOT displaced</b> — the prior succession
+  ///         behaviour (demolishing a live Class B to seat a tree) was
+  ///         retracted 2026-06-06; a Class D spawn now aborts on a tile
+  ///         holding a live Class B.</item>
   /// </list>
   ///
   /// <para><b>Tile-selection mode is now per-level, not per-class.</b>
@@ -71,9 +73,10 @@ namespace Keystone.Mod.Recipes {
     private readonly FloraCatalog _floraCatalog;
     private readonly KeystoneFloraSettings _settings;
 
-    /// <summary>Reusable scratch buffer for Class B replacement at the
-    /// spawn tile. Allocating once at the field level avoids per-spawn
-    /// list churn on the hot path.</summary>
+    /// <summary>Reusable scratch buffer for clearing replaceable
+    /// occupants (dead flourishes, harvested stumps) at the spawn tile.
+    /// Allocating once at the field level avoids per-spawn list churn on
+    /// the hot path.</summary>
     private readonly List<BlockObject> _replacementScratch = new();
 
     /// <summary>(tile, levelId) pairs we've successfully spawned in
@@ -180,10 +183,11 @@ namespace Keystone.Mod.Recipes {
 
     /// <summary>Replacement-aware Class D spawn helper. Performs the
     /// occupant check (rejects vanilla buildings, vanilla flora,
-    /// Class C, other Class D), demolishes any Class B occupants
-    /// (succession), resolves the blueprint, and spawns. Returns the
-    /// new <see cref="BlockObject"/> on success, or <c>null</c> if
-    /// any step failed.
+    /// Class C, other Class D, and now live Class B too), clears any
+    /// dead flourishes / harvested stumps at the tile, resolves the
+    /// blueprint, and spawns. Returns the new <see cref="BlockObject"/>
+    /// on success, or <c>null</c> if any step failed (including when a
+    /// live Class B occupies the tile — see <see cref="IsReplaceable"/>).
     /// <para><b>Public so dev tools can reuse this path.</b>
     /// <c>VanillaFloraPlacementTool</c> calls this directly so a
     /// force-placement exercises the same replacement logic the
@@ -299,15 +303,20 @@ namespace Keystone.Mod.Recipes {
     }
 
     /// <summary>True if <paramref name="bo"/> can be cleared to make
-    /// way for a Class D spawn. Three cases: live Class B Keystone
-    /// entities (succession — flourishes step aside for vanilla flora),
-    /// dead Keystone flourishes of any class (biome recovery), and
-    /// vanilla tree stumps whose yield has been fully harvested.</summary>
+    /// way for a Class D spawn. Two cases: dead Keystone flourishes of
+    /// any class (biome recovery) and vanilla tree stumps whose yield
+    /// has been fully harvested.
+    /// <para><b>Live Class B no longer yields to Class D.</b> The
+    /// succession path — a living Class B flourish demolished to make
+    /// room for vanilla flora — was retracted 2026-06-06. A Class D
+    /// spawn now aborts on a tile occupied by a live Class B rather
+    /// than displacing it. (Dead Class B husks are still cleared by the
+    /// dead-flourish recovery branch above; only the *live* override is
+    /// gone.)</para></summary>
     private static bool IsReplaceable(BlockObject bo) {
       if (KeystoneFlourish.IsDeadFlourish(bo)) return true;
       if (IsHarvestedStump(bo)) return true;
-      if (!bo.HasComponent<KeystoneVariant>()) return false;
-      return bo.GetComponent<KeystoneVariant>().Class == "B";
+      return false;
     }
 
     private static bool IsHarvestedStump(BlockObject bo) {

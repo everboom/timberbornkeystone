@@ -26,20 +26,21 @@ namespace Keystone.Mod.Flora {
   /// Score, then picks a random Class D recipe registered for that
   /// biome (via <see cref="FlourishCatalog.ClassDForBiome"/>) and
   /// spawns through <see cref="ClassDSpawnHandler.TrySpawnClassD"/>
-  /// so the Class B replacement logic is exercised exactly the same
-  /// way the natural handler path does it.
+  /// so the same occupant-classification / replacement logic the
+  /// natural handler path uses is exercised.
   ///
   /// <para><b>Why route through the handler.</b> The earlier
   /// implementation called <c>NaturalResourceFactory.SpawnIgnoringConstraints</c>
   /// directly, which bypassed the handler's tile-occupancy
-  /// classification (and therefore the Class B replacement). That
+  /// classification (and therefore the replacement logic). That
   /// made the dev tool a worse-than-useless test for the replacement
   /// logic — clicks always succeeded regardless of what was on the
   /// tile, so a broken replacement check would still appear to "work".
-  /// Going through <c>TrySpawnClassD</c> means a Class B at the tile
-  /// gets demolished before the spawn (succession), and a non-Class-B
-  /// occupant blocks the spawn — both behaviors observable in the
-  /// game-time after a click.</para>
+  /// Going through <c>TrySpawnClassD</c> means a dead flourish or
+  /// harvested stump at the tile gets cleared before the spawn, while a
+  /// live Class B (or any other occupant) blocks it — observable in the
+  /// game-time after a click. (Live Class B was demolished here until
+  /// the succession override was retracted 2026-06-06.)</para>
   ///
   /// <para><b>Biome resolution mirrors <see cref="Keystone.Mod.Flourish.FlourishPlacementTool"/>.</b>
   /// Walks every <see cref="BiomeKind"/> with at least one Class D

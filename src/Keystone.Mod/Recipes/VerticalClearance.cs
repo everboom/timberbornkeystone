@@ -11,8 +11,8 @@ namespace Keystone.Mod.Recipes {
   /// <c>(x, y, z + height)</c> to be free of both natural terrain and
   /// <see cref="BlockObject"/>s. <b>The placement voxel itself is
   /// outside this check</b>: the per-class replacement rules
-  /// (dead-flourish yield, Class B succession) own that voxel and run
-  /// before this helper is consulted.
+  /// (dead-flourish yield, harvested-stump clearing) own that voxel and
+  /// run before this helper is consulted.
   /// <para><b>Above-tile occupants are unconditional blockers.</b>
   /// Dead Keystone flourishes and live Class B entities sitting in
   /// the clearance band block the spawn just like any other

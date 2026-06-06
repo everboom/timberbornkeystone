@@ -264,10 +264,10 @@ namespace Keystone.Mod.Recipes {
     /// deviates from the class default.</para>
     /// <para><b>Above-tile occupants are unconditional blockers.</b>
     /// The placement-voxel replacement rules (dead Keystone flourishes
-    /// always yield; live Class B yields to Class D succession) apply
-    /// only to the placement voxel itself. Any occupant in the
-    /// clearance voxels above -- including dead flourishes and live
-    /// Class B -- blocks the spawn.</para></summary>
+    /// and fully-harvested stumps yield; live Class B does NOT, as of
+    /// 2026-06-06) apply only to the placement voxel itself. Any occupant
+    /// in the clearance voxels above -- including dead flourishes and
+    /// live Class B -- blocks the spawn.</para></summary>
     [Serialize] public int Height { get; init; }
 
   }

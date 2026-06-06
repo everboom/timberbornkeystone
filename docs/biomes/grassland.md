@@ -88,13 +88,15 @@ Forest's natural progression to take over.
    wild meadow with diverse small plants.
 3. **L2 fires** (~0.5 game-days). Stochastic bushes appear on previously
    empty tiles. The mini-flourishes from L1 stay where they were; bushes
-   coexist on different tiles. (Class D's tile-occupancy check skips tiles
-   with an L1 mini — Class D *can* replace Class B but only when
-   activation actually fires on a B-occupied tile.)
+   coexist on different tiles. (A Class D spawn aborts on a tile that
+   already holds a live L1 mini — as of 2026-06-06 live Class B is no
+   longer displaced by Class D. L1 minis occupy only a bounded,
+   hash-deterministic subset of tiles, so most tiles stay free for L2/L3.)
 4. **L3 fires** (~2 game-days). Tree seedlings (Birch-weighted) begin
    appearing on remaining empty tiles. Trees grow from seedlings at
-   vanilla rate. The succession rule (Class D replaces Class B) means tree
-   spawns *can* claim tiles previously holding minis — see "Succession" below.
+   vanilla rate. Class D no longer displaces live Class B, so tree spawns
+   establish on tiles not held by a live mini rather than bulldozing the
+   mini layer — see "Succession" below.
 5. **Natural succession** (longer-term). As `TreeCount` rises, the chunk's
    `ChunkBiomeInputs.TreeCount` and `TreeSpeciesCount` shift the
    `BiomeTargets.Forest` formula above `BiomeTargets.Grassland`. The
@@ -117,6 +119,16 @@ course of multiple game-weeks. The trajectory:
 - After flip, Grassland recipes stop firing (dispatcher gates on dominant
   biome). Forest recipes don't exist yet, so further evolution comes only
   from vanilla reproduction.
+
+**Trees do not displace live minis** (retracted 2026-06-06). A Class D
+spawn aborts on any tile holding a live Class B mini; the prior
+"succession override" that demolished a live mini to seat a tree is gone.
+This barely slows the Forest flip: Class B spawns deterministically on a
+bounded subset of tiles (~10% at L1), so the majority stay open for trees
+to seat on, and `TreeCount` still climbs on the free tiles. A mini's tile
+is only reclaimed for a tree once the mini has *died* (the dead-flourish
+recovery path still clears dead husks). Net effect: the meadow's mini
+layer persists alongside the growing trees instead of being bulldozed.
 
 Player intervention reverses succession: cutting trees lowers `TreeCount`,
 Grassland regains dominance, and Class B minis re-emerge in their original
