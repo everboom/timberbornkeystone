@@ -1,0 +1,23 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneMonoculture",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneBiomeLevelsSpec": {
+    "Biome": "Monoculture",
+    "Levels": [
+      { "LevelId": "L1", "LowerMaturity": 0.0, "UpperMaturity": 1000000.0 }
+    ]
+  },
+  "KeystoneRecipeBookSpec": {
+    "Attritions": [
+      {
+        "Biome": "Monoculture", "Level": "L1",
+        "Action": "Kill", "Classes": ["Overgrowth"],
+        "Probability": 0.5, "Filter": ""
+      }
+    ]
+  }
+}

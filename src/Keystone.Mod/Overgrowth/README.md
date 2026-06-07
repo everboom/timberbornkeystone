@@ -57,11 +57,15 @@ only if per-blueprint overgrowth *config* is ever needed.
     pins `#Dead`) + **decay cleanup** (`KeystoneOvergrowthDecayTicker`,
     ~10%/day, `Clear()`s the dead overlay → tree barren, can re-overgrow;
     `Clear()` leaves maturity intact — a still-dead tree keeps reclaiming).
-  - **Death triggers:** (1) per-tick **badwater self-kill** — same predicate
-    + threshold as Class B (`FlourishVisuals.ShouldDieFromBadwater`); (2)
-    **Dry-biome attrition** kills it via the `"Overgrowth"` token in an
-    attrition rule's `Classes` (Dry L1 uses `["B","C","Overgrowth"]`), on
-    the same cadence it kills irrigated flourishes.
+  - **Death triggers** (all kill the overgrowth *visual* via the
+    `"Overgrowth"` attrition token / `Kill()`): (1) per-tick **badwater
+    self-kill** — same predicate + threshold as Class B
+    (`FlourishVisuals.ShouldDieFromBadwater`); (2) **Dry-biome attrition**
+    (Dry L1 `Classes: ["B","C","Overgrowth"]`); (3) **Monoculture-biome
+    attrition** (`KeystoneMonoculture` L1 `Classes: ["Overgrowth"]`,
+    Prob 0.5) — a dense low-diversity managed field actively strips
+    overgrowth, and since Monoculture has no overgrow/reseed recipes the
+    area is left free of Keystone tree-replacement too.
   - **Reseed** (C3): a new `Reseed` target on the overgrowth recipe family.
     When a **matured** (`Maturity ≥ MaturityThreshold`) **dead** tree is hit
     on a recovering-biome level, `OvergrowthReseeder` removes the dead tree,

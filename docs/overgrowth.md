@@ -76,6 +76,14 @@ overgrowth as a target* — reusing the existing policy/cadence.
   `AttritionHandler` Kills the overgrowth on the tree at that tile on the
   same filter/probability it kills irrigated flourishes. (A token in the
   existing `Classes` list — uniform with B/C targeting, no special flag.)
+- **Monoculture biome → attrition kill.** `KeystoneMonoculture` (a new biome
+  blueprint — Monoculture is a real dominant `BiomeKind`, a dense
+  low-diversity managed field) carries an L1 attrition with
+  `Classes: ["Overgrowth"]` at `Probability 0.5`, so a managed monocrop area
+  actively strips overgrowth. Reseed is suppressed there for free: the
+  overgrow/reseed recipes live only on Grassland/Forest, so a
+  Monoculture-dominant chunk dispatches none — the player's managed area is
+  left alone by Keystone's tree-replacement.
 - **Cleanup = decay ticker.** `KeystoneOvergrowthDecayTicker` mirrors
   `KeystoneFlourishDecayTicker` (~10%/day) but `Clear()`s dead overgrowth
   (`KeystoneOvergrowth` is `IRegisteredComponent` for enumeration).
