@@ -1,4 +1,4 @@
-﻿ID,Text,Comment
+ID,Text,Comment
 Keystone.NeedGroup.Nature.DisplayName,Nature,"Header for the Keystone Nature need group in the wellbeing panel."
 Keystone.Need.Nature.Forest.DisplayName,Forest,"Nature need flavor — filled by visiting a contemplation building surrounded by Forest biome."
 Keystone.Need.Nature.Grassland.DisplayName,Grassland,"Nature need flavor — filled by visiting a contemplation building surrounded by Grassland biome."
@@ -175,8 +175,6 @@ Keystone.GrowthBonus.WouldGrow,"<YellowHighlight>Would grow faster in a healthy 
 Keystone.GrowthBonus.HealthyBiome,"<GreenHighlight>Part of a healthy {0}.</GreenHighlight>",Brief status on a mature plant in a healthy biome.
 Keystone.GrowthBonus.MonocultureWarning,"<YellowHighlight>Add species diversity to increase growth bonus.</YellowHighlight>",Monoculture suppression warning on a growing plant.
 Keystone.GrowthBonus.MonocultureBrief,"<YellowHighlight>This area lacks species diversity.</YellowHighlight>",Monoculture brief on a mature plant.
-Keystone.GrowthBonus.MaturingForestWarning,"<GreenHighlight>This woodland is still maturing — the bonus grows as the canopy establishes.</GreenHighlight>",Shown instead of MonocultureWarning on a growing tree when Forest is out-scored by Monoculture only because its canopy is still young.
-Keystone.GrowthBonus.MaturingForestBrief,"<GreenHighlight>This woodland is still maturing.</GreenHighlight>",Shown instead of MonocultureBrief on a grown tree when Forest is out-scored by Monoculture only because its canopy is still young.
 Keystone.GrowthBonus.RiverWarning,"<YellowHighlight>Water flow is too strong for a wetland to develop here.</YellowHighlight>",River suppression warning on a growing aquatic plant.
 Keystone.GrowthBonus.RiverBrief,"<YellowHighlight>Water flow is too strong for a wetland here.</YellowHighlight>",River brief on a mature aquatic plant.
 Keystone.GrowthBonus.Flavor.Thriving,"<GreenHighlight>Thriving in established {0}.</GreenHighlight>",Flavor line: established target biome + favorable conditions.

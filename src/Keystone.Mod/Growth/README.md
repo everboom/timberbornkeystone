@@ -18,16 +18,19 @@ bundle to a `GrowthVerdict`; the fragment maps that to a flavor string:
 
 | Verdict | When | Flavor line |
 |---|---|---|
-| Thriving | established target + favorable conditions | "Thriving in established {B}." |
-| Benefiting | a meaningful bonus is applied (≥ margin) | "Growing well — {B} is taking hold." |
-| Hostile | toxic ground, or moisture mismatch | "Struggling — {reason}." |
-| Establishing | actively establishing now — real current suitability, maturity still building | "Taking root — {B} is establishing." |
-| Potential | viable but not started — diverse young Forest canopy gated to ~0 current suitability | "Saplings growing — {B} will establish as the canopy matures." |
-| WrongBiome | a different non-hostile biome is established here | "Out of place — this is {O}, not {B}." (Monoculture → "Crowded — too little variety for {B}.") |
-| Dormant | nothing established, conditions not favorable | "No {B} taking hold here." |
+| Thriving | established target + favorable conditions | "Thriving in established {B}." `(+N%)` |
+| Benefiting | a meaningful bonus is applied (≥ margin) | "Growing well — {B} is taking hold." `(+N%)` |
+| Establishing | actively establishing now — real current suitability, maturity still building | "Taking root — {B} is establishing." `(+N%)` |
+| Potential | viable but not started — diverse young Forest canopy gated to ~0 current suitability | "No growth bonus yet — {B} will establish as the saplings mature." |
+| Hostile | toxic ground, or moisture mismatch | "No growth bonus — {reason}." |
+| WrongBiome | a different non-hostile biome is established here | "No growth bonus — needs {B}, this is established {O}." (Monoculture → "No growth bonus — too little species variety for {B}.") |
+| Dormant | nothing established, conditions not favorable | "No growth bonus — no established {B} here." |
 
-The technical detail (raw suitability/maturity numbers, the dominant-biome
-match, the limiting factor) lives in the hover tooltip, not the line.
+The no-bonus verdicts are framed "No growth bonus — …" so the line reads as a
+statement about the bonus, not a judgment on the plant. The `(+N%)` suffix
+rides only on the bonus-positive verdicts (Thriving / Benefiting /
+Establishing). The technical detail (raw suitability/maturity numbers, the
+dominant-biome match, the limiting factor) lives in the hover tooltip.
 
 ## Settings
 
