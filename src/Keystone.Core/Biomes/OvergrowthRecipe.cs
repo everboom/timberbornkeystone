@@ -8,19 +8,21 @@ namespace Keystone.Core.Biomes {
     /// boring area, never beyond a fixed fraction).</summary>
     Live,
 
-    /// <summary>Dead trees. Paired with <c>Stochastic</c> levels so the
-    /// per-cycle roll accumulates over time — every dead tree eventually
-    /// overgrows, on the way to being reseeded into a new living tree.</summary>
+    /// <summary>Dead trees. The decoration that signals nature reclaiming
+    /// deadwood. The level's <c>Mode</c> drives the rate shape (current
+    /// content uses a capped <c>Deterministic</c> fraction); this is purely
+    /// the visual — the reseed clock runs independently of it.</summary>
     Dead,
 
-    /// <summary>Reseed: replace an <i>already-overgrown, dead</i> tree
-    /// whose overgrowth has matured (<see cref="OvergrowthRecipe.MaturityThreshold"/>)
-    /// with a fresh living seedling drawn from the biome's Class D table
-    /// (<see cref="OvergrowthRecipe.SourceLevel"/>), carrying the
-    /// overgrowth straight onto the new tree and dropping the felled
-    /// tree's wood for hauling. The terminal stage of the dead-tree arc
-    /// (GitHub issue #33). Paired with <c>Stochastic</c> levels so mature
-    /// overgrown deadwood is reclaimed gradually.</summary>
+    /// <summary>Reseed: replace a <i>matured dead</i> tree (reclamation
+    /// maturity ≥ <see cref="OvergrowthRecipe.MaturityThreshold"/>) with a
+    /// fresh living seedling drawn from the biome's Class D table
+    /// (<see cref="OvergrowthRecipe.SourceLevel"/>), draping overgrowth on
+    /// the new tree and dropping the felled tree's wood for hauling. The
+    /// host need not be visually overgrown — maturity accrues on barren
+    /// dead trees too. The terminal stage of the dead-tree arc (GitHub
+    /// issue #33). Paired with <c>Stochastic</c> levels so mature deadwood
+    /// is reclaimed gradually.</summary>
     Reseed,
 
   }
@@ -34,11 +36,11 @@ namespace Keystone.Core.Biomes {
   ///
   /// <para>Dispatched by <c>OvergrowthHandler</c>, which extends the
   /// shared spawn dispatch (<c>SpawnHandlerBase</c>) purely to reuse its
-  /// per-level <c>Mode</c> handling: <see cref="OvergrowthTarget.Live"/>
-  /// recipes sit on <c>Deterministic</c> levels (capped coverage),
-  /// <see cref="OvergrowthTarget.Dead"/> recipes on <c>Stochastic</c>
-  /// levels (accumulate over time). The recipe carries no probability of
-  /// its own — the level owns the rate.</para>
+  /// per-level <c>Mode</c> handling. The level's <c>Mode</c> owns the rate
+  /// shape, not the target: current content puts the Live/Dead overgrow
+  /// levels on <c>Deterministic</c> (capped coverage) and the Reseed level
+  /// on <c>Stochastic</c> (per-cycle roll that accumulates). The recipe
+  /// carries no probability of its own — the level owns the rate.</para>
   /// </summary>
   /// <param name="Biome">Dominant biome that gates this recipe (the
   /// recovery biomes — Grassland / Forest).</param>

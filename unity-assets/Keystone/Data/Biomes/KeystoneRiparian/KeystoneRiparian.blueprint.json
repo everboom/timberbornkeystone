@@ -9,7 +9,9 @@
     "Biome": "Riparian",
     "Levels": [
       { "LevelId": "L1", "LowerMaturity": 0.5, "UpperMaturity":       3.0, "Density": 0.15 },
-      { "LevelId": "L2", "LowerMaturity": 3.0, "UpperMaturity": 30.0, "Density": 0.15 }
+      { "LevelId": "L2", "LowerMaturity": 3.0, "UpperMaturity": 30.0, "Density": 0.15 },
+      { "LevelId": "OvergrowDead", "LowerMaturity": 5.0, "UpperMaturity":      15.0, "Density": 0.10 },
+      { "LevelId": "Reseed",       "LowerMaturity": 10.0, "UpperMaturity": 1000000.0, "Density": 0.025, "Mode": "Stochastic" }
     ]
   },
   "KeystoneRecipeBookSpec": {
@@ -33,7 +35,12 @@
           "KeystoneRiparianMini10", "KeystoneRiparianMini11", "KeystoneRiparianMini12",
           "KeystoneRiparianMini13", "KeystoneRiparianMini14", "KeystoneRiparianMini15"
         ]
-      }
+      },
+      { "Class": "D", "BlueprintName": "Birch", "Biome": "Riparian", "Level": "ReseedSource", "Category": "Trees", "Weight": 1 }
+    ],
+    "Overgrowths": [
+      { "Biome": "Riparian", "Level": "OvergrowDead", "Target": "Dead", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "Weight": 1 },
+      { "Biome": "Riparian", "Level": "Reseed", "Target": "Reseed", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "SourceLevel": "ReseedSource", "MaturityThreshold": 10.0, "Weight": 1 }
     ]
   }
 }

@@ -18,15 +18,15 @@ namespace Keystone.Mod.Overgrowth {
   ///
   /// <para><b>Why it extends <see cref="SpawnHandlerBase{TRecipe}"/>.</b>
   /// Not to spawn — to reuse the base's per-level dispatch by
-  /// <c>BiomeLevel.Mode</c>. <see cref="OvergrowthTarget.Live"/> recipes
-  /// sit on <c>Deterministic</c> levels (hash-gated, coverage-capped at
-  /// <c>Density × progress</c> — decoration that never grows past a fixed
-  /// fraction); <see cref="OvergrowthTarget.Dead"/> recipes on
-  /// <c>Stochastic</c> levels (per-cycle roll that accumulates — every
-  /// dead tree eventually overgrows). The only override is
-  /// <see cref="OnRecipeChosen"/>: instead of placing a blueprint, find a
-  /// tree of the recipe's target state at the surface and
-  /// <see cref="KeystoneOvergrowth.Apply(string)"/> the composition.</para>
+  /// <c>BiomeLevel.Mode</c>. The level's Mode owns the rate shape, not the
+  /// target: current content puts the Live/Dead overgrow levels on
+  /// <c>Deterministic</c> (hash-gated, coverage-capped at
+  /// <c>Density × progress</c> — a fixed fraction of trees) and the Reseed
+  /// level on <c>Stochastic</c> (per-cycle roll that accumulates). The only
+  /// override is <see cref="OnRecipeChosen"/>: instead of placing a
+  /// blueprint, find a tree of the recipe's target state at the surface and
+  /// either <see cref="KeystoneOvergrowth.Apply(string)"/> the composition
+  /// (Live/Dead) or reseed it (Reseed).</para>
   /// </summary>
   public sealed class OvergrowthHandler : SpawnHandlerBase<OvergrowthRecipe> {
 

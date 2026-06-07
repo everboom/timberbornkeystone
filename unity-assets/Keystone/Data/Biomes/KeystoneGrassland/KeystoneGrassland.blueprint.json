@@ -12,9 +12,9 @@
       { "LevelId": "L2", "LowerMaturity":  2.5, "UpperMaturity":      30.0, "Density": 0.10 },
       { "LevelId": "L3", "LowerMaturity":  7.5, "UpperMaturity": 1000000.0, "Density": 0.005, "Mode": "Stochastic", "FaunaCapacityAtSaturation": 8, "FaunaMinScore": 0.5 },
       { "LevelId": "L4", "LowerMaturity": 12.5, "UpperMaturity": 1000000.0, "Density": 0.005, "Mode": "Stochastic" },
-      { "LevelId": "OvergrowDead", "LowerMaturity": 1.0, "UpperMaturity": 1000000.0, "Density": 0.25, "Mode": "Stochastic" },
-      { "LevelId": "OvergrowLive", "LowerMaturity": 1.0, "UpperMaturity":       2.0, "Density": 0.25 },
-      { "LevelId": "Reseed",       "LowerMaturity": 2.0, "UpperMaturity": 1000000.0, "Density": 0.10, "Mode": "Stochastic" }
+      { "LevelId": "OvergrowDead", "LowerMaturity": 5.0, "UpperMaturity":      15.0, "Density": 0.15 },
+      { "LevelId": "OvergrowLive", "LowerMaturity": 2.5, "UpperMaturity":      10.0, "Density": 0.05 },
+      { "LevelId": "Reseed",       "LowerMaturity": 10.0, "UpperMaturity": 1000000.0, "Density": 0.025, "Mode": "Stochastic" }
     ]
   },
   "KeystoneRecipeBookSpec": {
@@ -59,7 +59,7 @@
     "Overgrowths": [
       { "Biome": "Grassland", "Level": "OvergrowDead", "Target": "Dead", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "Weight": 1 },
       { "Biome": "Grassland", "Level": "OvergrowLive", "Target": "Live", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "Weight": 1 },
-      { "Biome": "Grassland", "Level": "Reseed", "Target": "Reseed", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "SourceLevel": "L4", "MaturityThreshold": 2.0, "Weight": 1 }
+      { "Biome": "Grassland", "Level": "Reseed", "Target": "Reseed", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "SourceLevel": "L4", "MaturityThreshold": 10.0, "Weight": 1 }
     ]
   }
 }
