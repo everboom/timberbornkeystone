@@ -151,6 +151,26 @@
     at runtime by KeystoneDevMode.IsEnabled. Nothing in this build
     target needs to write or delete a dev sentinel.
   -->
+  <!--
+    Validate localization CSVs before building so a malformed row fails the
+    build instead of crashing the game at language-load with a LINQtoCSV
+    AggregatedException ("reading data using type LocalizationRecord"). The
+    recurring mistake is an UNQUOTED COMMA in the Text/Comment column, which
+    creates extra fields. The check is quote-aware (TextFieldParser);
+    PowerShell's Import-Csv can't catch it (it silently drops extra fields).
+    Runs regardless of KeystoneDeploy; incremental via Inputs/Outputs so it
+    re-runs only when a loc CSV changes.
+  -->
+  <ItemGroup>
+    <_KeystoneLocFile Include="$(MSBuildThisFileDirectory)..\..\unity-assets\Keystone\Data\Localizations\*.csv" />
+  </ItemGroup>
+  <Target Name="ValidateLocalizations" BeforeTargets="Build"
+          Inputs="@(_KeystoneLocFile)"
+          Outputs="$(IntermediateOutputPath)keystone-loc-validated.stamp">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\..\tools\validate-localizations.ps1&quot; -Root &quot;$(MSBuildThisFileDirectory)..\..&quot;" />
+    <Touch Files="$(IntermediateOutputPath)keystone-loc-validated.stamp" AlwaysCreate="true" />
+  </Target>
+
   <Target Name="DeployKeystone" AfterTargets="Build" Condition="'$(KeystoneDeploy)' != 'false'">
     <ItemGroup>
       <_KeystoneDeployFile Include="$(TargetDir)Code.dll" />

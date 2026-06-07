@@ -412,6 +412,111 @@ namespace Keystone.Core.Tests.Biomes {
 
     #endregion
 
+    #region Forest limited by immaturity (vs genuine monoculture)
+
+    // ForestLimitedByImmaturity is the discriminator behind the entity
+    // panel's "still maturing" vs "lacks species diversity" message split.
+    // It answers: is Forest being out-scored by Monoculture *only* because
+    // its canopy hasn't grown up yet (so the area would read as Forest once
+    // established), as opposed to being a genuine low-diversity planting?
+    // Contract: MatureCanopyGate < 1  AND  ForestUngated > Monoculture.
+
+    [TestMethod]
+    public void ForestLimitedByImmaturity_YoungDiverseGrove_WouldBecomeForest_True() {
+      // The false-positive case the split exists to fix: a dense, multi-
+      // species planting of seedlings. The mature-canopy gate pins Forest
+      // at 0 (all seedlings), so Monoculture out-scores it and the old code
+      // showed "lacks diversity" -- but the un-gated Forest score already
+      // beats Monoculture, so this WILL be a forest once it grows. The
+      // honest message is "still maturing", so the discriminator is true.
+      var inputs = new ChunkBiomeInputs {
+          IrrigatedFraction = 1f,
+          TreeCount = 10,
+          TreeSpeciesCount = 3,
+          MatureTreeCount = 0,            // all seedlings -> gate = 0 < 1
+          PlantableCount = 10,
+          PlantableSpeciesCount = 3,
+          PlantableDominance = 0.5f,      // skewed enough that Monoculture > 0
+      };
+      // Sanity: Forest is genuinely suppressed here (gate zeroes it) while
+      // Monoculture is positive -- the suppression the message reacts to.
+      Assert.AreEqual(0f, BiomeTargets.Forest(inputs), 1e-4f);
+      Assert.IsTrue(BiomeTargets.Monoculture(inputs) > 0f);
+      Assert.IsTrue(BiomeTargets.ForestUngated(inputs) > BiomeTargets.Monoculture(inputs));
+
+      Assert.IsTrue(BiomeTargets.ForestLimitedByImmaturity(inputs));
+    }
+
+    [TestMethod]
+    public void ForestLimitedByImmaturity_MatureCanopy_False() {
+      // Same diverse/dense grove but the canopy is established (gate = 1).
+      // Immaturity can't be the limiter once the trees are grown -- here
+      // un-gated Forest already beats Monoculture so the chunk reads as
+      // Forest outright (no suppression, no message at all).
+      var inputs = new ChunkBiomeInputs {
+          IrrigatedFraction = 1f,
+          TreeCount = 10,
+          TreeSpeciesCount = 3,
+          MatureTreeCount = 10,           // fully mature -> gate = 1
+          PlantableCount = 10,
+          PlantableSpeciesCount = 3,
+          PlantableDominance = 0.5f,
+      };
+      Assert.IsFalse(BiomeTargets.ForestLimitedByImmaturity(inputs));
+    }
+
+    [TestMethod]
+    public void ForestLimitedByImmaturity_YoungSingleSpeciesFarm_StaysMonoculture_False() {
+      // A young single-species tree farm: seedlings (gate < 1) but it will
+      // NOT become a diverse forest -- un-gated Forest (diversity 0.5,
+      // fully mono-suppressed) loses to Monoculture even once grown. The
+      // diversity message is correct, not the maturity one, so the
+      // discriminator is false despite the young canopy.
+      var inputs = new ChunkBiomeInputs {
+          IrrigatedFraction = 1f,
+          TreeCount = 16,
+          TreeSpeciesCount = 1,
+          MatureTreeCount = 0,            // young -> gate < 1
+          PlantableCount = 16,
+          PlantableSpeciesCount = 1,
+          PlantableDominance = 1f,        // pure monoculture
+      };
+      Assert.IsTrue(BiomeTargets.MatureCanopyGate(inputs) < 1f);
+      Assert.IsFalse(BiomeTargets.ForestUngated(inputs) > BiomeTargets.Monoculture(inputs));
+
+      Assert.IsFalse(BiomeTargets.ForestLimitedByImmaturity(inputs));
+    }
+
+    [TestMethod]
+    public void ForestLimitedByImmaturity_EmptyChunk_False() {
+      // Nothing planted: no canopy to mature into. Gate is 0 (< 1) but
+      // un-gated Forest is 0 and Monoculture is 0, so 0 > 0 is false --
+      // the discriminator must not fire on an empty chunk.
+      var inputs = new ChunkBiomeInputs { IrrigatedFraction = 1f };
+      Assert.IsFalse(BiomeTargets.ForestLimitedByImmaturity(inputs));
+    }
+
+    [TestMethod]
+    public void Forest_FactoredAsUngatedTimesGate_MatchesInlinedProduct() {
+      // The Forest() split is behaviour-preserving: the product of the two
+      // exposed factors equals the single Forest score. Partial gate so
+      // both factors are non-trivial (12.5% mature -> gate 0.5).
+      var inputs = new ChunkBiomeInputs {
+          IrrigatedFraction = 1f,
+          TreeCount = 16,
+          TreeSpeciesCount = 3,
+          MatureTreeCount = 2,            // gate = 0.5
+          PlantableCount = 8,
+          PlantableSpeciesCount = 2,
+          PlantableDominance = 0.5f,
+      };
+      Assert.AreEqual(
+          BiomeTargets.ForestUngated(inputs) * BiomeTargets.MatureCanopyGate(inputs),
+          BiomeTargets.Forest(inputs), 1e-6f);
+    }
+
+    #endregion
+
     #region Water (clean)
 
     [TestMethod]

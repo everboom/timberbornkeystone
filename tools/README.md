@@ -1,6 +1,32 @@
 # tools
 
-Repo-local helper scripts. Not part of the build; not deployed.
+Repo-local helper scripts. Mostly not part of the build; the exception is
+`validate-localizations.ps1`, which the Mod build invokes (see below).
+
+## `validate-localizations.ps1`
+
+Quote-aware validator for the localization CSVs under
+`unity-assets/Keystone/Data/Localizations/`. Every data row must have exactly
+three fields (`ID,Text,Comment`) and a non-empty `ID`.
+
+**Why it exists:** Timberborn loads localizations with LINQtoCSV, which throws
+an `AggregatedException` ("reading data using type `LocalizationRecord`") and
+fails the whole language load — i.e. a black-screen crash at game start — if
+any row is malformed. The recurring mistake is an **unquoted comma** in the
+`Text` or `Comment` column, which silently creates extra fields. PowerShell's
+`Import-Csv` does **not** catch this (it drops the extra fields), so this uses
+`Microsoft.VisualBasic.FileIO.TextFieldParser`, which reports the true
+per-row field count.
+
+**Wired into the build:** the `ValidateLocalizations` target in
+`src/Keystone.Mod/Keystone.Mod.csproj` runs it `BeforeTargets="Build"`, so a
+bad row fails `dotnet build` (with a `file:line` message) instead of reaching
+the game. Runs regardless of `KeystoneDeploy`; incremental (re-runs only when
+a loc CSV changes). Run standalone with
+`powershell -File tools/validate-localizations.ps1`.
+
+**Fix when it fires:** quote any field containing a comma, e.g.
+`Key,"text, with comma","comment, with comma"`.
 
 ## `generate-flourish-blueprints.py`
 
