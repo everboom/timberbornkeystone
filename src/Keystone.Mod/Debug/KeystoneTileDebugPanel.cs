@@ -544,12 +544,19 @@ namespace Keystone.Mod.Debug {
       }
       var overgrowth = bo.GetComponent<Keystone.Mod.Overgrowth.KeystoneOvergrowth>();
       if (overgrowth != null) {
-        _buffer.AppendLine(overgrowth.IsOvergrown
-            ? string.Format(CultureInfo.InvariantCulture,
-                "    overgrowth: ON, maturity {0:F2}", overgrowth.Maturity)
-            : (overgrowth.CanOvergrow
-                ? "    overgrowth: off"
-                : "    overgrowth: off (water tree)"));
+        if (overgrowth.IsOvergrown) {
+          _buffer.AppendLine(string.Format(CultureInfo.InvariantCulture,
+              "    overgrowth: ON, maturity {0:F2}", overgrowth.Maturity));
+        } else if (overgrowth.Maturity > 0f) {
+          // Barren, but a dead host is running the reclamation clock toward
+          // reseed (no visual overlay — maturity is decoupled from it).
+          _buffer.AppendLine(string.Format(CultureInfo.InvariantCulture,
+              "    overgrowth: off, maturity {0:F2}", overgrowth.Maturity));
+        } else if (overgrowth.CanOvergrow) {
+          _buffer.AppendLine("    overgrowth: off");
+        } else {
+          _buffer.AppendLine("    overgrowth: off (water tree)");
+        }
       }
     }
 

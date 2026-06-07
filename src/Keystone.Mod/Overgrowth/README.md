@@ -47,26 +47,31 @@ only if per-blueprint overgrowth *config* is ever needed.
   - Biome-driven `OvergrowthHandler` on the chunk pass — Live recipes on
     Deterministic levels (capped), Dead on Stochastic (accumulate); all
     land trees (water trees self-filter); Grassland content authored.
-  - **Maturity points** (`+1`/day alive, `−2`/day drying, floored, persisted)
-    + tile-panel readout.
-  - **Terminal death** (`Kill()` → persisted dead state; controller pins
-    `#Dead`, maturity stops) + **decay cleanup** (`KeystoneOvergrowthDecayTicker`,
-    ~10%/day, `Clear()`s dead overgrowth → tree barren, can re-overgrow).
+  - **Reclamation maturity** — the reseed clock. A **dead** host accrues
+    `Maturity` (`+1`/day moist, `−2`/day dry, floored, persisted) **whether
+    or not it's overgrown**, so the graphical overgrowth layer and the
+    gameplay replacement speed are decoupled. Living trees have no clock.
+    Tile-panel readout. (Persistence keys `Decorated` explicitly now, so a
+    dead barren tree's maturity survives reload.)
+  - **Terminal death** (`Kill()` → persisted dead-*visual* state; controller
+    pins `#Dead`) + **decay cleanup** (`KeystoneOvergrowthDecayTicker`,
+    ~10%/day, `Clear()`s the dead overlay → tree barren, can re-overgrow;
+    `Clear()` leaves maturity intact — a still-dead tree keeps reclaiming).
   - **Death triggers:** (1) per-tick **badwater self-kill** — same predicate
     + threshold as Class B (`FlourishVisuals.ShouldDieFromBadwater`); (2)
     **Dry-biome attrition** kills it via the `"Overgrowth"` token in an
     attrition rule's `Classes` (Dry L1 uses `["B","C","Overgrowth"]`), on
     the same cadence it kills irrigated flourishes.
   - **Reseed** (C3): a new `Reseed` target on the overgrowth recipe family.
-    When an **overgrown, alive-overgrowth, matured** (`Maturity ≥
-    MaturityThreshold`) tree on a **dead host** is hit on a recovering-biome
-    level, `OvergrowthReseeder` removes the dead tree, plants a weighted
-    Class D seedling from the recipe's `SourceLevel` table, carries the
-    overgrowth onto it, and drops the felled wood onto the new tree's own
-    `GoodStack`. A *killed* overgrowth (recovery stalled) decays to barren
-    instead. Grassland content authored (`Reseed` level + entry — **needs a
-    Unity Mod Builder rebuild** to reach the game; the dev tool exercises
-    the mechanism without it).
+    When a **matured** (`Maturity ≥ MaturityThreshold`) **dead** tree is hit
+    on a recovering-biome level, `OvergrowthReseeder` removes the dead tree,
+    plants a weighted Class D seedling from the recipe's `SourceLevel` table,
+    carries an overgrowth overlay onto it, and drops the felled wood onto
+    the new tree's own `GoodStack`. The host need **not** be overgrown — the
+    reclamation clock runs on barren dead trees too; bad conditions erode
+    maturity and stall reseed naturally. Grassland content authored
+    (`Reseed` level + entry — **needs a Unity Mod Builder rebuild** to reach
+    the game; the dev tool exercises the mechanism without it).
   - **Dedicated overgrowth compositions**: 10 `KeystoneOvergrowthMini1..10`
     (undergrowth — mature CoffeeBush/BlueberryBush ≤70% + seedling Corn/
     Sunflower + pebbles — kept off-centre via the generator's `--clear-center`
@@ -74,10 +79,18 @@ only if per-blueprint overgrowth *config* is ever needed.
     `Compositions` list (each `OvergrowthEntry` expands 1:1 into recipes; the
     handler weighted-picks one per tree, so Dead/Live/Reseed all draw a
     random mini). Replaces the old `KeystoneGrasslandMini1` stand-in.
+  - **Forest content**: Grassland's overgrow + reseed levels/entries mirrored
+    into `KeystoneForest` (reseed `SourceLevel` = Forest's `L1` tree table).
+  - **Player settings** (`KeystoneOvergrowthSettings`, "Overgrowth" panel
+    section): two independent 0–200% sliders, via `GetDensityMultiplier` —
+    an **overgrowth rate** (graphics: scales Dead/Live overgrow density; 0%
+    = no visuals) and a **replacement rate** (gameplay: scales the Reseed
+    level density; 0% = trees never replaced; 200% = double). Independent
+    because the reclamation clock accrues on every dead tree regardless of
+    the visual.
 - **Next:**
-  - Forest content (mirror Grassland's overgrow + reseed levels/entries),
-    the trunk **ivy**, and in-game tuning of the maturity bands / densities /
-    `MaturityThreshold`.
+  - The trunk **ivy**, and in-game tuning of the maturity bands / densities /
+    `MaturityThreshold` (now adjustable live via the Overgrowth settings).
 - **Decisions settled** (see #33): **persist** the state — terminal dead
   state needs it; verified save-portable (removing Keystone strips the
   orphan data, trees load intact).

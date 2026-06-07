@@ -123,6 +123,19 @@ Keystone.Settings.Fauna.FishAbundance.Tooltip,"How many fish appear in suitable 
 0% removes fish entirely.
 100% is the default amount.
 200% doubles the population.",
+Keystone.Settings.Overgrowth.Header,Overgrowth,Header above the dead-tree overgrowth section of the Keystone settings panel.
+Keystone.Settings.Overgrowth.Density,Overgrowth rate,Overgrowth spawn-rate slider label.
+Keystone.Settings.Overgrowth.Density.Tooltip,"How quickly trees get overgrown with weeds, bushes, and moss. Purely visual — it does not change how fast dead trees are replaced.
+
+0% turns overgrowth visuals off entirely.
+100% is the default rate.
+200% is twice as fast.",
+Keystone.Settings.Overgrowth.ReplacementRate,Tree replacement rate,Dead-tree replacement-rate slider label.
+Keystone.Settings.Overgrowth.ReplacementRate.Tooltip,"How quickly mature dead trees are replaced by new saplings — leaving wood on the ground to haul, like a felled tree. Works whether or not the tree is overgrown.
+
+0% means dead trees are never replaced.
+100% is the default speed.
+200% is twice as fast.",
 Keystone.Settings.Effects.Header,Effects,Header above the atmospheric-effects section of the Keystone settings panel.
 Keystone.Settings.Effects.FoggyMorningFrequency,Foggy mornings,Foggy-morning frequency dropdown label.
 Keystone.Settings.Effects.FoggyMorningFrequency.Tooltip,"How often a misty morning rolls in over wetland areas.

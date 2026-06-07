@@ -3,6 +3,7 @@ using Keystone.Core.Biomes;
 using Keystone.Core.Ports;
 using Keystone.Core.Tiles;
 using Keystone.Mod.Recipes;
+using Keystone.Mod.Settings;
 using Timberborn.BlockSystem;
 using Timberborn.NaturalResourcesLifecycle;
 using UnityEngine;
@@ -34,6 +35,7 @@ namespace Keystone.Mod.Overgrowth {
     private readonly FlourishCatalog _catalog;
     private readonly IBlockService _blockService;
     private readonly OvergrowthReseeder _reseeder;
+    private readonly KeystoneOvergrowthSettings _settings;
 
     #endregion
 
@@ -44,16 +46,32 @@ namespace Keystone.Mod.Overgrowth {
         RecipeFilterRegistry filters,
         IPlantingMarkQuery marks,
         IBlockService blockService,
-        OvergrowthReseeder reseeder)
+        OvergrowthReseeder reseeder,
+        KeystoneOvergrowthSettings settings)
         : base(filters, marks) {
       _catalog = catalog;
       _blockService = blockService;
       _reseeder = reseeder;
+      _settings = settings;
     }
 
     #endregion
 
     #region SpawnHandlerBase
+
+    /// <summary>Player-tunable rate gating (see
+    /// <see cref="KeystoneOvergrowthSettings"/>) — two independent sliders:
+    /// the Dead/Live overgrow levels (graphics) scale by the overgrowth-rate
+    /// slider; the Reseed level (gameplay) scales by the replacement-rate
+    /// slider (0% → multiplier 0 → the level is skipped before any roll).
+    /// Each overgrowth level is single-target by design, so
+    /// <c>recipes[0].Target</c> classifies the whole bucket — mirrors how
+    /// <c>ClassDSpawnHandler</c> reads <c>recipes[0].Category</c>.</summary>
+    protected override float GetDensityMultiplier(IReadOnlyList<OvergrowthRecipe> recipes) {
+      return recipes[0].Target == OvergrowthTarget.Reseed
+          ? _settings.ReplacementRateMultiplier
+          : _settings.OvergrowthRateMultiplier;
+    }
 
     /// <inheritdoc />
     protected override IReadOnlyList<OvergrowthRecipe> GetAllRecipes() => _catalog.AllOvergrowth;
@@ -102,15 +120,18 @@ namespace Keystone.Mod.Overgrowth {
     }
 
     /// <summary>Reseed gate (the terminal dead-tree stage): the host tree
-    /// must be <b>dead</b>, its overgrowth <b>alive</b> (not terminally
-    /// killed) and <b>matured</b> past the recipe's threshold. (Biome
-    /// maturity is already gated by the recipe's level band, so reaching
-    /// here means the biome is recovering.) A killed overgrowth means
-    /// recovery stalled — it decays back to barren rather than reseeding.</summary>
+    /// must be <b>dead</b> and its reclamation maturity past the recipe's
+    /// threshold. (Biome maturity is already gated by the recipe's level
+    /// band, so reaching here means the biome is recovering.)
+    /// <para><b>The overgrowth visual is irrelevant here</b> — the
+    /// reclamation clock (<see cref="KeystoneOvergrowth.Maturity"/>) accrues
+    /// on every dead tree whether or not it's overgrown, so a barren dead
+    /// tree reseeds just like an overgrown one. Bad conditions (drought /
+    /// badwater) erode that maturity instead, naturally stalling reseed —
+    /// no separate "overgrowth alive" check needed.</para></summary>
     private void ReseedIfReady(
         KeystoneOvergrowth overgrowth, bool hostTreeDead, BiomeKind biome, OvergrowthRecipe recipe) {
       if (!hostTreeDead) return;
-      if (!overgrowth.IsOvergrown || overgrowth.IsDead) return;
       if (overgrowth.Maturity < recipe.MaturityThreshold) return;
       var sourceLevel = string.IsNullOrEmpty(recipe.SourceLevel) ? recipe.LevelId : recipe.SourceLevel;
       _reseeder.TryReseed(overgrowth, biome, sourceLevel, recipe.Composition);

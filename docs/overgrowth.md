@@ -24,7 +24,7 @@ reverses, and the overgrowth visibly dries and dies.
 | Transition | Gate |
 |---|---|
 | **Barren → Overgrown** | Grassland/Forest **biome maturity ≥ threshold** at the tile, then a random roll. Applies to **living and dead** trees (living-tree decoration is in, but rate-limited — see Perf). |
-| **Overgrown → Reseeded** | **Dead trees only**, and only while the overgrowth is **alive** (a killed overgrowth decays to barren instead). Requires **both** (a) overgrowth **maturity points ≥ threshold** and (b) sufficient biome maturity. Effect: delete the dead tree, spawn a new seedling from the **Class-D spawn table** (birch-heavy, others by existing weights — no special "same species" rule), enable overgrowth on it immediately, **and drop the felled tree's wood onto the new seedling's own `GoodStack` for a lumberjack to haul** (mimics a real cut). |
+| **Dead → Reseeded** | **Dead trees only.** Requires **both** (a) **reclamation maturity ≥ threshold** and (b) sufficient biome maturity. The host need **not** be overgrown — the reclamation clock runs on barren dead trees too (overgrowth is purely cosmetic). Effect: delete the dead tree, spawn a new seedling from the **Class-D spawn table** (birch-heavy, others by existing weights — no special "same species" rule), enable overgrowth on it immediately, **and drop the felled tree's wood onto the new seedling's own `GoodStack` for a lumberjack to haul** (mimics a real cut). |
 
 **Rate = the existing per-level `BiomeLevel.Mode`** (no new rate machinery):
 - **Living trees → `Deterministic`** levels — hash-gated, coverage **capped** at
@@ -46,13 +46,19 @@ a new `Overgrowths` array on `KeystoneRecipeBookSpec` (parallel to `Attritions`)
 (Classes A–E are taken — A decoration, B block, C respawnable, D vanilla flora, E
 fauna — so overgrowth is a new rule *family*, not a class.)
 
-### Axis 2 — overgrowth health (its own organism)
-- Reversible **alive ↔ drying** by per-tile moisture (the decoration's
-  `FloraLifecycleMoistureController`, already built).
-- **Maturity points**: `+R`/game-day while alive + irrigated; **`−2R`/game-day
-  while drying**; floored at 0. (Slow accrue, fast decay — the mod's grammar.)
-  These gate the reseed transition; drought erodes recovery progress.
-- **Death** and **cleanup** are delegated to existing systems (below).
+### Axis 2 — reclamation maturity (the gameplay clock, decoupled from the visual)
+- **Maturity points**, accrued by a **dead** host: `+R`/game-day while the
+  tile is moist; **`−2R`/game-day while dry/contaminated**; floored at 0.
+  (Slow accrue, fast decay — the mod's grammar.) These gate the reseed
+  transition; drought/badwater erode recovery progress.
+- **Runs whether or not the tree is overgrown.** The visual overgrowth and
+  this clock are independent, so the player can throttle the graphical
+  overgrowth rate without changing replacement speed (two separate sliders,
+  `KeystoneOvergrowthSettings`). A living host has no clock.
+- The **overgrowth overlay's** own reversible **alive ↔ drying** look is
+  moisture-derived by the decoration controller; its terminal **death** +
+  **cleanup** are delegated to existing systems (below). That's cosmetic and
+  separate from the reclamation clock above.
 
 ## Death & cleanup — reuse existing systems, extended to a new target (DONE)
 

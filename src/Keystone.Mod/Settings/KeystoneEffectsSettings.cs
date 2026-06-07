@@ -8,8 +8,8 @@ namespace Keystone.Mod.Settings {
 
   /// <summary>
   /// Player-tunable atmospheric / ambient-effect controls. Renders as the
-  /// "Effects" section in the Keystone mod-settings panel (fourth section,
-  /// <see cref="Order"/> = 3).
+  /// "Effects" section in the Keystone mod-settings panel (fifth section,
+  /// <see cref="Order"/> = 4).
   ///
   /// <para>Currently exposes one knob — foggy-morning frequency, expressed
   /// as "once every N days". Maps to <c>probability = 1 / N</c> when
@@ -44,7 +44,7 @@ namespace Keystone.Mod.Settings {
                 .SetLocalizedTooltip("Keystone.Settings.Effects.FoggyMorningFrequency.Tooltip"));
 
     /// <inheritdoc />
-    public override int Order => 3;
+    public override int Order => 4;
 
     /// <inheritdoc />
     public override string HeaderLocKey => "Keystone.Settings.Effects.Header";

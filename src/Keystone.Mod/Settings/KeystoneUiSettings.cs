@@ -32,7 +32,7 @@ namespace Keystone.Mod.Settings {
                 .SetLocalizedTooltip("Keystone.Settings.UI.TilledSoilTexture.Tooltip"));
 
     /// <inheritdoc />
-    public override int Order => 5;
+    public override int Order => 6;
 
     /// <inheritdoc />
     public override string HeaderLocKey => "Keystone.Settings.UI.Header";

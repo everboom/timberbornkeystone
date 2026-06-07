@@ -27,6 +27,7 @@ namespace Keystone.Mod.Settings {
     protected override void Configure() {
       Bind<KeystoneFloraSettings>().AsSingleton();
       Bind<KeystoneFaunaSettings>().AsSingleton();
+      Bind<KeystoneOvergrowthSettings>().AsSingleton();
       Bind<KeystoneEffectsSettings>().AsSingleton();
       Bind<KeystonePerformanceSettings>().AsSingleton();
       Bind<KeystoneBaseGameSettings>().AsSingleton();
