@@ -64,6 +64,7 @@ namespace Keystone.Mod.Growth {
     private readonly ChunkClusterIndex _clusterIndex;
     private readonly IChunkBiomeValues _biomeValues;
     private readonly IEcologyFieldQuery _fieldQuery;
+    private readonly ChunkBiomeAdapter _adapter;
     private readonly KeystoneFloraSettings _floraSettings;
 
     #endregion
@@ -79,8 +80,7 @@ namespace Keystone.Mod.Growth {
     private float _currentBonus;
     private float _currentSuitability;
     private float _currentMaturityFraction;
-    private bool _suppressedByCompetingBiome;
-    private BiomeKind? _competingBiome;
+    private float _currentClusterMaturityFraction;
     private float _totalProgressAdded;
 
     #endregion
@@ -119,17 +119,6 @@ namespace Keystone.Mod.Growth {
     /// settings slider, read live each tick.</summary>
     public float ConfiguredMaxBonus => _floraSettings.GrowthBonusPercent.Value / 100f;
 
-    /// <summary>True when a competing biome's suitability at this tile
-    /// exceeds the target biome's suitability — the growth bonus is
-    /// being suppressed. For trees: Monoculture outcompetes Forest.
-    /// For water plants: River outcompetes Wetland.</summary>
-    public bool IsSuppressedByCompetingBiome => _suppressedByCompetingBiome;
-
-    /// <summary>The biome that is outcompeting the target, or
-    /// <c>null</c> when not suppressed. Used by the describer to
-    /// show context-appropriate warnings.</summary>
-    public BiomeKind? CompetingBiome => _competingBiome;
-
     #endregion
 
     #region Construction
@@ -140,12 +129,14 @@ namespace Keystone.Mod.Growth {
         ChunkClusterIndex clusterIndex,
         IChunkBiomeValues biomeValues,
         IEcologyFieldQuery fieldQuery,
+        ChunkBiomeAdapter adapter,
         KeystoneFloraSettings floraSettings) {
       _dayNightCycle = dayNightCycle;
       _surveyor = surveyor;
       _clusterIndex = clusterIndex;
       _biomeValues = biomeValues;
       _fieldQuery = fieldQuery;
+      _adapter = adapter;
       _floraSettings = floraSettings;
     }
 
@@ -242,9 +233,11 @@ namespace Keystone.Mod.Growth {
       _totalProgressAdded += progressToAdd;
     }
 
-    /// <summary>Recompute suitability, maturity, competing-biome, and
-    /// bonus from the current ecology state. Called on tick cadence
-    /// and also on demand when the entity panel is open.</summary>
+    /// <summary>Recompute suitability, maturity, and bonus from the
+    /// current ecology state. Called on tick cadence and also on demand
+    /// when the entity panel is open. The richer panel diagnostics
+    /// (dominant-biome reads, canopy state) are computed separately in
+    /// <see cref="ComputeSignals"/> so they stay off this hot path.</summary>
     public void RefreshBiomeState() {
       var coords = _blockObject!.Coordinates;
       var surface = new SurfaceCoord(coords.x, coords.y, coords.z);
@@ -262,23 +255,6 @@ namespace Keystone.Mod.Growth {
             field.OriginX, field.OriginY,
             field.ChunksX, field.ChunksY,
             coords.x, coords.y);
-
-        var competitor = biome == BiomeKind.Forest ? BiomeKind.Monoculture
-                       : biome == BiomeKind.Grassland ? BiomeKind.Monoculture
-                       : biome == BiomeKind.Wetland ? BiomeKind.River
-                       : (BiomeKind?)null;
-        if (competitor.HasValue) {
-          var competitorSuitability = ChunkBiomeSampler.SampleSuitability(
-              _biomeValues, region.Id, competitor.Value,
-              field.OriginX, field.OriginY,
-              field.ChunksX, field.ChunksY,
-              coords.x, coords.y);
-          _suppressedByCompetingBiome = competitorSuitability > suitability;
-          _competingBiome = _suppressedByCompetingBiome ? competitor : null;
-        } else {
-          _suppressedByCompetingBiome = false;
-          _competingBiome = null;
-        }
       }
 
       // --- Maturity (max of cluster average and chunk local) ---
@@ -304,9 +280,127 @@ namespace Keystone.Mod.Growth {
       _currentSuitability = suitability;
       _currentMaturityFraction = _maturityCeiling > 0f
           ? System.Math.Min(1f, maturity / _maturityCeiling) : 0f;
+      _currentClusterMaturityFraction = _maturityCeiling > 0f
+          ? System.Math.Min(1f, clusterMaturity / _maturityCeiling) : 0f;
       _currentBonus = GrowthBonusCalculator.ComputeBonus(
           suitability, maturity, _maturityCeiling,
           _floraSettings.GrowthBonusPercent.Value / 100f);
+    }
+
+    /// <summary>
+    /// Assemble the full <see cref="GrowthSignals"/> bundle that drives
+    /// the entity panel's verdict line and hover tooltip. UI-only: called
+    /// from the open panel (once per frame for one selected entity), never
+    /// from <see cref="Tick"/>.
+    ///
+    /// <para>Reads the cached suitability/maturity/bonus that
+    /// <see cref="RefreshBiomeState"/> last computed, plus two extra
+    /// bilinear dominant-biome samples ("what's established here" /
+    /// "what do conditions look like") and, for Forest, the on-demand
+    /// canopy state from <see cref="GetForestCanopyInfo"/>. Call
+    /// <see cref="RefreshBiomeState"/> first.</para>
+    /// </summary>
+    public GrowthSignals ComputeSignals() {
+      var biome = _targetBiome ?? BiomeKind.Forest;
+
+      BiomeKind? dominantByMaturity = null;
+      var dominantMaturityFraction = 0f;
+      BiomeKind? dominantBySuitability = null;
+
+      if (_blockObject != null) {
+        var coords = _blockObject.Coordinates;
+        var surface = new SurfaceCoord(coords.x, coords.y, coords.z);
+        var region = _surveyor.Regions.Containing(surface);
+        var field = region != null ? _fieldQuery.FieldFor(region.Id) : null;
+        if (region != null && field != null) {
+          var (matBiome, matValue) = ChunkBiomeSampler.SampleDominantByMaturity(
+              _biomeValues, region.Id,
+              field.OriginX, field.OriginY, field.ChunksX, field.ChunksY,
+              coords.x, coords.y);
+          dominantByMaturity = matBiome;
+          if (matBiome.HasValue) {
+            var ceiling = MaturityParameters.Ceiling(matBiome.Value);
+            dominantMaturityFraction = ceiling > 0f
+                ? System.Math.Min(1f, matValue / ceiling) : 0f;
+          }
+          var (suitBiome, _) = ChunkBiomeSampler.SampleDominantBiome(
+              _biomeValues, region.Id,
+              field.OriginX, field.OriginY, field.ChunksX, field.ChunksY,
+              coords.x, coords.y);
+          dominantBySuitability = suitBiome;
+        }
+      }
+
+      var canopy = GetForestCanopyInfo();
+      var configuredMax = ConfiguredMaxBonus;
+
+      return new GrowthSignals {
+          TargetBiome = biome,
+          Suitability = _currentSuitability,
+          MaturityFraction = _currentMaturityFraction,
+          ClusterMaturityFraction = _currentClusterMaturityFraction,
+          BonusFraction = configuredMax > 0f ? _currentBonus / configuredMax : 0f,
+          DominantByMaturity = dominantByMaturity,
+          DominantMaturityFraction = dominantMaturityFraction,
+          DominantBySuitability = dominantBySuitability,
+          MatureCanopyGate = canopy.MatureCanopyGate,
+          WouldBeForestFavorable = canopy.WouldBeForestFavorable,
+      };
+    }
+
+    /// <summary>Forest mature-canopy facts for the tooltip and verdict,
+    /// or a "no data" value for non-Forest targets / unresolved chunks.</summary>
+    private readonly struct ForestCanopyInfo {
+      /// <summary>Mature-canopy gate [0, 1], or a negative sentinel when
+      /// not applicable (non-Forest, or chunk inputs unavailable).</summary>
+      public float MatureCanopyGate { get; init; }
+      /// <summary>Whether the un-gated Forest score is already favorable
+      /// (a dense, diverse planting) — i.e. once the canopy matures the
+      /// chunk reads as real Forest.</summary>
+      public bool WouldBeForestFavorable { get; init; }
+
+      public static ForestCanopyInfo None =>
+          new ForestCanopyInfo { MatureCanopyGate = -1f, WouldBeForestFavorable = false };
+    }
+
+    /// <summary>Rebuild the plant's chunk <see cref="ChunkBiomeInputs"/>
+    /// on demand through <see cref="ChunkBiomeAdapter"/> and read the
+    /// mature-canopy gate + the un-gated-Forest-vs-Monoculture comparison.
+    /// The gate isn't a persisted channel, so it can't come from the value
+    /// store. Forest-only; returns <see cref="ForestCanopyInfo.None"/>
+    /// otherwise. UI-only path (one marks-rect scan per call), kept off
+    /// <see cref="Tick"/>.</summary>
+    private ForestCanopyInfo GetForestCanopyInfo() {
+      if (_targetBiome != BiomeKind.Forest || _blockObject == null)
+        return ForestCanopyInfo.None;
+      var coords = _blockObject.Coordinates;
+      var surface = new SurfaceCoord(coords.x, coords.y, coords.z);
+      var region = _surveyor.Regions.Containing(surface);
+      if (region == null) return ForestCanopyInfo.None;
+      var field = _fieldQuery.FieldFor(region.Id);
+      if (field == null) return ForestCanopyInfo.None;
+      var localCx = FloorDiv(coords.x, RegionEcologyField.ChunkSize)
+          - field.OriginX / RegionEcologyField.ChunkSize;
+      var localCy = FloorDiv(coords.y, RegionEcologyField.ChunkSize)
+          - field.OriginY / RegionEcologyField.ChunkSize;
+      if (localCx < 0 || localCx >= field.ChunksX
+          || localCy < 0 || localCy >= field.ChunksY
+          || !field.ChunkValid(localCx, localCy)) {
+        return ForestCanopyInfo.None;
+      }
+      var inputs = _adapter.Build(field, localCx, localCy);
+      // "Would be a forest once grown" = the un-gated score is genuinely
+      // FAVORABLE (dense + diverse), not merely greater than a near-zero
+      // Monoculture. The favorability bar excludes lone/sparse trees (whose
+      // small positive score would otherwise flicker against ~0 Monoculture
+      // and falsely read as "establishing") while still catching real dense
+      // diverse young plantings. (1 - Monoculture) is already folded into
+      // ForestUngated, so a managed monoculture can't clear the bar either.
+      return new ForestCanopyInfo {
+          MatureCanopyGate = BiomeTargets.MatureCanopyGate(inputs),
+          WouldBeForestFavorable =
+              BiomeTargets.ForestUngated(inputs) >= GrowthDiagnostics.SuitabilityFavorable,
+      };
     }
 
     #endregion

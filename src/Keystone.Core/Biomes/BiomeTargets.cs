@@ -120,14 +120,59 @@ namespace Keystone.Core.Biomes {
     #region Land -- irrigated (no contamination gate)
 
     public static float Forest(in ChunkBiomeInputs i) {
+      // Forest = positive-evidence score (irrigation × diversity × density,
+      // suppressed by monoculture) GATED by the mature-canopy ramp, so a
+      // field of seedlings reads as 0 Forest however dense or diverse until
+      // its trees establish. Factored into ForestUngated × MatureCanopyGate
+      // so consumers can ask "would this read as Forest once the canopy
+      // matures?" (see ForestLimitedByImmaturity) without the gate masking
+      // the answer. The product is identical to the inlined form.
+      return ForestUngated(i) * MatureCanopyGate(i);
+    }
+
+    /// <summary>Forest's positive-evidence score <i>before</i> the
+    /// mature-canopy gate: <c>irrigation × species-diversity × density ×
+    /// (1 - Monoculture)</c>. This is what Forest would score if its trees
+    /// were already established. Not a biome target on its own — exposed so
+    /// <see cref="ForestLimitedByImmaturity"/> can tell "young woodland that
+    /// will become Forest" apart from "genuine low-diversity monoculture."</summary>
+    public static float ForestUngated(in ChunkBiomeInputs i) {
       var diversity = Saturate(i.TreeSpeciesCount / ForestSpeciesSaturation);
       var density = Saturate(i.TreeCount / ForestDensitySaturation);
       var monoSuppression = 1f - Monoculture(i);
-      // Mature-canopy gate: linear ramp on the share of the chunk's
-      // trees that are fully grown. A field of seedlings (0% mature)
-      // reads as 0 Forest however dense; full credit at >= 25% mature.
-      var matureGate = Saturate(i.MatureTreeFraction / ForestMatureFractionSaturation);
-      return i.IrrigatedFraction * diversity * density * monoSuppression * matureGate;
+      return i.IrrigatedFraction * diversity * density * monoSuppression;
+    }
+
+    /// <summary>The mature-canopy gate <see cref="Forest"/> multiplies in:
+    /// a linear ramp on the share of the chunk's trees that are fully grown
+    /// (<see cref="ChunkBiomeInputs.MatureTreeFraction"/>), reaching full
+    /// strength at <see cref="ForestMatureFractionSaturation"/>. 0 for an
+    /// all-seedling chunk (no established canopy), 1 once a quarter of the
+    /// trees are mature. See the field docstring for the rationale (the
+    /// biome rewards genuinely established woodland and can't be gamed by
+    /// mass-planting seedlings).</summary>
+    public static float MatureCanopyGate(in ChunkBiomeInputs i) =>
+        Saturate(i.MatureTreeFraction / ForestMatureFractionSaturation);
+
+    /// <summary>True when Forest is out-scored by <see cref="Monoculture"/>
+    /// <i>solely</i> because its canopy hasn't matured yet — i.e. the chunk
+    /// would read as Forest once its trees establish. Defined as: the
+    /// mature-canopy gate is below full strength
+    /// (<see cref="MatureCanopyGate"/> &lt; 1) <b>and</b>
+    /// <see cref="ForestUngated"/> already out-scores
+    /// <see cref="Monoculture"/>. When this holds a "lacks species
+    /// diversity" message is misleading — the planting is diverse/dense
+    /// enough, it is merely young; the honest signal is "still maturing."
+    /// When it does not hold (canopy already established, or the un-gated
+    /// score still loses to Monoculture) the chunk is a genuine
+    /// low-diversity planting and the diversity message is correct.
+    /// <para><b>Forest-specific.</b> Grassland has no maturity gate — it
+    /// yields to <i>mature</i> trees, not seedlings — so its Monoculture
+    /// competition is never "just immature"; callers must not apply this to
+    /// the Grassland/crop path.</para></summary>
+    public static bool ForestLimitedByImmaturity(in ChunkBiomeInputs i) {
+      if (MatureCanopyGate(i) >= 1f) return false;
+      return ForestUngated(i) > Monoculture(i);
     }
 
     /// <summary>Grassland: irrigated land scaled down by mature-canopy
