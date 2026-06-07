@@ -87,7 +87,17 @@
       "NaturalResources/KeystoneWetlandShoreMini6/KeystoneWetlandShoreMini6.blueprint",
       "NaturalResources/KeystoneWetlandShoreMini7/KeystoneWetlandShoreMini7.blueprint",
       "NaturalResources/KeystoneWetlandShoreMini8/KeystoneWetlandShoreMini8.blueprint",
-      "NaturalResources/KeystoneDeadPine1/KeystoneDeadPine1.blueprint"
+      "NaturalResources/KeystoneDeadPine1/KeystoneDeadPine1.blueprint",
+      "NaturalResources/KeystoneOvergrowthMini1/KeystoneOvergrowthMini1.blueprint",
+      "NaturalResources/KeystoneOvergrowthMini2/KeystoneOvergrowthMini2.blueprint",
+      "NaturalResources/KeystoneOvergrowthMini3/KeystoneOvergrowthMini3.blueprint",
+      "NaturalResources/KeystoneOvergrowthMini4/KeystoneOvergrowthMini4.blueprint",
+      "NaturalResources/KeystoneOvergrowthMini5/KeystoneOvergrowthMini5.blueprint",
+      "NaturalResources/KeystoneOvergrowthMini6/KeystoneOvergrowthMini6.blueprint",
+      "NaturalResources/KeystoneOvergrowthMini7/KeystoneOvergrowthMini7.blueprint",
+      "NaturalResources/KeystoneOvergrowthMini8/KeystoneOvergrowthMini8.blueprint",
+      "NaturalResources/KeystoneOvergrowthMini9/KeystoneOvergrowthMini9.blueprint",
+      "NaturalResources/KeystoneOvergrowthMini10/KeystoneOvergrowthMini10.blueprint"
     ]
   }
 }

@@ -9,7 +9,10 @@
     "Biome": "Forest",
     "Levels": [
       { "LevelId": "L1", "LowerMaturity":  2.0, "UpperMaturity": 1000000.0, "Density": 0.005, "Mode": "Stochastic" },
-      { "LevelId": "L2", "LowerMaturity": 12.0, "UpperMaturity": 1000000.0, "Density": 0.0,   "Mode": "Stochastic", "FaunaCapacityAtSaturation": 8, "FaunaMinScore": 0.5 }
+      { "LevelId": "L2", "LowerMaturity": 12.0, "UpperMaturity": 1000000.0, "Density": 0.0,   "Mode": "Stochastic", "FaunaCapacityAtSaturation": 8, "FaunaMinScore": 0.5 },
+      { "LevelId": "OvergrowDead", "LowerMaturity": 1.0, "UpperMaturity": 1000000.0, "Density": 0.25, "Mode": "Stochastic" },
+      { "LevelId": "OvergrowLive", "LowerMaturity": 1.0, "UpperMaturity":       2.0, "Density": 0.25 },
+      { "LevelId": "Reseed",       "LowerMaturity": 2.0, "UpperMaturity": 1000000.0, "Density": 0.10, "Mode": "Stochastic" }
     ]
   },
   "KeystoneRecipeBookSpec": {
@@ -19,6 +22,11 @@
       { "Class": "D", "BlueprintName": "ChestnutTree", "Biome": "Forest", "Level": "L1", "Category": "Trees", "Weight": 2.0 },
       { "Class": "D", "BlueprintName": "Oak",          "Biome": "Forest", "Level": "L1", "Category": "Trees", "Weight": 1.0 },
       { "Class": "E", "BlueprintName": "KeystoneDeer", "Biome": "Forest", "Level": "L2", "Category": "Deer", "Weight": 1 }
+    ],
+    "Overgrowths": [
+      { "Biome": "Forest", "Level": "OvergrowDead", "Target": "Dead", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "Weight": 1 },
+      { "Biome": "Forest", "Level": "OvergrowLive", "Target": "Live", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "Weight": 1 },
+      { "Biome": "Forest", "Level": "Reseed", "Target": "Reseed", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "SourceLevel": "L1", "MaturityThreshold": 2.0, "Weight": 1 }
     ]
   }
 }

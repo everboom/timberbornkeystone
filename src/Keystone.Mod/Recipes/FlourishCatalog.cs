@@ -150,8 +150,11 @@ namespace Keystone.Mod.Recipes {
         }
 
         foreach (var overgrowth in book.Overgrowths) {
-          if (TryParseOvergrowth(overgrowth, bookBlueprintName, out var recipe)) {
-            AddOvergrowth(recipe);
+          var parsed = new List<OvergrowthRecipe>();
+          if (TryParseOvergrowth(overgrowth, bookBlueprintName, parsed)) {
+            foreach (var recipe in parsed) {
+              AddOvergrowth(recipe);
+            }
           }
         }
 
@@ -412,43 +415,74 @@ namespace Keystone.Mod.Recipes {
       return Array.Empty<AttritionRecipe>();
     }
 
-    /// <summary>Parse a Mod-side <see cref="OvergrowthEntry"/> into a Core
-    /// <see cref="OvergrowthRecipe"/>. Requires a known biome, a level, a
-    /// known <c>Target</c> (Live/Dead), and a non-empty composition;
-    /// warns and skips otherwise. Overgrowth is biome-specific (the
-    /// recovery biomes), so there's no "any biome" expansion.</summary>
+    /// <summary>Parse a Mod-side <see cref="OvergrowthEntry"/> into one or
+    /// more Core <see cref="OvergrowthRecipe"/> (one per composition, via
+    /// <see cref="EnumerateCompositions"/>), appended to
+    /// <paramref name="outRecipes"/>. Requires a known biome, a level, a
+    /// known <c>Target</c> (Live/Dead/Reseed), and at least one composition;
+    /// warns and skips otherwise. Returns true if any recipe was produced.
+    /// Overgrowth is biome-specific (the recovery biomes), so there's no
+    /// "any biome" expansion.</summary>
     private static bool TryParseOvergrowth(
-        OvergrowthEntry entry, string sourceBookName, out OvergrowthRecipe recipe) {
-      recipe = null!;
-      if (string.IsNullOrEmpty(entry.Composition)) {
-        KeystoneLog.Warn(
-            $"[Keystone] FlourishCatalog: overgrowth entry in book '{sourceBookName}' " +
-            "has empty Composition. Entry skipped.");
-        return false;
-      }
+        OvergrowthEntry entry, string sourceBookName, List<OvergrowthRecipe> outRecipes) {
       if (string.IsNullOrEmpty(entry.Level)) {
         KeystoneLog.Warn(
-            $"[Keystone] FlourishCatalog: overgrowth entry '{entry.Composition}' in book " +
-            $"'{sourceBookName}' has empty Level. Entry skipped.");
+            $"[Keystone] FlourishCatalog: overgrowth entry in book '{sourceBookName}' " +
+            "has empty Level. Entry skipped.");
         return false;
       }
       if (!Enum.TryParse<BiomeKind>(entry.Biome, ignoreCase: true, out var biome)) {
         KeystoneLog.Warn(
-            $"[Keystone] FlourishCatalog: overgrowth entry '{entry.Composition}' in book " +
+            $"[Keystone] FlourishCatalog: overgrowth entry (Level='{entry.Level}') in book " +
             $"'{sourceBookName}' has Biome='{entry.Biome}' which is not a known BiomeKind. Entry skipped.");
         return false;
       }
       if (!Enum.TryParse<OvergrowthTarget>(entry.Target, ignoreCase: true, out var target)) {
         KeystoneLog.Warn(
-            $"[Keystone] FlourishCatalog: overgrowth entry '{entry.Composition}' in book " +
-            $"'{sourceBookName}' has Target='{entry.Target}' (expected Live, Dead, or Reseed). " +
+            $"[Keystone] FlourishCatalog: overgrowth entry (Biome='{entry.Biome}', Level='{entry.Level}') " +
+            $"in book '{sourceBookName}' has Target='{entry.Target}' (expected Live, Dead, or Reseed). " +
             "Entry skipped.");
         return false;
       }
-      recipe = new OvergrowthRecipe(
-          biome, entry.Level, target, entry.Composition, entry.Filter ?? "",
-          NormaliseWeight(entry.Weight), entry.MaturityThreshold, entry.SourceLevel ?? "");
+      var weight = NormaliseWeight(entry.Weight);
+      var filter = entry.Filter ?? "";
+      var sourceLevel = entry.SourceLevel ?? "";
+      var added = 0;
+      foreach (var composition in EnumerateCompositions(entry, sourceBookName)) {
+        outRecipes.Add(new OvergrowthRecipe(
+            biome, entry.Level, target, composition, filter, weight,
+            entry.MaturityThreshold, sourceLevel));
+        added++;
+      }
+      if (added == 0) {
+        KeystoneLog.Warn(
+            $"[Keystone] FlourishCatalog: overgrowth entry (Biome='{entry.Biome}', Level='{entry.Level}', " +
+            $"Target='{entry.Target}') in book '{sourceBookName}' has no Composition/Compositions. " +
+            "Entry skipped.");
+        return false;
+      }
       return true;
+    }
+
+    /// <summary>Enumerate an overgrowth entry's compositions: every
+    /// non-blank name in <see cref="OvergrowthEntry.Compositions"/>, then
+    /// <see cref="OvergrowthEntry.Composition"/> if non-blank. Mirrors
+    /// <see cref="EnumerateBlueprintNames"/>.</summary>
+    private static IEnumerable<string> EnumerateCompositions(
+        OvergrowthEntry entry, string sourceBookName) {
+      foreach (var name in entry.Compositions) {
+        if (string.IsNullOrWhiteSpace(name)) {
+          KeystoneLog.Warn(
+              $"[Keystone] FlourishCatalog: empty entry in Compositions in book " +
+              $"'{sourceBookName}' (Biome={entry.Biome}, Level={entry.Level}, " +
+              $"Target={entry.Target}). Skipped.");
+          continue;
+        }
+        yield return name;
+      }
+      if (!string.IsNullOrWhiteSpace(entry.Composition)) {
+        yield return entry.Composition;
+      }
     }
 
     private void AddOvergrowth(OvergrowthRecipe recipe) {

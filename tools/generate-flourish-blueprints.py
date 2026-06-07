@@ -327,7 +327,8 @@ def generate_composition(plant_specs, total, rng):
 ANCHOR_JITTER = 0.05
 
 
-def generate_positions(composition, rng, max_attempts=1000, avoid_center=False):
+def generate_positions(composition, rng, max_attempts=1000, avoid_center=False,
+                       clearance=CENTERPIECE_CLEARANCE):
     """Generate per-plant (x, z) tuples respecting MIN_PLANT_DISTANCE,
     COG offset window, and per-plant anchors.
 
@@ -337,11 +338,12 @@ def generate_positions(composition, rng, max_attempts=1000, avoid_center=False):
     avoiding all already-placed positions. The COG check covers the
     combined set.
 
-    `avoid_center=True` (set when a dead-tree centerpiece occupies the
-    tile centre) additionally rejects free-plant positions within
-    CENTERPIECE_CLEARANCE of the origin, so scattered undergrowth sits
-    around the trunk rather than inside it. Anchored plants are exempt --
-    an explicit anchor is taken as deliberate.
+    `avoid_center=True` additionally rejects free-plant positions within
+    `clearance` of the origin, so scattered content rings the centre
+    rather than sitting in it. Set when a dead-tree centerpiece occupies
+    the tile centre, or via --clear-center when the blueprint overlays an
+    external host (e.g. overgrowth on a living/dead tree). Anchored plants
+    are exempt -- an explicit anchor is taken as deliberate.
 
     Returns (positions, cog_x, cog_z) where positions is in the same
     order as `composition`.
@@ -386,7 +388,7 @@ def generate_positions(composition, rng, max_attempts=1000, avoid_center=False):
                 x = rng.uniform(-POSITION_RANGE, POSITION_RANGE)
                 z = rng.uniform(-POSITION_RANGE, POSITION_RANGE)
                 ok = True
-                if avoid_center and math.hypot(x, z) < CENTERPIECE_CLEARANCE:
+                if avoid_center and math.hypot(x, z) < clearance:
                     continue
                 for p in positions:
                     if p is None:
@@ -419,11 +421,12 @@ def generate_positions(composition, rng, max_attempts=1000, avoid_center=False):
     )
 
 
-def generate_scales(total, rng):
-    """Pick `total` per-plant scales uniformly in [MIN_PLANT_SCALE, MAX_PLANT_SCALE].
-    Each plant's scale is shared across its three lifecycle phases so the mesh
-    doesn't visibly resize when wilting."""
-    return [round(rng.uniform(MIN_PLANT_SCALE, MAX_PLANT_SCALE), 2) for _ in range(total)]
+def generate_scales(total, rng, lo=MIN_PLANT_SCALE, hi=MAX_PLANT_SCALE):
+    """Pick `total` per-plant scales uniformly in [lo, hi] (defaults to the
+    global [MIN_PLANT_SCALE, MAX_PLANT_SCALE]; override the whole run via
+    --plant-scale). Each plant's scale is shared across its three lifecycle
+    phases so the mesh doesn't visibly resize when wilting."""
+    return [round(rng.uniform(lo, hi), 2) for _ in range(total)]
 
 
 def generate_decoration_composition(decoration_specs, total, rng):
@@ -447,7 +450,8 @@ def generate_decoration_composition(decoration_specs, total, rng):
 
 
 def generate_decoration_positions(decoration_composition, plant_positions, rng,
-                                  max_attempts=200, avoid_center=False):
+                                  max_attempts=200, avoid_center=False,
+                                  clearance=CENTERPIECE_CLEARANCE):
     """Generate (x, z) for each decoration, avoiding plants by
     MIN_DECORATION_TO_PLANT and avoiding other decorations by a
     per-pair distance computed from radii via _required_pair_distance.
@@ -469,7 +473,7 @@ def generate_decoration_positions(decoration_composition, plant_positions, rng,
             x = rng.uniform(-DECORATION_POSITION_RANGE, DECORATION_POSITION_RANGE)
             z = rng.uniform(-DECORATION_POSITION_RANGE, DECORATION_POSITION_RANGE)
             ok = True
-            if avoid_center and math.hypot(x, z) < CENTERPIECE_CLEARANCE:
+            if avoid_center and math.hypot(x, z) < clearance:
                 continue
             for p in plant_positions:
                 if math.hypot(x - p[0], z - p[1]) < MIN_DECORATION_TO_PLANT:
@@ -818,6 +822,12 @@ def main():
                         help="Base directory for blueprint folders.")
     parser.add_argument("--stage", choices=["Seedling", "Mature"], default="Seedling",
                         help="Vanilla mesh stage to compose (default: Seedling).")
+    parser.add_argument("--plant-scale", default=None,
+                        help="Override the per-plant scale range for ALL plants in "
+                             "the run, as 'lo-hi' (e.g. '0.5-0.7') or a single fixed "
+                             "value (e.g. '0.7'). Useful to keep a composition small "
+                             "(e.g. overgrowth undergrowth that shouldn't dwarf its "
+                             f"host). Default: {MIN_PLANT_SCALE}-{MAX_PLANT_SCALE}.")
     parser.add_argument("--plants-per-blueprint", default="3",
                         help="Plants per blueprint as a fixed int ('3') or an inclusive "
                              "range ('2-3'). Range picks uniformly per blueprint. Default: 3.")
@@ -878,6 +888,17 @@ def main():
                              '--plants/--decorations (which then scatter AROUND the '
                              'trunk, kept clear of centre by CENTERPIECE_CLEARANCE). '
                              'A tree-only blueprint (no --plants) is valid.')
+    parser.add_argument("--clear-center", type=float, default=None,
+                        help='Keep plants/decorations at least this many tile '
+                             'units from tile centre, leaving a clear gap for an '
+                             'external mesh the blueprint does NOT itself contain '
+                             '-- e.g. an overgrowth overlay draped on a living/dead '
+                             'host tree, where the trunk is the host entity, not '
+                             'part of this composition. Float, typically 0.25-0.35. '
+                             'Independent of --dead-tree (which sets its own '
+                             f'CENTERPIECE_CLEARANCE of {CENTERPIECE_CLEARANCE}); '
+                             'when both are given, --clear-center wins. Must be < '
+                             f'POSITION_RANGE ({POSITION_RANGE}).')
     parser.add_argument("--ivy-variants", action="store_true",
                         help='Wire the ivy through its lifecycle: #Dying uses '
                              '"{Species}IvyDry", #Dead uses "{Species}IvyDead". '
@@ -914,6 +935,24 @@ def main():
     args = parser.parse_args()
 
     pmin, pmax = parse_plants_per_blueprint(args.plants_per_blueprint)
+
+    # Plant scale range: default to the module constants unless --plant-scale
+    # overrides for the whole run.
+    if args.plant_scale is not None:
+        s = args.plant_scale.strip()
+        try:
+            if "-" in s:
+                lo_s, hi_s = s.split("-", 1)
+                plant_scale_lo, plant_scale_hi = float(lo_s), float(hi_s)
+            else:
+                plant_scale_lo = plant_scale_hi = float(s)
+        except ValueError:
+            sys.exit(f"error: bad --plant-scale '{args.plant_scale}'. "
+                     "Use 'lo-hi' (e.g. '0.5-0.7') or a single value (e.g. '0.7').")
+        if not (0.0 < plant_scale_lo <= plant_scale_hi):
+            sys.exit(f"error: bad --plant-scale '{args.plant_scale}'. Need 0 < lo <= hi.")
+    else:
+        plant_scale_lo, plant_scale_hi = MIN_PLANT_SCALE, MAX_PLANT_SCALE
     # When a plant has no explicit cap, default to the per-blueprint upper bound:
     # otherwise a 2-3 range with one plant would cap at 2 even on triple-blueprints.
     plant_specs = [parse_plant_spec(s, pmax) for s in args.plants]
@@ -982,6 +1021,21 @@ def main():
     else:
         decoration_variant = "Dry" if args.dry else "Mossy"
 
+    # Center-clearance: keep content away from tile centre. Enabled either
+    # by a dead-tree centerpiece (its trunk occupies the centre) or
+    # explicitly via --clear-center (for overlays on an external host tree
+    # the blueprint doesn't itself contain). --clear-center overrides the
+    # centerpiece default when both are present.
+    if centerpiece is not None or args.clear_center is not None:
+        avoid_center = True
+        clearance = args.clear_center if args.clear_center is not None else CENTERPIECE_CLEARANCE
+    else:
+        avoid_center = False
+        clearance = CENTERPIECE_CLEARANCE
+    if avoid_center and clearance >= POSITION_RANGE:
+        sys.exit(f"error: --clear-center {clearance} leaves no room for plants "
+                 f"(must be < POSITION_RANGE {POSITION_RANGE}).")
+
     rng = random.Random(args.seed)
     seed_label = "random" if args.seed is None else str(args.seed)
     range_label = f"{pmin}" if pmin == pmax else f"{pmin}-{pmax}"
@@ -1021,8 +1075,8 @@ def main():
             per_blueprint = rng.randint(pmin, pmax)
             composition = generate_composition(plant_specs, per_blueprint, rng)
             positions, cog_x, cog_z = generate_positions(
-                composition, rng, avoid_center=centerpiece is not None)
-            scales = generate_scales(per_blueprint, rng)
+                composition, rng, avoid_center=avoid_center, clearance=clearance)
+            scales = generate_scales(per_blueprint, rng, plant_scale_lo, plant_scale_hi)
         else:
             composition = []
             positions = []
@@ -1034,7 +1088,7 @@ def main():
         deco_count = rng.randint(dmin, dmax) if decoration_specs else 0
         deco_composition = generate_decoration_composition(decoration_specs, deco_count, rng)
         deco_positions = generate_decoration_positions(
-            deco_composition, positions, rng, avoid_center=centerpiece is not None)
+            deco_composition, positions, rng, avoid_center=avoid_center, clearance=clearance)
         deco_scales = generate_decoration_scales(len(deco_positions), rng)
         deco_rotations = generate_decoration_rotations(
             len(deco_positions), args.decoration_rotation, rng)

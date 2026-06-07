@@ -312,11 +312,22 @@ namespace Keystone.Mod.Recipes {
     /// <see cref="SourceLevel"/>).</summary>
     [Serialize] public string Target { get; init; } = "Dead";
 
-    /// <summary>Keystone flourish composition blueprint to drape on the
-    /// tree (the overgrowth overlay). Required; catalog warns and skips
-    /// entries with an empty composition. For <c>"Reseed"</c> this is the
-    /// composition carried onto the new seedling.</summary>
+    /// <summary>Single Keystone flourish composition blueprint to drape on
+    /// the tree (the overgrowth overlay). For <c>"Reseed"</c> this is the
+    /// composition carried onto the new seedling. Combine with — or replace
+    /// by — <see cref="Compositions"/> for per-tile variety. At least one of
+    /// <see cref="Composition"/> / <see cref="Compositions"/> must be
+    /// non-empty or the catalog skips the entry.</summary>
     [Serialize] public string Composition { get; init; } = "";
+
+    /// <summary>Multiple flourish compositions for this bucket, expanded
+    /// 1:1 into recipes (mirrors <see cref="RecipeEntry.BlueprintNames"/>).
+    /// Each shares this entry's Biome/Level/Target/Weight/MaturityThreshold/
+    /// SourceLevel; the handler's weighted pick then chooses one per tree,
+    /// so a Dead/Live overgrow — or a Reseed's carried-over overlay — draws
+    /// a random mini. <see cref="Composition"/> (if non-empty) is appended
+    /// as one more.</summary>
+    [Serialize] public ImmutableArray<string> Compositions { get; init; } = ImmutableArray<string>.Empty;
 
     /// <summary>Optional spatial-eligibility filter (same registry as
     /// spawn recipes). Empty = no filter.</summary>

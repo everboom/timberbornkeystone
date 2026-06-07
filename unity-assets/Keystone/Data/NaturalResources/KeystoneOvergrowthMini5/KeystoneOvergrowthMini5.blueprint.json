@@ -1,0 +1,416 @@
+{
+  "TemplateSpec": {
+    "TemplateName": "KeystoneOvergrowthMini5",
+    "BackwardCompatibleTemplateNames": [],
+    "RequiredFeatureToggle": "",
+    "DisablingFeatureToggle": ""
+  },
+  "KeystoneFlourishSpec": {},
+  "KeystoneVariantSpec": {},
+  "BlockObjectSpec": {
+    "Size": {
+      "X": 1,
+      "Y": 1,
+      "Z": 1
+    },
+    "Blocks": [
+      {
+        "MatterBelow": "Ground",
+        "Occupations": "Floor, Bottom, Corners, Path, Middle",
+        "Stackable": "None",
+        "OccupyAllBelow": false,
+        "Underground": false
+      }
+    ],
+    "Entrance": {
+      "HasEntrance": false,
+      "Coordinates": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      }
+    },
+    "BaseZ": 0,
+    "Overridable": true,
+    "Flippable": false
+  },
+  "NaturalResourceSpec": {
+    "Order": 100
+  },
+  "FloodableNaturalResourceSpec": {
+    "MinWaterHeight": 0,
+    "MaxWaterHeight": 0,
+    "DaysToDie": 1000000000.0
+  },
+  "DemolishableSpec": {
+    "DemolishTimeInHours": 0.5,
+    "ShowDemolishButtonInEntityPanel": false
+  },
+  "LabeledEntitySpec": {
+    "DisplayNameLocKey": "NaturalResource.KeystoneFlourish.DisplayName",
+    "DescriptionLocKey": "",
+    "FlavorDescriptionLocKey": "",
+    "Icon": "NaturalResources/Trees/Pine/PineIcon"
+  },
+  "BlockObjectModelSpec": {
+    "FullModelName": "#Models",
+    "UncoveredModelName": "",
+    "UndergroundModelName": "",
+    "UndergroundModelDepth": 0
+  },
+  "Children": {
+    "#Models": {
+      "Children": {
+        "Mature": {
+          "Children": {
+            "#Alive": {
+              "Children": {
+                "BlueberryBushA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Bushes/Blueberry/BlueberryBushMature"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.18,
+                      "Y": 0.0,
+                      "Z": 0.26
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.55,
+                      "Y": 0.55,
+                      "Z": 0.55
+                    }
+                  }
+                },
+                "SunflowerA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Sunflower/SunflowerSeedling"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.32,
+                      "Y": 0.0,
+                      "Z": -0.25
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.66,
+                      "Y": 0.66,
+                      "Z": 0.66
+                    }
+                  }
+                },
+                "CoffeeBushA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Bushes/Coffee/CoffeeBushMature"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.27,
+                      "Y": 0.0,
+                      "Z": -0.29
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.69,
+                      "Y": 0.69,
+                      "Z": 0.69
+                    }
+                  }
+                },
+                "Pebble_Round_3A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_3"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.46,
+                      "Y": 0.0,
+                      "Z": 0.15
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.83,
+                      "Y": 0.83,
+                      "Z": 0.83
+                    }
+                  }
+                },
+                "Pebble_Round_1A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_1"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.22,
+                      "Y": 0.0,
+                      "Z": 0.83
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.76,
+                      "Y": 0.76,
+                      "Z": 0.76
+                    }
+                  }
+                }
+              }
+            },
+            "#Dying": {
+              "Children": {
+                "BlueberryBushA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Bushes/Blueberry/BlueberryBushMatureDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.18,
+                      "Y": 0.0,
+                      "Z": 0.26
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.55,
+                      "Y": 0.55,
+                      "Z": 0.55
+                    }
+                  }
+                },
+                "SunflowerA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Sunflower/SunflowerSeedlingDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.32,
+                      "Y": 0.0,
+                      "Z": -0.25
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.66,
+                      "Y": 0.66,
+                      "Z": 0.66
+                    }
+                  }
+                },
+                "CoffeeBushA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Bushes/Coffee/CoffeeBushMatureDry"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.27,
+                      "Y": 0.0,
+                      "Z": -0.29
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.69,
+                      "Y": 0.69,
+                      "Z": 0.69
+                    }
+                  }
+                },
+                "Pebble_Round_3A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_3"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.46,
+                      "Y": 0.0,
+                      "Z": 0.15
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.83,
+                      "Y": 0.83,
+                      "Z": 0.83
+                    }
+                  }
+                },
+                "Pebble_Round_1A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_1"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.22,
+                      "Y": 0.0,
+                      "Z": 0.83
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.76,
+                      "Y": 0.76,
+                      "Z": 0.76
+                    }
+                  }
+                }
+              }
+            },
+            "#Dead": {
+              "Children": {
+                "BlueberryBushA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Bushes/Blueberry/BlueberryBushMatureDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.18,
+                      "Y": 0.0,
+                      "Z": 0.26
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.55,
+                      "Y": 0.55,
+                      "Z": 0.55
+                    }
+                  }
+                },
+                "SunflowerA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Crops/Sunflower/SunflowerSeedlingDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": -0.32,
+                      "Y": 0.0,
+                      "Z": -0.25
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.66,
+                      "Y": 0.66,
+                      "Z": 0.66
+                    }
+                  }
+                },
+                "CoffeeBushA": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/Bushes/Coffee/CoffeeBushMatureDead"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.27,
+                      "Y": 0.0,
+                      "Z": -0.29
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.69,
+                      "Y": 0.69,
+                      "Z": 0.69
+                    }
+                  }
+                },
+                "Pebble_Round_3A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_3"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.46,
+                      "Y": 0.0,
+                      "Z": 0.15
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.83,
+                      "Y": 0.83,
+                      "Z": 0.83
+                    }
+                  }
+                },
+                "Pebble_Round_1A": {
+                  "TimbermeshSpec": {
+                    "Model": "NaturalResources/KeystoneRocks/Pebble_Round_1"
+                  },
+                  "TransformSpec": {
+                    "Position": {
+                      "X": 0.22,
+                      "Y": 0.0,
+                      "Z": 0.83
+                    },
+                    "Rotation": {
+                      "X": 0.0,
+                      "Y": 0.0,
+                      "Z": 0.0
+                    },
+                    "Scale": {
+                      "X": 0.76,
+                      "Y": 0.76,
+                      "Z": 0.76
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "WateredNaturalResourceSpec": {
+    "DaysToDieDry": 1000000000.0
+  }
+}

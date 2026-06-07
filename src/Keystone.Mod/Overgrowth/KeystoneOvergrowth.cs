@@ -61,14 +61,16 @@ namespace Keystone.Mod.Overgrowth {
 
     #region Constants
 
-    /// <summary>Placeholder donor for the overgrowth overlay — an
-    /// existing Keystone flourish composition. It already arranges its
-    /// plants around the tile via <c>TransformSpec</c> (positioning
-    /// baked, no hand offsets) and carries the standard
+    /// <summary>Default overgrowth composition — used by the dev tool's
+    /// no-arg <see cref="Apply()"/> and as the fallback when a recipe or a
+    /// loaded save supplies an empty composition. The biome-driven
+    /// <see cref="OvergrowthHandler"/> passes a real composition (weighted-
+    /// picked from the recipe's <c>Compositions</c>), so this is only a
+    /// floor. One of the purpose-built overgrowth minis (undergrowth rings
+    /// the trunk via <c>--clear-center</c>; carries the standard
     /// <c>#Models/Mature/#Alive|#Dying|#Dead</c> hierarchy the lifecycle
-    /// controller manages. Swapped for a purpose-built overgrowth
-    /// composition (+ ivy) later.</summary>
-    private const string PlaceholderDonor = "KeystoneGrasslandMini1";
+    /// controller manages).</summary>
+    private const string DefaultComposition = "KeystoneOvergrowthMini1";
 
     /// <summary>Tick-counter cadence for the maturity update — a few
     /// times per game day (matches <c>KeystoneGrowthBonus</c>). The rate
@@ -108,7 +110,7 @@ namespace Keystone.Mod.Overgrowth {
 
     /// <summary>Which composition this tree is overgrown with. Persisted
     /// so the same one returns after reload.</summary>
-    private string _decorationId = PlaceholderDonor;
+    private string _decorationId = DefaultComposition;
 
     /// <summary>Accrued maturity (accumulated healthy time); gates the
     /// future reseed. Persisted.</summary>
@@ -186,7 +188,7 @@ namespace Keystone.Mod.Overgrowth {
       if (_decorated || !CanOvergrow) return;
       if (GetComponent<BlockObject>() == null) return;
       _decorated = true;
-      _decorationId = string.IsNullOrEmpty(composition) ? PlaceholderDonor : composition;
+      _decorationId = string.IsNullOrEmpty(composition) ? DefaultComposition : composition;
       SpawnDecoration();
     }
 
@@ -194,7 +196,7 @@ namespace Keystone.Mod.Overgrowth {
     /// by <see cref="OvergrowthTestTool"/>. The biome-driven
     /// <see cref="OvergrowthHandler"/> calls <see cref="Apply(string)"/>
     /// with the recipe's composition.</summary>
-    public void Apply() => Apply(PlaceholderDonor);
+    public void Apply() => Apply(DefaultComposition);
 
     /// <summary>Remove the overgrowth from this entity (logical + visual),
     /// and reset accrued maturity.</summary>
@@ -301,7 +303,7 @@ namespace Keystone.Mod.Overgrowth {
       if (!entityLoader.TryGetComponent(ComponentKey, out var loader)) return;
       _decorated = true;
       if (loader.Has(DecorationIdKey)) {
-        _decorationId = loader.Get(DecorationIdKey) ?? PlaceholderDonor;
+        _decorationId = loader.Get(DecorationIdKey) ?? DefaultComposition;
       }
       if (loader.Has(MaturityKey)) {
         _maturity = loader.Get(MaturityKey);

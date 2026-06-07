@@ -57,9 +57,9 @@
       { "Class": "D", "BlueprintName": "Oak",           "Biome": "Grassland", "Level": "L4", "Category": "Trees", "Weight": 1.0 }
     ],
     "Overgrowths": [
-      { "Biome": "Grassland", "Level": "OvergrowDead", "Target": "Dead", "Composition": "KeystoneGrasslandMini1", "Weight": 1 },
-      { "Biome": "Grassland", "Level": "OvergrowLive", "Target": "Live", "Composition": "KeystoneGrasslandMini1", "Weight": 1 },
-      { "Biome": "Grassland", "Level": "Reseed", "Target": "Reseed", "Composition": "KeystoneGrasslandMini1", "SourceLevel": "L4", "MaturityThreshold": 2.0, "Weight": 1 }
+      { "Biome": "Grassland", "Level": "OvergrowDead", "Target": "Dead", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "Weight": 1 },
+      { "Biome": "Grassland", "Level": "OvergrowLive", "Target": "Live", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "Weight": 1 },
+      { "Biome": "Grassland", "Level": "Reseed", "Target": "Reseed", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "SourceLevel": "L4", "MaturityThreshold": 2.0, "Weight": 1 }
     ]
   }
 }

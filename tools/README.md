@@ -82,6 +82,24 @@ scatter *around* the trunk (kept clear of centre by
 `--ivy-variants` wires the ivy through `{Species}IvyDry` / `{Species}IvyDead`
 on `#Dying` / `#Dead` — enable only once those meshes are authored.
 
+```bash
+# Overgrowth overlays: undergrowth that RINGS a host tree the blueprint
+# doesn't itself contain (the dead/living tree is the host entity). 3-4
+# wild plants per mini, kept 0.30 off-centre so they don't clip the trunk.
+python tools/generate-flourish-blueprints.py \
+    --prefix KeystoneOvergrowthMini \
+    --plants Dandelion:2 BlueberryBush:2 Sunflower:2 \
+    --plants-per-blueprint 3-4 --clear-center 0.30 --stage Mature \
+    --count 10 --seed 33
+```
+
+**`--clear-center <radius>`** keeps all plants/decorations at least `radius`
+tile units from tile centre, leaving a clear gap for a mesh the blueprint
+does *not* contain itself — e.g. an overgrowth overlay draped on a
+living/dead host tree, where the trunk is the host entity. Independent of
+`--dead-tree` (which adds its own trunk + uses `CENTERPIECE_CLEARANCE`);
+when both are given, `--clear-center` wins. Must be `< POSITION_RANGE`.
+
 **Auto-registration.** Generated blueprints are appended (idempotently)
 to the `KeystoneNaturalResources` TemplateCollection so the game loads
 them — the collection is a hand-maintained explicit list, not

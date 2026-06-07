@@ -37,10 +37,11 @@ namespace Keystone.Mod.Overgrowth {
 
     /// <summary>Biome / source level / composition the dev reseed draws
     /// from. Grassland L4 is the tree table (Birch-heavy); the composition
-    /// is the current placeholder overgrowth donor.</summary>
+    /// is one of the purpose-built overgrowth minis carried onto the new
+    /// seedling.</summary>
     private const BiomeKind DevReseedBiome = BiomeKind.Grassland;
     private const string DevReseedSourceLevel = "L4";
-    private const string DevReseedComposition = "KeystoneGrasslandMini1";
+    private const string DevReseedComposition = "KeystoneOvergrowthMini1";
 
     #endregion
 

@@ -27,7 +27,7 @@ around it via `KeystoneDecorationRegistry`.
 |---|---|
 | `KeystoneOvergrowth` | Per-instance component, attached to **every tree** via `AddDecorator<TreeComponentSpec, KeystoneOvergrowth>` (in `KeystoneConfigurator`) — vanilla and any faction's, no hardcoded list. `Apply()` spawns one flourish-composition decoration (with a lifecycle controller); `Clear()` removes it; cleans up on entity delete. `CanOvergrow` self-filters water-based trees (`FloodableNaturalResourceSpec.MinWaterHeight > 0`). |
 | `OvergrowthReseeder` | The reseed mechanism: removes a mature overgrown **dead** tree, plants a weighted Class D seedling at the same tile (via `ClassDSpawnHandler.TrySpawnClassD`), carries the overgrowth onto it, and drops the felled tree's wood onto the **new seedling's own `GoodStack`** + registers it for lumberjack hauling. Mimics a real cut (`Cuttable.Cut`) without a free-standing log-pile entity (vanilla has none). Eligibility gates live in `OvergrowthHandler`; this is the pure mechanism. |
-| `OvergrowthTestTool` | Dev tool: click cycles barren → overgrown → **reseeded**. The reseed click bypasses the natural gates so the delete + spawn + wood-drop is reachable on demand (Grassland L4 species, placeholder composition). |
+| `OvergrowthTestTool` | Dev tool: click cycles barren → overgrown → **reseeded**. The reseed click bypasses the natural gates so the delete + spawn + wood-drop is reachable on demand (Grassland L4 species, a `KeystoneOvergrowthMini` overlay). |
 
 ## How it attaches (no marker spec)
 
@@ -67,11 +67,17 @@ only if per-blueprint overgrowth *config* is ever needed.
     instead. Grassland content authored (`Reseed` level + entry — **needs a
     Unity Mod Builder rebuild** to reach the game; the dev tool exercises
     the mechanism without it).
+  - **Dedicated overgrowth compositions**: 10 `KeystoneOvergrowthMini1..10`
+    (undergrowth — mature CoffeeBush/BlueberryBush ≤70% + seedling Corn/
+    Sunflower + pebbles — kept off-centre via the generator's `--clear-center`
+    so they ring the host trunk). Wired via the recipe family's
+    `Compositions` list (each `OvergrowthEntry` expands 1:1 into recipes; the
+    handler weighted-picks one per tree, so Dead/Live/Reseed all draw a
+    random mini). Replaces the old `KeystoneGrasslandMini1` stand-in.
 - **Next:**
   - Forest content (mirror Grassland's overgrow + reseed levels/entries),
-    the trunk ivy, a dedicated overgrowth composition (replace the
-    `KeystoneGrasslandMini1` placeholder), and in-game tuning of the
-    maturity bands / densities / `MaturityThreshold`.
+    the trunk **ivy**, and in-game tuning of the maturity bands / densities /
+    `MaturityThreshold`.
 - **Decisions settled** (see #33): **persist** the state — terminal dead
   state needs it; verified save-portable (removing Keystone strips the
   orphan data, trees load intact).
