@@ -448,8 +448,8 @@ namespace Keystone.Mod.Overgrowth {
         _dead = loader.Get(DeadKey);
       }
       // Absent in pre-rot saves; TryAdoptExistingWoodPile re-arms those piles
-      // on the first tick after load (living tree + unhauled wood), so they
-      // start rotting too rather than lingering forever.
+      // on the first tick after load (any tree carrying an unhauled
+      // goodstack), so they start rotting too rather than lingering forever.
       if (loader.Has(CarriesReseedWoodKey)) {
         _carriesReseedWood = loader.Get(CarriesReseedWoodKey);
       }
@@ -462,24 +462,39 @@ namespace Keystone.Mod.Overgrowth {
 
     #region Helpers
 
-    /// <summary>Retroactively arm the rot on a reseed pile that predates the
-    /// flag (wood dropped before the rot feature, or loaded from a save
-    /// without the persisted key). A <b>living</b> tree (host not dead)
-    /// carrying unhauled wood on its <see cref="GoodStack"/> can only be one
-    /// of our reseed piles: vanilla parks felled wood only on a cut stump,
-    /// and <c>Cuttable.Cut</c> calls <c>LivingNaturalResource.Die()</c> as it
-    /// fills the stack, so every vanilla wood pile sits on a <i>dead</i> host
-    /// and is excluded here. Arms the same per-day rot as a fresh reseed,
-    /// dated from today. Runs once per tree per load (a cached
-    /// <c>GetComponent</c> + an <c>IsEmpty</c> test — a no-op for the empty
-    /// stack on a normal living tree).</summary>
+    /// <summary>Retroactively arm the rot on any tree carrying unhauled wood
+    /// on its <see cref="GoodStack"/> that isn't already flagged — catching
+    /// reseed piles dropped before the rot flag existed (older saves), even
+    /// after the seedling has since died.
+    ///
+    /// <para><b>Why this also adopts vanilla cut stumps, and why that's
+    /// acceptable.</b> A dead reseed pile is structurally identical to a
+    /// lumberjack-felled stump — <c>Cuttable.Cut</c> calls
+    /// <c>LivingNaturalResource.Die()</c> as it fills the stack, so both are
+    /// "dead tree + log goodstack" with no state to tell them apart. Rather
+    /// than miss every dead reseed pile (in a harsh, dead forest <i>all</i>
+    /// of them die), we adopt both. The daily rot only ever consumes
+    /// <b>unreserved</b> logs (<see cref="RotOneLog"/>), so a stump a hauler
+    /// is actively working is untouched; only <i>abandoned</i> wood — cut or
+    /// reseeded, that no hauler is coming for — actually composts away, which
+    /// is the intended cleanup.</para>
+    ///
+    /// <para>Standing dead trees are <b>not</b> affected: their logs are
+    /// <c>Yielder</c> yield, not a goodstack, so the empty-stack guard skips
+    /// them. Runs once per tree per load (a cached <c>GetComponent</c> + an
+    /// <c>IsEmpty</c> test — a no-op for the empty stack on a normal
+    /// tree).</para></summary>
     private void TryAdoptExistingWoodPile() {
-      if (_carriesReseedWood) return;                 // already armed (fresh reseed)
-      if (_living != null && _living.IsDead) return;  // dead host = vanilla cut stump, never ours
+      if (_carriesReseedWood) return;  // already armed (fresh reseed)
       _woodStack ??= GetComponent<GoodStack>();
       var inventory = _woodStack?.Inventory;
       if (inventory == null || inventory.IsEmpty) return;
       MarkReseedWood();
+      // TEMP diagnostic (remove once rot is confirmed in-game): proves
+      // adoption fired and reports host liveness + pile size per tile.
+      KeystoneLog.Info(
+          $"[Keystone] Reseed-wood rot armed at {GetComponent<BlockObject>()?.Coordinates} " +
+          $"({inventory.TotalAmountInStock} logs, hostDead={(_living != null && _living.IsDead)}).");
     }
 
     /// <summary>Once-per-game-day rot pass on the reseed wood pile. Erodes
