@@ -59,6 +59,7 @@ namespace Keystone.Mod.Fauna {
     private readonly ChunkClusterIndex _clusterIndex;
     private readonly EntityService _entityService;
     private readonly KeystoneFaunaRegistry _registry;
+    private readonly FaunaUpdateProfiler _updateProfiler;
 
     #endregion
 
@@ -90,15 +91,37 @@ namespace Keystone.Mod.Fauna {
         IClock clock,
         ChunkClusterIndex clusterIndex,
         EntityService entityService,
-        KeystoneFaunaRegistry registry) {
+        KeystoneFaunaRegistry registry,
+        FaunaUpdateProfiler updateProfiler) {
       _clock = clock;
       _clusterIndex = clusterIndex;
       _entityService = entityService;
       _registry = registry;
+      _updateProfiler = updateProfiler;
     }
 
     public abstract void Awake();
-    public abstract void Update();
+
+    /// <summary>Engine per-frame hook. Times the concrete agent's
+    /// <see cref="UpdateCore"/> and reports the elapsed ticks to
+    /// <see cref="FaunaUpdateProfiler"/>, which aggregates every agent's
+    /// cost into one per-frame <c>Fauna.AgentUpdate</c> perf sample.
+    /// Sealed so the timing can't be bypassed by a subclass overriding
+    /// <c>Update</c> directly — subclasses implement
+    /// <see cref="UpdateCore"/> instead.</summary>
+    public void Update() {
+      var start = System.Diagnostics.Stopwatch.GetTimestamp();
+      try {
+        UpdateCore();
+      } finally {
+        _updateProfiler.Record(System.Diagnostics.Stopwatch.GetTimestamp() - start);
+      }
+    }
+
+    /// <summary>The agent's actual per-frame behaviour (movement,
+    /// cluster self-check, despawn). Implemented by concrete agents;
+    /// invoked through the timed <see cref="Update"/> wrapper.</summary>
+    protected abstract void UpdateCore();
 
     Region? IFaunaPositioning.Region => Region;
     TileCoord IFaunaPositioning.CurrentTile => CurrentTile;

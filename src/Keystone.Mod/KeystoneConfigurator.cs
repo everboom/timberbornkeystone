@@ -318,6 +318,10 @@ namespace Keystone.Mod {
       Bind<Keystone.Mod.Fauna.KeystoneFaunaAgent>().AsTransient();
       Bind<Keystone.Mod.Fauna.KeystoneAquaticAgent>().AsTransient();
       Bind<Keystone.Mod.Fauna.KeystoneFaunaRegistry>().AsSingleton();
+      // FaunaUpdateProfiler: per-frame aggregator that times every fauna
+      // agent's Update() and flushes one Fauna.AgentUpdate perf sample
+      // per frame (IUpdatableSingleton). Injected into the agents.
+      Bind<Keystone.Mod.Fauna.FaunaUpdateProfiler>().AsSingleton();
       // FaunaSpawnQueue: shared FIFO worklist of clusters with
       // outstanding spawn deficit. Written by the cycle ticker, read
       // by the per-frame drainer.

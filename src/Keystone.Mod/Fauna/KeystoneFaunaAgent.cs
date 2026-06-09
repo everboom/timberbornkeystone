@@ -202,8 +202,9 @@ namespace Keystone.Mod.Fauna {
         RegionService regions,
         IRegionTopologyQuery topology,
         IEcologyFieldQuery fieldQuery,
-        IChunkBiomeValues biomeValues)
-        : base(clock, clusterIndex, entityService, registry) {
+        IChunkBiomeValues biomeValues,
+        FaunaUpdateProfiler updateProfiler)
+        : base(clock, clusterIndex, entityService, registry, updateProfiler) {
       _regions = regions;
       _fieldQuery = fieldQuery;
       _biomeValues = biomeValues;
@@ -295,8 +296,8 @@ namespace Keystone.Mod.Fauna {
     /// <summary>Per-frame update. Cluster-affinity check first (base
     /// class); on failure the agent has already been deleted, so
     /// bail. Otherwise dispatch to the Idle / Walking state
-    /// handler.</summary>
-    public override void Update() {
+    /// handler. Invoked through the base's timed <c>Update</c> wrapper.</summary>
+    protected override void UpdateCore() {
       if (!CheckClusterAffinityAndStaysAlive()) return;
       switch (_planner.CurrentState) {
         case FaunaWanderPlanner.State.Idle: UpdateIdle(); break;

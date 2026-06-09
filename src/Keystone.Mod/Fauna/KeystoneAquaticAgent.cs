@@ -129,8 +129,9 @@ namespace Keystone.Mod.Fauna {
         IRegionTopologyQuery topology,
         IEcologyFieldQuery fieldQuery,
         IChunkBiomeValues biomeValues,
-        IWaterQuery water)
-        : base(clock, clusterIndex, entityService, registry) {
+        IWaterQuery water,
+        FaunaUpdateProfiler updateProfiler)
+        : base(clock, clusterIndex, entityService, registry, updateProfiler) {
       _regions = regions;
       _fieldQuery = fieldQuery;
       _biomeValues = biomeValues;
@@ -225,7 +226,9 @@ namespace Keystone.Mod.Fauna {
       }
     }
 
-    public override void Update() {
+    /// <summary>Per-frame update, invoked through the base's timed
+    /// <c>Update</c> wrapper.</summary>
+    protected override void UpdateCore() {
       if (!_configured || Region == null || _traversalTopology == null
           || _destinationTopology == null) return;
       // Base class: game-time cluster-affinity self-check.
