@@ -184,11 +184,27 @@ namespace Keystone.Mod.Atmosphere {
     /// marshland sweet spot.</summary>
     private const float MistWaterDepthMax = 0.5f;
 
+    /// <summary>Perf scope for the whole per-tick body (drains + the
+    /// once-per-day roll). Fires every sim tick, so it lands in the
+    /// Perf window's per-tick table. Mirrors the <c>.Tick</c> naming
+    /// the rolling-sweep tickers use so all Keystone tick scopes share
+    /// a prefix.</summary>
+    private const string TickScope = nameof(WetlandMistDirector) + ".Tick";
+
+    /// <summary>Perf scope for the once-per-day mist schedule roll —
+    /// the full-map region/chunk scan in <see cref="RollDailySchedule"/>.
+    /// Nested under <see cref="TickScope"/> so the perf window renders it
+    /// as a child, and isolated so the daily scan's spike shows up on its
+    /// own row (sporadic table, high max) rather than hiding inside the
+    /// per-tick average.</summary>
+    private const string RollScope = TickScope + ".DailyRoll";
+
     #endregion
 
     #region Dependencies
 
     private readonly IClock _clock;
+    private readonly PerfTracker _perf;
     private readonly RegionService _regions;
     private readonly IEcologyFieldQuery _fieldQuery;
     private readonly IChunkBiomeValues _biomeValues;
@@ -241,6 +257,7 @@ namespace Keystone.Mod.Atmosphere {
 
     public WetlandMistDirector(
         IClock clock,
+        PerfTracker perf,
         RegionService regions,
         IEcologyFieldQuery fieldQuery,
         IChunkBiomeValues biomeValues,
@@ -250,6 +267,7 @@ namespace Keystone.Mod.Atmosphere {
         KeystoneAssetService assets,
         KeystoneEffectsSettings settings) {
       _clock = clock;
+      _perf = perf;
       _regions = regions;
       _fieldQuery = fieldQuery;
       _biomeValues = biomeValues;
@@ -266,38 +284,45 @@ namespace Keystone.Mod.Atmosphere {
 
     public void Tick() {
       try {
-        var now = _clock.TotalDaysElapsed;
-        var today = (int)Math.Floor(now);
-        var hourFraction = now - today;
+        using (_perf.Track(TickScope)) {
+          var now = _clock.TotalDaysElapsed;
+          var today = (int)Math.Floor(now);
+          var hourFraction = now - today;
 
-        if (today > _lastDayRolled) {
-          if (hourFraction >= SpawnWindowStart && hourFraction < SpawnWindowEnd) {
-            _lastDayRolled = today;
-            RollDailySchedule(today, hourFraction);
-          } else if (hourFraction >= SpawnWindowEnd) {
-            _lastDayRolled = today;
+          if (today > _lastDayRolled) {
+            if (hourFraction >= SpawnWindowStart && hourFraction < SpawnWindowEnd) {
+              _lastDayRolled = today;
+              // Isolate the once-per-day full-map scan in its own scope so
+              // its spike is attributable rather than lost in the per-tick
+              // average / inside vanilla Engine.TickWork.
+              using (_perf.Track(RollScope)) {
+                RollDailySchedule(today, hourFraction);
+              }
+            } else if (hourFraction >= SpawnWindowEnd) {
+              _lastDayRolled = today;
+            }
           }
-        }
 
-        for (var i = _scheduled.Count - 1; i >= 0; i--) {
-          var s = _scheduled[i];
-          if (now >= s.SpawnTime) {
-            SpawnMistAt(s.Tile, s.SpawnTime, s.DespawnTime);
-            _scheduled.RemoveAt(i);
+          for (var i = _scheduled.Count - 1; i >= 0; i--) {
+            var s = _scheduled[i];
+            if (now >= s.SpawnTime) {
+              SpawnMistAt(s.Tile, s.SpawnTime, s.DespawnTime);
+              _scheduled.RemoveAt(i);
+            }
           }
-        }
 
-        for (var i = _active.Count - 1; i >= 0; i--) {
-          var a = _active[i];
-          if (now >= a.DespawnTime) {
-            _decorations.Despawn(a.Decoration);
-            _active.RemoveAt(i);
-            continue;
+          for (var i = _active.Count - 1; i >= 0; i--) {
+            var a = _active[i];
+            if (now >= a.DespawnTime) {
+              _decorations.Despawn(a.Decoration);
+              _active.RemoveAt(i);
+              continue;
+            }
+            UpdateEmissionRamp(a, now);
           }
-          UpdateEmissionRamp(a, now);
-        }
 
-        EmitTelemetryIfDue();
+          EmitTelemetryIfDue();
+        }
       } catch (Exception ex) {
         Keystone.Mod.Diagnostics.LifecycleGuard.HandleErrorOnce(
             "WetlandMistDirector.Tick", "Subsystem failed", ex, ref _tickFailureLogged);
