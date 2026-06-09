@@ -160,12 +160,19 @@ namespace Keystone.Mod.Overgrowth {
     private bool _wasDead;
 
     /// <summary>True when this tree is carrying felled reseed wood on its own
-    /// <see cref="GoodStack"/> that should slowly rot away if left unhauled
-    /// (set by <see cref="MarkReseedWood"/> at reseed time). The state lives
-    /// on the tree that holds the wood — no central registry to keep in sync —
-    /// and self-clears the moment the stack empties (hauled or rotted).
-    /// Persisted.</summary>
+    /// <see cref="GoodStack"/> that should slowly rot away if left unhauled.
+    /// Set by <see cref="MarkReseedWood"/> at reseed time, or retroactively by
+    /// <see cref="TryAdoptExistingWoodPile"/> for piles dropped before the rot
+    /// feature existed. The state lives on the tree that holds the wood — no
+    /// central registry to keep in sync — and self-clears the moment the stack
+    /// empties (hauled or rotted). Persisted.</summary>
     private bool _carriesReseedWood;
+
+    /// <summary>One-shot-per-load guard for the retroactive
+    /// <see cref="TryAdoptExistingWoodPile"/> sweep. Transient: it re-checks
+    /// once each session so a pile that predates the flag still gets armed,
+    /// and short-circuits every tick thereafter.</summary>
+    private bool _woodAdoptionChecked;
 
     /// <summary>The <see cref="IDayNightCycle.DayNumber"/> at which the reseed
     /// pile last lost a log. A new day past this triggers the next rot pass.
@@ -332,6 +339,13 @@ namespace Keystone.Mod.Overgrowth {
       // host's life state (the wood sits on a living seedling), so it goes
       // ahead of the living-tree fast path below. Cheap when disarmed: a
       // single bool test for the overwhelming majority of trees.
+      //
+      // One-time-per-load: retroactively arm piles dropped before the rot
+      // flag existed (older saves) so they decay too, not just new reseeds.
+      if (!_woodAdoptionChecked) {
+        _woodAdoptionChecked = true;
+        TryAdoptExistingWoodPile();
+      }
       if (_carriesReseedWood) TickWoodRot();
 
       var hostDead = _living != null && _living.IsDead;
@@ -433,8 +447,9 @@ namespace Keystone.Mod.Overgrowth {
       if (loader.Has(DeadKey)) {
         _dead = loader.Get(DeadKey);
       }
-      // Absent in pre-rot saves — those reseed piles simply keep their old
-      // "lingers forever" behaviour rather than rotting retroactively.
+      // Absent in pre-rot saves; TryAdoptExistingWoodPile re-arms those piles
+      // on the first tick after load (living tree + unhauled wood), so they
+      // start rotting too rather than lingering forever.
       if (loader.Has(CarriesReseedWoodKey)) {
         _carriesReseedWood = loader.Get(CarriesReseedWoodKey);
       }
@@ -446,6 +461,26 @@ namespace Keystone.Mod.Overgrowth {
     #endregion
 
     #region Helpers
+
+    /// <summary>Retroactively arm the rot on a reseed pile that predates the
+    /// flag (wood dropped before the rot feature, or loaded from a save
+    /// without the persisted key). A <b>living</b> tree (host not dead)
+    /// carrying unhauled wood on its <see cref="GoodStack"/> can only be one
+    /// of our reseed piles: vanilla parks felled wood only on a cut stump,
+    /// and <c>Cuttable.Cut</c> calls <c>LivingNaturalResource.Die()</c> as it
+    /// fills the stack, so every vanilla wood pile sits on a <i>dead</i> host
+    /// and is excluded here. Arms the same per-day rot as a fresh reseed,
+    /// dated from today. Runs once per tree per load (a cached
+    /// <c>GetComponent</c> + an <c>IsEmpty</c> test — a no-op for the empty
+    /// stack on a normal living tree).</summary>
+    private void TryAdoptExistingWoodPile() {
+      if (_carriesReseedWood) return;                 // already armed (fresh reseed)
+      if (_living != null && _living.IsDead) return;  // dead host = vanilla cut stump, never ours
+      _woodStack ??= GetComponent<GoodStack>();
+      var inventory = _woodStack?.Inventory;
+      if (inventory == null || inventory.IsEmpty) return;
+      MarkReseedWood();
+    }
 
     /// <summary>Once-per-game-day rot pass on the reseed wood pile. Erodes
     /// <see cref="ReseedWoodRotPerDay"/> log(s) per elapsed day, skipping any
