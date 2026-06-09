@@ -1206,6 +1206,12 @@ namespace Keystone.Mod.Diagnostics {
           now.FlourishDecayCycles, _activityReference?.FlourishDecayCycles, now, _activityReference);
       buffer.AppendLine();
 
+      // Overgrowth / dead-tree cycle (issue #33): live census + the
+      // cumulative reseed count. Answers "how many trees are visibly
+      // overgrown / being replaced?" without hovering individual trees.
+      AppendOvergrowthSection(buffer, now, _activityReference);
+      buffer.AppendLine();
+
       // Region churn collapsed to a single line — events are usually
       // sparse (a long quiet game has zero churn for hours), so four
       // dedicated rows is more noise than signal. Optional "since
@@ -1249,6 +1255,62 @@ namespace Keystone.Mod.Diagnostics {
       // L3, 10 = mid-level marker, 20 = late-level marker).
       buffer.AppendLine();
       AppendBiomeMaturityTable(buffer);
+    }
+
+    /// <summary>Render the overgrowth / dead-tree cycle block: a live
+    /// census (overgrown split by host liveness, dead-tree count, the
+    /// reclaim-clock distribution, dead visuals awaiting decay) plus the
+    /// cumulative session reseed count with a since-open delta. The
+    /// census is a single registry walk in
+    /// <see cref="KeystoneActivityRecorder.TakeOvergrowthCensus"/>; the
+    /// reseed count rides the activity snapshot like the other
+    /// cumulative counters.</summary>
+    private void AppendOvergrowthSection(
+        StringBuilder buffer, ActivitySnapshot now, ActivitySnapshot? reference) {
+      var c = _activityRecorder.TakeOvergrowthCensus();
+      buffer.AppendLine("  Overgrowth cycle:");
+      if (c.TreesTracked == 0) {
+        buffer.AppendLine("    (no overgrowth-tracked trees loaded)");
+        return;
+      }
+      var overgrownTotal = c.OvergrownLiving + c.OvergrownDead;
+      buffer.Append("    overgrown: ")
+            .Append(c.OvergrownLiving).Append(" living + ")
+            .Append(c.OvergrownDead).Append(" dead = ")
+            .Append(overgrownTotal).Append(" (")
+            .Append(Percent(overgrownTotal, c.TreesTracked)).Append(" of ")
+            .Append(c.TreesTracked).AppendLine(" trees)");
+      buffer.Append("    dead trees: ").Append(c.DeadTrees).AppendLine();
+      // Reclaim-clock distribution: exclusive bins (tiers[i], tiers[i+1]]
+      // — same convention as the biome maturity table, so each dead tree
+      // sits in exactly one column. The last bin (10+) is past the
+      // reseed bar; trees at/over it are reseeded on the next dispatch,
+      // so it stays near-empty in steady state.
+      var tiers = KeystoneActivityRecorder.OvergrowthMaturityTiers;
+      var counts = c.MaturityTierCounts;
+      var labels = BuildBinLabels(tiers);
+      buffer.Append("      reclaim:");
+      for (var i = 0; i < labels.Length; i++) {
+        var n = i < counts.Count ? counts[i] : 0;
+        buffer.Append("  ").Append(labels[i]).Append(": ").Append(n);
+      }
+      buffer.AppendLine("   (reseed bar = "
+          + tiers[tiers.Count - 1].ToString(CultureInfo.InvariantCulture) + ")");
+      buffer.Append("    reseeds performed: ").Append(now.OvergrowthReseeds);
+      if (reference.HasValue) {
+        var delta = now.OvergrowthReseeds - reference.Value.OvergrowthReseeds;
+        if (delta > 0) buffer.Append("   (+").Append(delta).Append(" since open)");
+      }
+      buffer.AppendLine();
+      buffer.Append("    dead visuals awaiting decay: ")
+            .Append(c.DeadVisualsAwaitingDecay).AppendLine();
+    }
+
+    /// <summary>Integer-percent helper for the overgrowth census
+    /// ("N% of trees"). Guards a zero denominator.</summary>
+    private static string Percent(int part, int whole) {
+      if (whole <= 0) return "0%";
+      return (100f * part / whole).ToString("F0", CultureInfo.InvariantCulture) + "%";
     }
 
     /// <summary>Render the "what cadence are we actually running at"

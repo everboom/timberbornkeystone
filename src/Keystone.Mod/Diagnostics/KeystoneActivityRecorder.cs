@@ -9,6 +9,8 @@ using Keystone.Mod.Biomes;
 using Keystone.Mod.Ecology;
 using Keystone.Mod.Fauna;
 using Keystone.Mod.Flourish;
+using Keystone.Mod.Overgrowth;
+using Timberborn.EntitySystem;
 
 namespace Keystone.Mod.Diagnostics {
 
@@ -45,6 +47,8 @@ namespace Keystone.Mod.Diagnostics {
     private readonly ChunkClusterIndex _clusterIndex;
     private readonly KeystoneFaunaRegistry _faunaRegistry;
     private readonly ChunkValueStore _chunkValues;
+    private readonly EntityComponentRegistry _entityRegistry;
+    private readonly OvergrowthReseeder _reseeder;
 
     /// <summary>Maturity thresholds the per-biome breakdown reports
     /// chunk counts above. These align with the biome ladders' level
@@ -64,7 +68,9 @@ namespace Keystone.Mod.Diagnostics {
         RegionService regions,
         ChunkClusterIndex clusterIndex,
         KeystoneFaunaRegistry faunaRegistry,
-        ChunkValueStore chunkValues) {
+        ChunkValueStore chunkValues,
+        EntityComponentRegistry entityRegistry,
+        OvergrowthReseeder reseeder) {
       _clock = clock;
       _ecologyField = ecologyField;
       _biomeTicker = biomeTicker;
@@ -75,7 +81,23 @@ namespace Keystone.Mod.Diagnostics {
       _clusterIndex = clusterIndex;
       _faunaRegistry = faunaRegistry;
       _chunkValues = chunkValues;
+      _entityRegistry = entityRegistry;
+      _reseeder = reseeder;
     }
+
+    /// <summary>Reclaim-clock tiers for the overgrowth census, mirroring
+    /// <see cref="MaturityThresholds"/> but tuned to the dead-tree reseed
+    /// cycle (issue #33) rather than the biome ladder. Binning uses the
+    /// same <b>exclusive</b> convention as
+    /// <see cref="TakeBiomeMaturityBreakdown"/>: each dead tree lands in
+    /// exactly one bin, <c>(tiers[i], tiers[i+1]]</c> (lower-exclusive,
+    /// upper-inclusive), with the last bin open-right
+    /// (<c>&gt; tiers[N-1]</c>). Dead trees at maturity ≤ the lowest tier
+    /// (0 — freshly dead, or eroded back to 0 by drought) fall in no bin,
+    /// so the bins sum to "dead trees that have accrued anything," not
+    /// the full dead-tree count. The top tier (10) is the reseed bar.</summary>
+    public static readonly IReadOnlyList<float> OvergrowthMaturityTiers =
+        new[] { 0f, 2.5f, 5f, 7.5f, 10f };
 
     /// <summary>Read every counter and live-state value into a single
     /// <see cref="ActivitySnapshot"/>. Cheap — six counter reads + four
@@ -103,7 +125,55 @@ namespace Keystone.Mod.Diagnostics {
           LastRebuildRegionsIncluded: _clusterIndex.LastRebuildRegionsIncluded,
           LastRebuildRegionsSkippedNoField: _clusterIndex.LastRebuildRegionsSkippedNoField,
           LastRebuildRegionsSkippedFewValidChunks: _clusterIndex.LastRebuildRegionsSkippedFewValidChunks,
-          FieldShapeVersion: _ecologyField.FieldShapeVersion);
+          FieldShapeVersion: _ecologyField.FieldShapeVersion,
+          OvergrowthReseeds: _reseeder.ReseedsThisSession);
+    }
+
+    /// <summary>Map-wide live census of the overgrowth / dead-tree cycle
+    /// (GitHub issue #33): a single walk of every
+    /// <see cref="KeystoneOvergrowth"/> in the entity registry. Answers
+    /// "how many trees are visibly overgrown right now?" and "how far
+    /// along is the reclamation clock?" — the cumulative reseed count
+    /// (which a snapshot can't recover from live state, since a reseeded
+    /// tile looks like any other overgrown living tree afterward) rides
+    /// the <see cref="ActivitySnapshot.OvergrowthReseeds"/> counter
+    /// instead.
+    ///
+    /// <para>O(trees) of cheap field reads —
+    /// <see cref="KeystoneOvergrowth.HostDead"/> reads a cached
+    /// resource, no <c>GetComponent</c>. Called once per panel render
+    /// (~2 Hz, only while the Activity tab is open), matching the cost
+    /// profile of <see cref="TakeBiomeMaturityBreakdown"/>.</para></summary>
+    public OvergrowthCensus TakeOvergrowthCensus() {
+      var tiers = OvergrowthMaturityTiers;
+      var tierCounts = new int[tiers.Count];
+      int trees = 0, overgrownLiving = 0, overgrownDead = 0;
+      int deadTrees = 0, deadVisuals = 0;
+      foreach (var o in _entityRegistry.GetEnabled<KeystoneOvergrowth>()) {
+        trees++;
+        var hostDead = o.HostDead;
+        if (hostDead) {
+          deadTrees++;
+          var m = o.Maturity;
+          // Exclusive bins, matching TakeBiomeMaturityBreakdown: a tree
+          // lands in exactly one bin (tiers[i], tiers[i+1]]; the last
+          // bin is open-right. Maturity <= tiers[0] (== 0) falls in no
+          // bin (hasn't started reclaiming).
+          if (m > tiers[0]) {
+            var bin = tiers.Count - 1;
+            for (var k = 1; k < tiers.Count; k++) {
+              if (m <= tiers[k]) { bin = k - 1; break; }
+            }
+            tierCounts[bin]++;
+          }
+        }
+        if (o.IsOvergrown) {
+          if (hostDead) overgrownDead++; else overgrownLiving++;
+        }
+        if (o.IsDead) deadVisuals++;
+      }
+      return new OvergrowthCensus(
+          trees, overgrownLiving, overgrownDead, deadTrees, tierCounts, deadVisuals);
     }
 
     /// <summary>Per-biome chunk-maturity breakdown: for each biome
@@ -279,7 +349,31 @@ namespace Keystone.Mod.Diagnostics {
       int LastRebuildRegionsIncluded,
       int LastRebuildRegionsSkippedNoField,
       int LastRebuildRegionsSkippedFewValidChunks,
-      int FieldShapeVersion);
+      int FieldShapeVersion,
+      int OvergrowthReseeds);
+
+  /// <summary>Instantaneous map-wide overgrowth census (GitHub issue
+  /// #33). All counts are a live snapshot from one registry walk; the
+  /// cumulative reseed count lives on
+  /// <see cref="ActivitySnapshot.OvergrowthReseeds"/> instead (it can't
+  /// be recovered from live state). <see cref="OvergrownLiving"/> /
+  /// <see cref="OvergrownDead"/> split the visibly-overgrown trees by
+  /// host liveness; <see cref="DeadTrees"/> is every dead host
+  /// (overgrown or not, since the reclaim clock runs on all of them);
+  /// <see cref="MaturityTierCounts"/> is the reclaim-clock distribution,
+  /// aligned to <see cref="KeystoneActivityRecorder.OvergrowthMaturityTiers"/>
+  /// — entry [i] is the count of dead trees whose maturity falls in the
+  /// exclusive bin <c>(tiers[i], tiers[i+1]]</c> (last bin open-right),
+  /// so each dead tree is counted in at most one tier;
+  /// <see cref="DeadVisualsAwaitingDecay"/> is overgrowth overlays
+  /// flipped to dead and awaiting the decay sweep.</summary>
+  public readonly record struct OvergrowthCensus(
+      int TreesTracked,
+      int OvergrownLiving,
+      int OvergrownDead,
+      int DeadTrees,
+      IReadOnlyList<int> MaturityTierCounts,
+      int DeadVisualsAwaitingDecay);
 
   /// <summary>One row of the per-biome maturity breakdown.
   /// <see cref="CountsInBin"/>[i] is the count of chunks with this
