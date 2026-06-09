@@ -76,6 +76,15 @@ namespace Keystone.Mod.Overgrowth {
       _lumberjackStacks = lumberjackStacks;
     }
 
+    /// <summary>Count of successful reseeds since this session loaded —
+    /// a dead tree replaced by a fresh seedling. Non-persisted (resets
+    /// on load); a tuning/observability signal read by the overgrowth
+    /// debug panel, not gameplay state. A live census can't show this
+    /// because a reseeded tile looks like any other overgrown living
+    /// tree afterward, so "how many were replaced" has to be counted as
+    /// it happens.</summary>
+    public int ReseedsThisSession { get; private set; }
+
     #endregion
 
     #region Public API
@@ -127,11 +136,16 @@ namespace Keystone.Mod.Overgrowth {
 
       // Carry the overgrowth straight onto the new tree ("overgrown from
       // the start").
-      seedling.GetComponent<KeystoneOvergrowth>()?.Apply(composition);
+      var newOvergrowth = seedling.GetComponent<KeystoneOvergrowth>();
+      newOvergrowth?.Apply(composition);
 
-      // Step 3 — drop the felled wood for hauling.
-      DropWood(seedling, yield);
+      // Step 3 — drop the felled wood for hauling, and arm its slow rot so an
+      // unreached pile eventually clears instead of lingering forever.
+      if (DropWood(seedling, yield)) {
+        newOvergrowth?.MarkReseedWood();
+      }
 
+      ReseedsThisSession++;
       KeystoneLog.Verbose(
           $"[Keystone] OvergrowthReseeder: reseeded {tile} with " +
           $"'{pick.BlueprintName}'" +
@@ -155,15 +169,19 @@ namespace Keystone.Mod.Overgrowth {
     /// the felled wood and register it for lumberjack hauling. The tree's
     /// <c>LumberjackGoodStackAdder</c> wired removal-on-empty during its
     /// (already-run) <c>Start</c>, but its initial add saw an empty stack —
-    /// so register explicitly here, guarded against a double-add.</summary>
-    private void DropWood(BlockObject seedling, GoodAmount yield) {
-      if (yield.Amount <= 0) return;
+    /// so register explicitly here, guarded against a double-add. Returns
+    /// <c>true</c> when wood was actually placed (a grown tree's yield), so
+    /// the caller can arm the pile's rot; <c>false</c> for a dead sapling that
+    /// yielded nothing.</summary>
+    private bool DropWood(BlockObject seedling, GoodAmount yield) {
+      if (yield.Amount <= 0) return false;
       var stack = seedling.GetComponent<GoodStack>();
-      if (stack == null) return;
+      if (stack == null) return false;
       stack.EnableGoodStack(yield);
       if (!AlreadyRegistered(stack)) {
         _lumberjackStacks.Add(stack);
       }
+      return true;
     }
 
     private bool AlreadyRegistered(GoodStack stack) {

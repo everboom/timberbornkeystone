@@ -6,6 +6,9 @@ using Keystone.Mod.Decoration;
 using Keystone.Mod.Diagnostics;
 using Timberborn.BlockSystem;
 using Timberborn.EntitySystem;
+using Timberborn.GoodStackSystem;
+using Timberborn.Goods;
+using Timberborn.InventorySystem;
 using Timberborn.NaturalResourcesLifecycle;
 using Timberborn.NaturalResourcesMoisture;
 using Timberborn.Persistence;
@@ -97,11 +100,21 @@ namespace Keystone.Mod.Overgrowth {
     /// gain rate (the mod's slow-accrue / fast-loss grammar).</summary>
     private const float MaturityLossPerDay = 2.0f;
 
+    /// <summary>Logs the felled-wood pile loses per game-day once nobody has
+    /// hauled it — the slow "deadwood returns to the soil" cleanup for the
+    /// reseed pile (GitHub issue #33). One per day means the pile clears over
+    /// as many days as it held logs; reserved logs (a lumberjack already en
+    /// route) are never touched, so the count only erodes wood nobody has
+    /// claimed.</summary>
+    private const int ReseedWoodRotPerDay = 1;
+
     private static readonly ComponentKey ComponentKey = new("KeystoneOvergrowth");
     private static readonly PropertyKey<bool> DecoratedKey = new("Decorated");
     private static readonly PropertyKey<string> DecorationIdKey = new("DecorationId");
     private static readonly PropertyKey<float> MaturityKey = new("Maturity");
     private static readonly PropertyKey<bool> DeadKey = new("Dead");
+    private static readonly PropertyKey<bool> CarriesReseedWoodKey = new("CarriesReseedWood");
+    private static readonly PropertyKey<int> LastWoodRotDayKey = new("LastWoodRotDay");
 
     #endregion
 
@@ -146,10 +159,28 @@ namespace Keystone.Mod.Overgrowth {
     /// than back-dating the whole time it was alive. Transient.</summary>
     private bool _wasDead;
 
+    /// <summary>True when this tree is carrying felled reseed wood on its own
+    /// <see cref="GoodStack"/> that should slowly rot away if left unhauled
+    /// (set by <see cref="MarkReseedWood"/> at reseed time). The state lives
+    /// on the tree that holds the wood — no central registry to keep in sync —
+    /// and self-clears the moment the stack empties (hauled or rotted).
+    /// Persisted.</summary>
+    private bool _carriesReseedWood;
+
+    /// <summary>The <see cref="IDayNightCycle.DayNumber"/> at which the reseed
+    /// pile last lost a log. A new day past this triggers the next rot pass.
+    /// Persisted alongside <see cref="_carriesReseedWood"/>.</summary>
+    private int _lastWoodRotDay;
+
+    /// <summary>Cached own <see cref="GoodStack"/> (every tree template carries
+    /// one) — the reseed pile we rot from. Resolved lazily; transient.</summary>
+    private GoodStack _woodStack;
+
     private readonly List<KeystoneDecoration> _spawned = new();
     private float _lastCheckDay;
     private int _tickCounter;
     private bool _tickFailureLogged;
+    private bool _woodRotFailureLogged;
 
     #endregion
 
@@ -184,6 +215,15 @@ namespace Keystone.Mod.Overgrowth {
     /// and awaits removal by the decay ticker. Does not affect the
     /// reclamation clock.</summary>
     public bool IsDead => _dead;
+
+    /// <summary>True when the host tree itself is dead (its
+    /// <see cref="LivingNaturalResource"/> reports <c>IsDead</c>) — the
+    /// state on which the reclamation clock accrues. Distinct from
+    /// <see cref="IsDead"/>, which is about the overgrowth <i>visual</i>.
+    /// Reads the cached resource (no per-call <c>GetComponent</c>); used
+    /// by the diagnostics census. A tree with no
+    /// <see cref="LivingNaturalResource"/> reads as not-dead.</summary>
+    public bool HostDead => _living != null && _living.IsDead;
 
     /// <summary>Terminally kill the overgrowth visual (Dry-biome attrition /
     /// badwater). No-op if not overgrown or already dead. The controller
@@ -238,6 +278,18 @@ namespace Keystone.Mod.Overgrowth {
       DespawnAll();
     }
 
+    /// <summary>Arm the slow rot of the felled wood the reseeder just dropped
+    /// on this seedling's <see cref="GoodStack"/>: from now on the pile loses
+    /// <see cref="ReseedWoodRotPerDay"/> unhauled log(s) per game-day until a
+    /// lumberjack fetches it or it rots to nothing — at which point the stack
+    /// disables itself (vanilla) and this flag self-clears. Called once, right
+    /// after the wood is placed; no-op-safe to call again. Independent of the
+    /// overgrowth visual and the reclamation clock.</summary>
+    public void MarkReseedWood() {
+      _carriesReseedWood = true;
+      _lastWoodRotDay = _dayNightCycle.DayNumber;
+    }
+
     #endregion
 
     #region Lifecycle
@@ -275,6 +327,13 @@ namespace Keystone.Mod.Overgrowth {
     public override void Tick() {
       var blockObject = GetComponent<BlockObject>();
       if (blockObject == null) return;
+
+      // Reseed-wood rot runs independently of the overgrowth visual and the
+      // host's life state (the wood sits on a living seedling), so it goes
+      // ahead of the living-tree fast path below. Cheap when disarmed: a
+      // single bool test for the overwhelming majority of trees.
+      if (_carriesReseedWood) TickWoodRot();
+
       var hostDead = _living != null && _living.IsDead;
 
       // Fast path: a living, un-decorated tree has no overlay to maintain
@@ -345,15 +404,18 @@ namespace Keystone.Mod.Overgrowth {
 
     /// <inheritdoc />
     public void Save(IEntitySaver entitySaver) {
-      // Persist when there's anything non-default: the overgrowth visual, or
-      // a dead tree's accrued reclamation maturity (which exists with no
-      // visual). A pristine living/barren tree writes nothing.
-      if (!_decorated && _maturity <= 0f) return;
+      // Persist when there's anything non-default: the overgrowth visual, a
+      // dead tree's accrued reclamation maturity (which exists with no
+      // visual), or a reseed pile still rotting down. A pristine living/barren
+      // tree writes nothing.
+      if (!_decorated && _maturity <= 0f && !_carriesReseedWood) return;
       var saver = entitySaver.GetComponent(ComponentKey);
       saver.Set(DecoratedKey, _decorated);
       saver.Set(DecorationIdKey, _decorationId);
       saver.Set(MaturityKey, _maturity);
       saver.Set(DeadKey, _dead);
+      saver.Set(CarriesReseedWoodKey, _carriesReseedWood);
+      saver.Set(LastWoodRotDayKey, _lastWoodRotDay);
     }
 
     /// <inheritdoc />
@@ -371,11 +433,75 @@ namespace Keystone.Mod.Overgrowth {
       if (loader.Has(DeadKey)) {
         _dead = loader.Get(DeadKey);
       }
+      // Absent in pre-rot saves — those reseed piles simply keep their old
+      // "lingers forever" behaviour rather than rotting retroactively.
+      if (loader.Has(CarriesReseedWoodKey)) {
+        _carriesReseedWood = loader.Get(CarriesReseedWoodKey);
+      }
+      if (loader.Has(LastWoodRotDayKey)) {
+        _lastWoodRotDay = loader.Get(LastWoodRotDayKey);
+      }
     }
 
     #endregion
 
     #region Helpers
+
+    /// <summary>Once-per-game-day rot pass on the reseed wood pile. Erodes
+    /// <see cref="ReseedWoodRotPerDay"/> log(s) per elapsed day, skipping any
+    /// a lumberjack has reserved (so wood actively being hauled is never
+    /// pulled out from under the carrier). Self-disarms when the stack empties
+    /// — whether by rot or by a hauler — so a hauled-clean pile stops being
+    /// tracked. Guarded: a background tick must never throw out of the loop.
+    /// <para>The day-number compare is the gate, so the body only does real
+    /// work on a day boundary; every other tick is a single integer
+    /// comparison.</para></summary>
+    private void TickWoodRot() {
+      try {
+        var currentDay = _dayNightCycle.DayNumber;
+        if (currentDay <= _lastWoodRotDay) return;
+
+        _woodStack ??= GetComponent<GoodStack>();
+        var inventory = _woodStack?.Inventory;
+        if (inventory == null || inventory.IsEmpty) {
+          // Hauled away, or no stack to rot from — stop tracking this tree.
+          _carriesReseedWood = false;
+          return;
+        }
+
+        // Catch up one log per elapsed day (normally exactly one). Each pass
+        // re-checks stock + reservations, so the loop ends naturally when the
+        // pile empties or only reserved logs remain.
+        var passes = (currentDay - _lastWoodRotDay) * ReseedWoodRotPerDay;
+        _lastWoodRotDay = currentDay;
+        for (var i = 0; i < passes; i++) {
+          if (!RotOneLog(inventory)) break;
+        }
+
+        if (inventory.IsEmpty) _carriesReseedWood = false;
+      } catch (System.Exception ex) {
+        LifecycleGuard.HandleErrorOnce(
+            "KeystoneOvergrowth.TickWoodRot", "Reseed-wood rot errors", ex,
+            ref _woodRotFailureLogged);
+      }
+    }
+
+    /// <summary>Take a single unreserved unit of whatever good the reseed pile
+    /// holds (it is a single wood type). Returns <c>false</c> when the pile is
+    /// empty or every remaining unit is reserved — the signal to stop this
+    /// day's pass. The <see cref="Inventory.UnreservedAmountInStock"/> guard
+    /// is mandatory: <see cref="Inventory.Take"/> throws on reserved stock.
+    /// The <c>return</c> immediately after the take exits the enumeration
+    /// before the (now-mutated) stock list is advanced.</summary>
+    private static bool RotOneLog(Inventory inventory) {
+      foreach (var good in inventory.Stock) {
+        if (inventory.UnreservedAmountInStock(good.GoodId) >= 1) {
+          inventory.Take(new GoodAmount(good.GoodId, 1));
+          return true;
+        }
+      }
+      return false;
+    }
 
     /// <summary>Per-tile throttle offset so trees don't all fire their
     /// maturity update on the same tick. Used at start and on the
