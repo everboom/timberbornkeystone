@@ -10,6 +10,7 @@ using Keystone.Mod.Flourish;
 using Timberborn.BlockSystem;
 using Timberborn.BlueprintSystem;
 using Timberborn.EntitySystem;
+using Timberborn.NaturalResourcesLifecycle;
 using UnityEngine;
 
 namespace Keystone.Mod.Recipes {
@@ -59,6 +60,18 @@ namespace Keystone.Mod.Recipes {
   /// bucket's combined species list. Player-marked tiles remain
   /// exempt because the per-surface marked-tile skip in
   /// <c>ChunkRulesApplier</c> fires before this handler runs.</para>
+  ///
+  /// <para><b>Dead-only rules.</b> A recipe with
+  /// <see cref="AttritionRecipe.DeadOnly"/> set acts only on a target
+  /// whose <see cref="LivingNaturalResource"/> reports <c>IsDead</c>
+  /// (see <see cref="IsDeadResource"/>); living plants and anything
+  /// without a <c>LivingNaturalResource</c> are skipped. This is how
+  /// the irrigated/wet biomes (Grassland, Forest, Riparian, Wetland,
+  /// River, Lake) reclaim dead vanilla bushes —
+  /// <c>Destroy</c> + <c>VanillaSpecies: ["BlueberryBush", "Dandelion"]</c>
+  /// + <c>DeadOnly</c> — without ever touching a thriving bush. Dead
+  /// Keystone flourishes aren't covered here on purpose: the global
+  /// <c>KeystoneFlourishDecayTicker</c> already sweeps them everywhere.</para>
   ///
   /// <para><b>RNG.</b> Bernoulli rolls use a non-deterministic
   /// <see cref="System.Random"/>. Each cycle gives an entity a fresh
@@ -173,6 +186,7 @@ namespace Keystone.Mod.Recipes {
           if (!AttritionTargeting.MatchesTarget(recipe, classId, vanillaBlueprintName)) continue;
           if (!IsHabitatIncluded(entity, recipe.IncludeHabitats)) continue;
           if (IsHabitatExcluded(entity, recipe.ExcludeHabitats)) continue;
+          if (recipe.DeadOnly && !IsDeadResource(entity)) continue;
           if (_rng.NextDouble() >= probability) continue;
           ApplyAction(entity, recipe.Action);
           if (recipe.Action == AttritionAction.Destroy) {
@@ -227,6 +241,18 @@ namespace Keystone.Mod.Recipes {
         }
       }
       return false;
+    }
+
+    /// <summary>True if <paramref name="entity"/> is a dead natural
+    /// resource — carries <see cref="LivingNaturalResource"/> with
+    /// <c>IsDead</c> set. The liveness gate for <c>DeadOnly</c> rules
+    /// (dead-clutter cleanup): a living plant, or anything with no
+    /// <see cref="LivingNaturalResource"/> at all, reads as not-dead
+    /// and is therefore skipped by a dead-only rule (we never want a
+    /// dead-only rule to delete something we can't confirm is dead).</summary>
+    private static bool IsDeadResource(Timberborn.BlockSystem.BlockObject entity) {
+      var living = entity.GetComponent<LivingNaturalResource>();
+      return living != null && living.IsDead;
     }
 
     /// <summary>Resolve the per-tile probability for

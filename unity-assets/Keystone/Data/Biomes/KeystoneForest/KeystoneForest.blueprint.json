@@ -27,6 +27,13 @@
       { "Biome": "Forest", "Level": "OvergrowDead", "Target": "Dead", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "Weight": 1 },
       { "Biome": "Forest", "Level": "OvergrowLive", "Target": "Live", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "Weight": 1 },
       { "Biome": "Forest", "Level": "Reseed", "Target": "Reseed", "Compositions": ["KeystoneOvergrowthMini1","KeystoneOvergrowthMini2","KeystoneOvergrowthMini3","KeystoneOvergrowthMini4","KeystoneOvergrowthMini5","KeystoneOvergrowthMini6","KeystoneOvergrowthMini7","KeystoneOvergrowthMini8","KeystoneOvergrowthMini9","KeystoneOvergrowthMini10"], "SourceLevel": "L1", "MaturityThreshold": 10.0, "Weight": 1 }
+    ],
+    "Attritions": [
+      {
+        "Biome": "Forest", "Level": "L1",
+        "Action": "Destroy", "VanillaSpecies": ["BlueberryBush", "Dandelion"],
+        "DeadOnly": true, "Probability": 0.1, "Filter": ""
+      }
     ]
   }
 }

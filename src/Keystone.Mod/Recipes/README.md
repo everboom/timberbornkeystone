@@ -84,7 +84,22 @@ by design.
 Attrition rules live alongside spawn recipes in the same
 `KeystoneRecipeBookSpec`, under a separate `Attritions` array of
 `AttritionEntry` records (`Biome`, `Level`, `Action`, `Classes`,
-`Probability`, `Filter`).
+`Probability`, `Filter`, plus `VanillaSpecies`, `ScaleBy`,
+`Include`/`ExcludeHabitats`, `DeadOnly`).
+
+`Action` is `Kill` (flip a Keystone flourish to its dead visual) or
+`Destroy` (`EntityService.Delete` the entity). `Classes` targets
+Keystone-stamped content (B/C, plus the `Overgrowth` token);
+`VanillaSpecies` targets vanilla flora by blueprint name (the only way
+to reach unstamped entities, so it's also the mod-safe whitelist — we
+only ever touch what we name). `DeadOnly: true` gates the rule to
+targets whose `LivingNaturalResource.IsDead` is set. The irrigated/wet
+biomes (Grassland, Forest, Riparian, Wetland, River, Lake) use
+`Destroy` + `VanillaSpecies: ["BlueberryBush", "Dandelion"]` +
+`DeadOnly` to reclaim dead vanilla bushes while leaving living ones
+standing; trees are excluded on purpose (the overgrowth reseed cycle
+owns dead trees), and dead Keystone flourishes are swept globally by
+`KeystoneFlourishDecayTicker` rather than per-biome.
 
 ## Two schedulers, by design
 

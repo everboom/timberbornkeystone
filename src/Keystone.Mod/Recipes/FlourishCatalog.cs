@@ -390,7 +390,8 @@ namespace Keystone.Mod.Recipes {
           ScaleMax: entry.ScaleMax,
           ProbabilityAtMin: entry.ProbabilityAtMin,
           ExcludeHabitats: entry.ExcludeHabitats,
-          IncludeHabitats: entry.IncludeHabitats);
+          IncludeHabitats: entry.IncludeHabitats,
+          DeadOnly: entry.DeadOnly);
       return AttritionRecipeParser.TryParse(input, sourceBookName, KeystoneLog.Warn, out recipe);
     }
 

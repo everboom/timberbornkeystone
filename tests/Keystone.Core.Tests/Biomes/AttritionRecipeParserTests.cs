@@ -41,7 +41,8 @@ namespace Keystone.Core.Tests.Biomes {
         float scaleMax = 0f,
         float probabilityAtMin = 0f,
         IReadOnlyList<string>? excludeHabitats = null,
-        IReadOnlyList<string>? includeHabitats = null) {
+        IReadOnlyList<string>? includeHabitats = null,
+        bool deadOnly = false) {
       return new AttritionEntryInput(
           Biome: biome,
           Level: level,
@@ -55,7 +56,8 @@ namespace Keystone.Core.Tests.Biomes {
           ScaleMax: scaleMax,
           ProbabilityAtMin: probabilityAtMin,
           ExcludeHabitats: excludeHabitats ?? System.Array.Empty<string>(),
-          IncludeHabitats: includeHabitats ?? System.Array.Empty<string>());
+          IncludeHabitats: includeHabitats ?? System.Array.Empty<string>(),
+          DeadOnly: deadOnly);
     }
 
     private static (AttritionRecipe? Recipe, List<string> Warnings, bool Result)
@@ -102,6 +104,28 @@ namespace Keystone.Core.Tests.Biomes {
       var (recipe, _, ok) = Parse(Valid(action: "Kill"));
       Assert.IsTrue(ok);
       Assert.AreEqual(AttritionAction.Kill, recipe!.Action);
+    }
+
+    [TestMethod]
+    public void TryParse_DeadOnly_DefaultsFalse() {
+      // Unauthored DeadOnly preserves the pre-feature semantics: a rule
+      // acts on its target regardless of liveness (e.g. River reed washout).
+      var (recipe, _, ok) = Parse(Valid());
+      Assert.IsTrue(ok);
+      Assert.IsFalse(recipe!.DeadOnly);
+    }
+
+    [TestMethod]
+    public void TryParse_DeadOnly_RoundTrips() {
+      // Dead-clutter cleanup rules (irrigated biomes destroying dead
+      // BlueberryBush / Dandelion) round-trip DeadOnly=true to the recipe.
+      var (recipe, _, ok) = Parse(Valid(
+          action: "Destroy",
+          classes: System.Array.Empty<string>(),
+          vanillaSpecies: new[] { "BlueberryBush", "Dandelion" },
+          deadOnly: true));
+      Assert.IsTrue(ok);
+      Assert.IsTrue(recipe!.DeadOnly);
     }
 
     [TestMethod]

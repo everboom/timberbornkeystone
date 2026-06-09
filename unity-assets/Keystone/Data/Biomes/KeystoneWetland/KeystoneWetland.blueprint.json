@@ -66,6 +66,11 @@
         "Action": "Kill", "Classes": ["B"],
         "Probability": 0.33, "Filter": "",
         "IncludeHabitats": ["Dry"]
+      },
+      {
+        "Biome": "Wetland", "Level": "L1",
+        "Action": "Destroy", "VanillaSpecies": ["BlueberryBush", "Dandelion"],
+        "DeadOnly": true, "Probability": 0.1, "Filter": ""
       }
     ]
   }

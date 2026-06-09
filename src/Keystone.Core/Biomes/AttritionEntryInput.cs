@@ -29,6 +29,7 @@ namespace Keystone.Core.Biomes {
       float ScaleMax,
       float ProbabilityAtMin,
       IReadOnlyList<string> ExcludeHabitats,
-      IReadOnlyList<string> IncludeHabitats);
+      IReadOnlyList<string> IncludeHabitats,
+      bool DeadOnly);
 
 }

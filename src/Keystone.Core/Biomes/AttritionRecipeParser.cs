@@ -147,7 +147,8 @@ namespace Keystone.Core.Biomes {
           ProbabilityAtMin: probabilityAtMin,
           ExcludeHabitats: excludeHabitats,
           IncludeHabitats: includeHabitats,
-          VanillaSpecies: vanillaSpecies);
+          VanillaSpecies: vanillaSpecies,
+          DeadOnly: entry.DeadOnly);
       return true;
     }
 

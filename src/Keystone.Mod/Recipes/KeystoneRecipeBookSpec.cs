@@ -174,6 +174,18 @@ namespace Keystone.Mod.Recipes {
     /// chunk untouched.</para></summary>
     [Serialize] public ImmutableArray<string> IncludeHabitats { get; init; } = ImmutableArray<string>.Empty;
 
+    /// <summary>When <c>true</c>, the rule only acts on a target whose
+    /// <c>LivingNaturalResource.IsDead</c> is set; a living target is
+    /// left untouched. Default <c>false</c> = no liveness gate (acts on
+    /// the target regardless of state, e.g. River's reed-washout rule).
+    /// <para>This is the "clean up dead clutter" switch: irrigated
+    /// biomes list dead-only <c>Destroy</c> rules for vanilla bushes
+    /// (<c>VanillaSpecies: ["BlueberryBush", "Dandelion"]</c>) so dead
+    /// husks are reclaimed while living, productive bushes stay. A
+    /// targeted entity with no <c>LivingNaturalResource</c> reads as
+    /// not-dead and is skipped under a dead-only rule.</para></summary>
+    [Serialize] public bool DeadOnly { get; init; }
+
   }
 
   /// <summary>One recipe entry inside a <see cref="KeystoneRecipeBookSpec"/>.</summary>

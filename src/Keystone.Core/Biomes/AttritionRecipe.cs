@@ -81,6 +81,15 @@ namespace Keystone.Core.Biomes {
   /// already exempt at the dispatcher level (the per-surface marked
   /// skip in <c>ChunkRulesApplier</c> fires before any handler),
   /// so listing a species here doesn't override that protection.</param>
+  /// <param name="DeadOnly">When <c>true</c>, the rule only acts on
+  /// entities whose <c>LivingNaturalResource.IsDead</c> is set — living
+  /// targets are left alone. Default <c>false</c> = no liveness gate
+  /// (acts on a target regardless of state, e.g. River's reed-washout
+  /// rule). Used for "clean up dead clutter" rules that should leave a
+  /// thriving plant standing. The gate is enforced Mod-side in the
+  /// handler (Core has no entity-state access); a targeted entity with
+  /// no <c>LivingNaturalResource</c> at all reads as not-dead and is
+  /// skipped under a dead-only rule.</param>
   public sealed record AttritionRecipe(
       BiomeKind Biome,
       string LevelId,
@@ -94,7 +103,8 @@ namespace Keystone.Core.Biomes {
       float ProbabilityAtMin,
       IReadOnlyList<string> ExcludeHabitats,
       IReadOnlyList<string> IncludeHabitats,
-      IReadOnlyList<string> VanillaSpecies) {
+      IReadOnlyList<string> VanillaSpecies,
+      bool DeadOnly = false) {
 
     /// <summary>
     /// Per-tile probability for this recipe given the channel sample
