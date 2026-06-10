@@ -14,6 +14,7 @@ using Timberborn.Planting;
 using Timberborn.Growing;
 using Timberborn.NaturalResources;
 using Timberborn.NaturalResourcesMoisture;
+using Timberborn.TemplateSystem;
 using Timberborn.TickSystem;
 using Timberborn.TimeSystem;
 
@@ -54,6 +55,11 @@ namespace Keystone.Mod.Growth {
     /// <summary>Tick-counter cadence for biome checks. ~800 ticks
     /// ≈ 3 checks per game day at the default tick rate.</summary>
     private const int CheckIntervalTicks = 800;
+
+    /// <summary>Template name of the third-party "Tree Of Life" mod's
+    /// centerpiece tree, hard-excluded from the growth bonus. See the
+    /// exclusion note in <see cref="StartTickable"/>.</summary>
+    private const string ExcludedTreeOfLifeTemplate = "TreeOfLife";
 
     #endregion
 
@@ -155,6 +161,23 @@ namespace Keystone.Mod.Growth {
         }
 
         if (GetComponent<NaturalResourceSpec>() == null) {
+          _targetBiome = null;
+          return;
+        }
+
+        // Hardcoded compatibility exclusion: the Tree of Life (third-party
+        // "Tree Of Life" mod) is a unique floodable, water-sourcing
+        // centerpiece. Its FloodableNaturalResourceSpec.MinWaterHeight > 0
+        // would otherwise classify it aquatic -> Wetland below, granting a
+        // growth-speed bonus and showing a Wetland verdict in the entity
+        // panel -- neither sensible for a revivable shrine tree. Null target
+        // biome opts it out: IsActive stays false, which both hides the panel
+        // fragment AND skips the tick bonus, in this one place.
+        // NOTE: deliberately a brittle by-name coupling to one foreign mod
+        // (principled by-spec predicates were considered and declined). IsNamed
+        // also matches backward-compatible aliases, so a rename that keeps the
+        // alias still hits; a clean rename without one would need this updated.
+        if (GetComponent<TemplateSpec>()?.IsNamed(ExcludedTreeOfLifeTemplate) == true) {
           _targetBiome = null;
           return;
         }
