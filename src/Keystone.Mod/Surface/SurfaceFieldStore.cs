@@ -219,8 +219,10 @@ namespace Keystone.Mod.Surface {
                 + $"supported v{CurrentSchemaVersion}; loading best-effort.");
           }
         }
-        // Saved Size is the max column count at save time. Unpack only
-        // the levels both saves agree on; the rest stay zero.
+        // Saved Size is the number of levels actually packed at save time
+        // (the store array's column extent -- equal to the max column count
+        // in steady state; see Save). Unpack only the levels both saves agree
+        // on; the rest stay zero.
         var savedColumnCount = loader.Has(SizeKey) ? loader.Get(SizeKey) : 1;
         var levels = Math.Min(savedColumnCount, maxColumnCount);
         for (var i = 0; i < _fields.Length; i++) {
@@ -241,12 +243,24 @@ namespace Keystone.Mod.Surface {
     public void Save(ISingletonSaver singletonSaver) {
       var saver = singletonSaver.GetSingleton(StoreKey);
       saver.Set(SchemaVersionKey, CurrentSchemaVersion);
-      var maxColumnCount = _columnTerrainMap.MaxColumnCount;
-      saver.Set(SizeKey, maxColumnCount);
+      // Pack reads inputArray[startingIndex + (levels-1)*VerticalStride + ...],
+      // so it requires inputArray.Length >= levels * VerticalStride. Derive the
+      // level count from the array we actually hold rather than a live
+      // _columnTerrainMap.MaxColumnCount read: a terrain edit (our own digging,
+      // or another mod such as More Mines stacking ore) grows the column count
+      // and queues a resize that Tick() drains on the next sim tick, but a save
+      // landing in that same frame (GameSaver runs on LateUpdate) would pass the
+      // already-grown live count against the not-yet-grown array and index off
+      // the end -> IndexOutOfRangeException mid-save. The columns the live count
+      // is ahead by carry no Keystone state yet (their accrual hasn't run; the
+      // pending ColumnReset would zero them anyway), so the array's own extent
+      // is the correct -- and only safe -- thing to persist.
+      var columns = _fields[0].Length / _verticalStride;
+      saver.Set(SizeKey, columns);
       for (var i = 0; i < _fields.Length; i++) {
         saver.Set(
             _fieldKeys[i],
-            _mapIndexService.Pack(_fields[i], maxColumnCount),
+            _mapIndexService.Pack(_fields[i], columns),
             _floatPackedListSerializer);
       }
     }
