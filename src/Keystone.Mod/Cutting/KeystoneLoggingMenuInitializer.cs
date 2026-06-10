@@ -13,19 +13,23 @@ namespace Keystone.Mod.Cutting {
   /// vanilla group buttons; we locate the group that owns the base-game
   /// <see cref="TreeCuttingAreaSelectionTool"/> and add our button to it.
   ///
-  /// <para><b>Dev-mode only (for now).</b> Gated behind
-  /// <see cref="KeystoneDevMode"/>, like the planting brushes, so it never
-  /// reaches a clean release build — the design is still in flux (issue #30)
-  /// and the tool overlaps Cordial's Cutter Tool
-  /// (<c>docs/private/cuttertool.md</c>).</para>
+  /// <para><b>Player gating.</b> The button is always wired into the vanilla
+  /// TreeCutting group here; whether it shows is decided live by
+  /// <see cref="Keystone.Mod.Toolbar.KeystoneToolDisabler"/> from the
+  /// <see cref="Keystone.Mod.Settings.KeystoneUiSettings"/> cutting-planner
+  /// toggle (default on; the toggle lets players who run Cordial's Cutter Tool
+  /// turn it off — <c>docs/private/cuttertool.md</c>). The engine re-checks
+  /// tool-button visibility on each tool-group open, so a setting change needs
+  /// no reload.</para>
   /// </summary>
   public sealed class KeystoneLoggingMenuInitializer : IPostLoadableSingleton {
 
     #region Constants
 
-    /// <summary>Placeholder button icon (shared with the dev tool group); a
-    /// dedicated icon needs the Unity asset pipeline.</summary>
-    private const string IconName = "KeystoneFlourishPlacement";
+    /// <summary>Button icon name, resolved by <see cref="ToolButtonFactory"/>
+    /// from the bundle's <c>Sprites/BottomBar/</c> (source-of-truth under
+    /// <c>unity-assets/Keystone/AssetBundles/Resources/Sprites/BottomBar/</c>).</summary>
+    private const string IconName = "CuttingToolIcon";
 
     #endregion
 
@@ -57,9 +61,8 @@ namespace Keystone.Mod.Cutting {
 
     /// <inheritdoc />
     public void PostLoad() {
-      // Dev-mode only: not surfaced in a clean release build.
-      if (!KeystoneDevMode.IsEnabled) return;
-
+      // Always wired into the vanilla TreeCutting group; KeystoneToolDisabler
+      // gates the button's visibility live from the KeystoneUiSettings toggle.
       var groupButton = FindGroupButton();
       if (groupButton == null) {
         KeystoneLog.Warn(
@@ -69,7 +72,21 @@ namespace Keystone.Mod.Cutting {
         return;
       }
 
-      var button = _toolButtonFactory.Create(_tool, IconName, groupButton.ToolButtonsElement);
+      // Icon resolves from the deployed AssetBundle. If it's missing (e.g. the
+      // bundle hasn't been rebuilt after a new sprite was added on the code
+      // side), Create throws -- and this runs in PostLoad, so an unguarded
+      // throw aborts the whole game load. A cosmetic icon is never worth that:
+      // log it loudly with the fix and skip this button instead.
+      ToolButton button;
+      try {
+        button = _toolButtonFactory.Create(_tool, IconName, groupButton.ToolButtonsElement);
+      } catch (System.Exception e) {
+        KeystoneLog.Error(
+            $"[Keystone] KeystoneLoggingMenuInitializer: failed to load icon '{IconName}' for the "
+            + "cutting-planner button -- rebuild the Keystone AssetBundle in the Modding SDK "
+            + $"(the sprite isn't in the deployed bundle). Button not added. {e}");
+        return;
+      }
       _toolGroupService.AssignToGroup(_toolGroupService.GetGroup(KeystoneLoggingTool.GroupId), _tool);
       groupButton.AddTool(button);
       // ToolButtonFactory registered the button, but the service's PostLoad pass

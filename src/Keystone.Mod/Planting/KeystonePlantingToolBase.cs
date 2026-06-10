@@ -55,6 +55,10 @@ namespace Keystone.Mod.Planting {
     private const string OverwriteLocKey = "Tool.Keystone.Planting.Overwrite";
     private const string DestroyExistingLocKey = "Tool.Keystone.Planting.DestroyExisting";
 
+    /// <summary>Shared trailing note on every Keystone tool description that
+    /// points the player at the on/off toggle in mod settings.</summary>
+    private const string ModSettingsHintLocKey = "Tool.Keystone.ModSettingsHint";
+
     private static readonly Color PreviewColor = new(0f, 0.8f, 0f, 1f);
 
     #endregion
@@ -203,6 +207,7 @@ namespace Keystone.Mod.Planting {
     public ToolDescription DescribeTool() {
       return new ToolDescription.Builder(Loc.T(TitleLocKey))
           .AddSection(Loc.T(DescriptionLocKey))
+          .AddSection(Loc.T(ModSettingsHintLocKey))
           .Build();
     }
 

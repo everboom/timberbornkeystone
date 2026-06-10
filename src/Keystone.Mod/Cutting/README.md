@@ -8,9 +8,13 @@ Tool (`docs/private/cuttertool.md`): a percentage knob instead of fixed
 checkered/line patterns, built on the vanilla cutting-area services.
 
 It only writes the host's tree-cutting **area** (beavers fell the trees through
-the normal forester pipeline); nothing is force-removed. **Currently dev-mode
-only** — gated behind `KeystoneDevMode` like the planting brushes — because it
-overlaps the upstream Cutter Tool and the design is still settling (issue #30).
+the normal forester pipeline); nothing is force-removed. **Player-gated by its
+own `KeystoneUiSettings.CuttingPlannerTool` toggle** (default on; the toggle
+lets a player running the upstream Cutter Tool turn ours off — issue #30),
+enforced live by `Keystone.Mod.Toolbar.KeystoneToolDisabler` the same way the
+planting brushes are: the button is always wired into the vanilla TreeCutting
+group and its visibility re-checks on each tool-group open, so a toggle takes
+effect with no reload.
 
 The options panel lists the **tree-type filter first** (one toggle per species,
 plus Select all / Clear all), then below a divider the other options: a

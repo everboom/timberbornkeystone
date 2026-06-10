@@ -19,24 +19,25 @@ namespace Keystone.Mod.Planting {
   /// <see cref="ToolButtonService.GetToolGroupButton"/> for the group
   /// button that owns it, and add our button to that group.</para>
   ///
-  /// <para><b>Dev-mode only (for now).</b> Both planting brushes — crops
-  /// and trees/bushes — are gated behind <see cref="KeystoneDevMode"/>, the
-  /// same sentinel <see cref="Keystone.Mod.Toolbar.KeystoneToolGroup"/>
-  /// uses, so neither appears in a clean release build. The design is still
-  /// in flux (see issue #30), and dev-only keeps the trees/bushes variant —
-  /// which overlaps the upstream Forest Tool mod — out of players' hands
-  /// regardless until that's squared away. When these go player-facing,
-  /// drop the gate and decide per-tool exposure here.</para>
+  /// <para><b>Per-tool player gating.</b> Both buttons are always wired into
+  /// their vanilla groups here; whether each one shows is decided live by
+  /// <see cref="Keystone.Mod.Toolbar.KeystoneToolDisabler"/> from the on/off
+  /// toggles in <see cref="Keystone.Mod.Settings.KeystoneUiSettings"/> (both
+  /// default on; the toggle lets players who run the overlapping Forest Tool
+  /// mod turn the trees/bushes variant off). The engine re-checks tool-button
+  /// visibility on each tool-group open, so a setting change takes effect with
+  /// no reload.</para>
   /// </summary>
   public sealed class KeystonePlantingMenuInitializer : IPostLoadableSingleton {
 
     #region Constants
 
-    /// <summary>Placeholder button icon name, resolved by
-    /// <see cref="ToolButtonFactory"/> from <c>Sprites/BottomBar/</c>.
-    /// Shared with the dev tool group for now; per-tool icons need the
-    /// Unity asset pipeline.</summary>
-    private const string IconName = "KeystoneFlourishPlacement";
+    /// <summary>Button icon name shared by both planting brushes (trees and
+    /// crops), resolved by <see cref="ToolButtonFactory"/> from the bundle's
+    /// <c>Sprites/BottomBar/</c> (source-of-truth under
+    /// <c>unity-assets/Keystone/AssetBundles/Resources/Sprites/BottomBar/</c>).
+    /// The cutting tool will get its own icon separately.</summary>
+    private const string IconName = "RandomPlantIcon";
 
     #endregion
 
@@ -71,8 +72,9 @@ namespace Keystone.Mod.Planting {
 
     /// <inheritdoc />
     public void PostLoad() {
-      // Dev-mode only: neither brush is surfaced in a clean release build.
-      if (!KeystoneDevMode.IsEnabled) return;
+      // Both brushes are always wired into their vanilla planting groups;
+      // KeystoneToolDisabler gates each button's visibility live from the
+      // KeystoneUiSettings toggles, so nothing is gated at add-time here.
       AddToolToGroup(KeystoneCropPlantingTool.GroupId, _cropTool);
       AddToolToGroup(KeystoneForestPlantingTool.GroupId, _forestTool);
     }
@@ -90,7 +92,21 @@ namespace Keystone.Mod.Planting {
         return;
       }
 
-      var button = _toolButtonFactory.Create(tool, IconName, groupButton.ToolButtonsElement);
+      // Icon resolves from the deployed AssetBundle. If it's missing (e.g. the
+      // bundle hasn't been rebuilt after a new sprite was added on the code
+      // side), Create throws -- and this runs in PostLoad, so an unguarded
+      // throw aborts the whole game load. A cosmetic icon is never worth that:
+      // log it loudly with the fix and skip this button instead.
+      ToolButton button;
+      try {
+        button = _toolButtonFactory.Create(tool, IconName, groupButton.ToolButtonsElement);
+      } catch (System.Exception e) {
+        KeystoneLog.Error(
+            $"[Keystone] KeystonePlantingMenuInitializer: failed to load icon '{IconName}' for the "
+            + $"'{groupId}' planting button -- rebuild the Keystone AssetBundle in the Modding SDK "
+            + $"(the sprite isn't in the deployed bundle). Button not added. {e}");
+        return;
+      }
       _toolGroupService.AssignToGroup(_toolGroupService.GetGroup(groupId), tool);
       groupButton.AddTool(button);
       // ToolButtonFactory already registered the button with

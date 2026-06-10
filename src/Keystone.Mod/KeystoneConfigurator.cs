@@ -41,6 +41,7 @@ using Timberborn.BottomBarSystem;
 using Timberborn.TemplateCollectionSystem;
 using Timberborn.TemplateInstantiation;
 using Timberborn.TimbermeshMaterials;
+using Timberborn.ToolSystem;
 
 namespace Keystone.Mod {
 
@@ -389,10 +390,11 @@ namespace Keystone.Mod {
       // pipeline), extended to crops. Two category variants (crops; trees +
       // bushes) share KeystonePlantingToolBase + the Core PlantingPalette
       // policy; the menu initializer injects their buttons into the vanilla
-      // "Fields" / "Forestry" planting menus. Currently DEV-MODE ONLY (like
-      // KeystoneToolGroup) -- the design is still in flux (issue #30) and
-      // dev-only keeps the Forest-Tool-overlapping trees variant out of
-      // players' hands. See docs/private/foresttool.md and
+      // "Fields" / "Forestry" planting menus. Each brush is individually
+      // player-gated by an on/off toggle in KeystoneUiSettings, enforced live
+      // by KeystoneToolDisabler (bound below); both default on, with the
+      // toggle there so players who run an overlapping mod (Forest Tool) can
+      // turn them off. See docs/private/foresttool.md and
       // src/Keystone.Mod/Planting/README.md.
       Bind<KeystoneCropPlantingTool>().AsSingleton();
       Bind<KeystoneForestPlantingTool>().AsSingleton();
@@ -402,12 +404,19 @@ namespace Keystone.Mod {
       // drag-select an area and mark a player-set fraction of the trees in it
       // for cutting (per-tile seeded selection via Core LoggingSelector,
       // written through ICuttingAreaWriter over the vanilla TreeCuttingArea).
-      // Injected into the vanilla "TreeCutting" menu. DEV-MODE ONLY for the same
-      // reason as the planting brush -- it overlaps Cordial's Cutter Tool and
-      // the design is still in flux (issue #30). See docs/private/cuttertool.md
-      // and src/Keystone.Mod/Cutting/README.md.
+      // Injected into the vanilla "TreeCutting" menu. Player-gated by its own
+      // KeystoneUiSettings toggle (default on) like the planting brushes, so
+      // players running Cordial's Cutter Tool can turn it off. See
+      // docs/private/cuttertool.md and src/Keystone.Mod/Cutting/README.md.
       Bind<KeystoneLoggingTool>().AsSingleton();
       Bind<KeystoneLoggingMenuInitializer>().AsSingleton();
+
+      // Live per-tool visibility gate for the three brushes above. As an
+      // IToolDisabler it's consulted by every ToolButton's visibility check,
+      // which the engine re-evaluates on each ToolGroupEnteredEvent -- so
+      // toggling a KeystoneUiSettings tool switch shows/hides the button the
+      // next time its group is opened, no reload.
+      MultiBind<IToolDisabler>().To<KeystoneToolDisabler>().AsSingleton();
 
       MultiBind<TemplateModule>().ToProvider<KeystoneTemplateModuleProvider>().AsSingleton();
       MultiBind<BottomBarModule>().ToProvider<KeystoneBottomBarModuleProvider>().AsSingleton();

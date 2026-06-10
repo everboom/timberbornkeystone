@@ -8,10 +8,11 @@ built on the clean vanilla planting services instead of Forest Tool's static
 global state.
 
 It only writes planting *marks* (beavers fulfil them through the normal
-pipeline); nothing is force-spawned. **Currently dev-mode only** — gated behind
-`KeystoneDevMode` like the `Keystone.Mod.Toolbar` dev tools — while the design
-is still in flux (issue #30) and the trees/bushes overlap with the upstream
-Forest Tool mod is unresolved.
+pipeline); nothing is force-spawned. Each brush is **player-gated by its own
+on/off toggle** in `KeystoneUiSettings` (both default on; the toggle lets
+players who run the overlapping Forest Tool mod turn the trees/bushes brush off
+— issue #30). The gate is enforced live by
+`Keystone.Mod.Toolbar.KeystoneToolDisabler`; see below.
 
 ## Key types
 
@@ -48,17 +49,20 @@ Forest Tool mod is unresolved.
   the tool buttons into the existing vanilla group buttons (the Forest Tool
   approach: find `ToolGroupButton` by id, `ToolButtonFactory.Create`, `AddTool`).
 
-## Dev-mode only, for now
+## Per-tool player gating (settings toggles)
 
-Both brushes are gated behind `KeystoneDevMode` in
-`KeystonePlantingMenuInitializer.PostLoad` — they appear only when dev mode is
-enabled, never in a clean release build. Two reasons: the design is still in
-flux (issue #30 — e.g. count-tiered "smart planting" modes), and the
-trees/bushes brush directly overlaps the upstream Forest Tool mod, which we
-don't want in players' hands until that's squared with its author. When these
-go player-facing, drop the dev-mode gate in `PostLoad` and decide per-tool
-exposure there (crops are net-new; the trees/bushes overlap is the sensitive
-one).
+The two buttons are always wired into their vanilla groups in
+`KeystonePlantingMenuInitializer.PostLoad`; whether each one *shows* is decided
+live by `Keystone.Mod.Toolbar.KeystoneToolDisabler` — an `IToolDisabler` that
+reads `KeystoneUiSettings.MixedCropPlantingTool` /
+`MixedForestPlantingTool`. The engine re-checks every tool button's visibility
+on each `ToolGroupEnteredEvent`, so flipping a toggle shows/hides the button the
+next time that tool group is opened, with **no reload**.
+
+Both default **on**. The toggle exists mainly so a player running the upstream
+Forest Tool mod (which the trees/bushes brush overlaps) can turn ours off to
+avoid duplicate buttons; crops are net-new, so that one rarely needs disabling.
+(Design is still evolving — issue #30, e.g. count-tiered "smart planting" modes.)
 
 ## Design notes
 

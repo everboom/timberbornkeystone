@@ -31,6 +31,36 @@ namespace Keystone.Mod.Settings {
                 .CreateLocalized("Keystone.Settings.UI.TilledSoilTexture")
                 .SetLocalizedTooltip("Keystone.Settings.UI.TilledSoilTexture.Tooltip"));
 
+    /// <summary>On/off for the mixed-crop planting brush (injected into the
+    /// vanilla field/crop planting menu). On by default; turn it off here to
+    /// hide the button. Read live by
+    /// <see cref="Keystone.Mod.Toolbar.KeystoneToolDisabler"/>: toggling it
+    /// shows/hides the tool button the next time its tool group is opened, no
+    /// reload.</summary>
+    public ModSetting<bool> MixedCropPlantingTool { get; } =
+        new(defaultValue: true,
+            ModSettingDescriptor
+                .CreateLocalized("Keystone.Settings.UI.MixedCropPlantingTool")
+                .SetLocalizedTooltip("Keystone.Settings.UI.MixedCropPlantingTool.Tooltip"));
+
+    /// <summary>On/off for the mixed tree/bush planting brush (injected into
+    /// the vanilla forester planting menu). On by default; same live gating
+    /// as <see cref="MixedCropPlantingTool"/>.</summary>
+    public ModSetting<bool> MixedForestPlantingTool { get; } =
+        new(defaultValue: true,
+            ModSettingDescriptor
+                .CreateLocalized("Keystone.Settings.UI.MixedForestPlantingTool")
+                .SetLocalizedTooltip("Keystone.Settings.UI.MixedForestPlantingTool.Tooltip"));
+
+    /// <summary>On/off for the cutting-planner brush (injected into the
+    /// vanilla forester tree-cutting menu). On by default; same live gating
+    /// as <see cref="MixedCropPlantingTool"/>.</summary>
+    public ModSetting<bool> CuttingPlannerTool { get; } =
+        new(defaultValue: true,
+            ModSettingDescriptor
+                .CreateLocalized("Keystone.Settings.UI.CuttingPlannerTool")
+                .SetLocalizedTooltip("Keystone.Settings.UI.CuttingPlannerTool.Tooltip"));
+
     /// <inheritdoc />
     public override int Order => 6;
 

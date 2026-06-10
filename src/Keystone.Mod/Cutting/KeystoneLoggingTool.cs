@@ -65,6 +65,10 @@ namespace Keystone.Mod.Cutting {
     private const string TitleLocKey = "Tool.Keystone.Logging.DisplayName";
     private const string DescriptionLocKey = "Tool.Keystone.Logging.Description";
     private const string PanelTitleLocKey = "Tool.Keystone.Logging.PanelTitle";
+
+    /// <summary>Shared trailing note pointing the player at the mod-settings
+    /// on/off toggle (same key the planting brushes use).</summary>
+    private const string ModSettingsHintLocKey = "Tool.Keystone.ModSettingsHint";
     private const string PercentLocKey = "Tool.Keystone.Logging.Percent";
     private const string OverrideExistingLocKey = "Tool.Keystone.Logging.OverrideExisting";
     private const string SpeciesLocKey = "Tool.Keystone.Logging.Species";
@@ -204,6 +208,7 @@ namespace Keystone.Mod.Cutting {
     public ToolDescription DescribeTool() {
       return new ToolDescription.Builder(_loc.T(TitleLocKey))
           .AddSection(_loc.T(DescriptionLocKey))
+          .AddSection(_loc.T(ModSettingsHintLocKey))
           .Build();
     }
 
