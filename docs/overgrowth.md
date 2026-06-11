@@ -112,6 +112,22 @@ overgrowth as a target* — reusing the existing policy/cadence.
 - **Save-portable**: removing Keystone strips the orphan component data and
   loads the trees intact (verified) — persisting on vanilla trees is safe.
 
+## Planting-marked tiles (forester zones)
+
+The `ChunkRulesApplier` normally skips any surface the player has marked
+for planting before any handler runs, so spawn/attrition never touch a
+forester zone. Overgrowth **draping** is exempt: it decorates the tree
+already standing on the tile (never places or replaces a `BlockObject`),
+so it's non-destructive and runs inside forester zones too. The handler
+opts in via `IRuleHandler.RunsOnMarkedTiles => true`; the applier keeps a
+second interest map restricted to mark-exempt handlers and dispatches it
+on marked surfaces. **Reseed is the exception** — it deletes the host and
+replants a Class-D-picked species, which would override the forester's
+designated species, so reseed alone re-checks the mark and bails on marked
+tiles. (Before this, *all* overgrowth was suppressed on planting tiles,
+which hid it on most managed-forest trees — the bulk of trees a player
+sees.)
+
 ## Performance
 
 Activation rides the **low-frequency chunk pass**, never a per-tree
@@ -119,6 +135,14 @@ per-frame tick. The cost to watch is the **count of simultaneous overlays**,
 not the bookkeeping. Living-tree overgrowth is deliberately **lower
 probability/density** than dead-tree (poor visibility + cost), tuned via the
 handler's roll.
+
+One cost the marked-tile exemption adds: because overgrowth opts into
+marked-tile dispatch, planting-marked surfaces are no longer skipped before
+biome sampling — they now pay the per-surface biome+maturity sample (but
+still short-circuit at the mark-exempt interest map for any
+`(biome, level)` bucket overgrowth doesn't cover). This rides the same
+amortised rolling sweep, so it's spread across ticks; the blanket fast-skip
+is preserved only when *no* handler is mark-exempt.
 
 ## Species & timing
 

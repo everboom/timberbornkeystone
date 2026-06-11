@@ -49,7 +49,9 @@ namespace Keystone.Mod.Recipes {
   ///         within the cycle.</item>
   ///   <item>For each <see cref="ChunkCoord"/>, <see cref="ProcessUnit"/>
   ///         walks every surface in the chunk that belongs to this
-  ///         region (and isn't player-marked), resolves that surface's
+  ///         region (player-marked surfaces dispatch only mark-exempt
+  ///         handlers — <see cref="IRuleHandler.RunsOnMarkedTiles"/> —
+  ///         and are skipped entirely when none exist), resolves that surface's
   ///         dominant biome + maturity per tile, iterates the
   ///         winner's active levels, and invokes every handler's
   ///         <see cref="IRuleHandler.OnUnit"/> for each
@@ -150,6 +152,22 @@ namespace Keystone.Mod.Recipes {
     /// PostLoad before reading.</para>
     /// </summary>
     private Dictionary<(BiomeKind Biome, string LevelId), int[]>? _interestMap;
+
+    /// <summary>The <see cref="_interestMap"/> restricted to handlers
+    /// that opt into marked-tile dispatch
+    /// (<see cref="IRuleHandler.RunsOnMarkedTiles"/>). On a
+    /// player-marked surface the dispatch loop uses this map instead of
+    /// the full one, so only the exempt handlers (overgrowth draping)
+    /// fire there while spawn/attrition stay suppressed. Built alongside
+    /// <see cref="_interestMap"/> in <see cref="BuildInterestMap"/>.</summary>
+    private Dictionary<(BiomeKind Biome, string LevelId), int[]>? _interestMapMarked;
+
+    /// <summary>True when at least one handler opts into marked-tile
+    /// dispatch. When false, the fast blanket marked-tile skip in
+    /// <see cref="ProcessUnit"/> is preserved (no biome sampling on
+    /// marked surfaces); when true, marked surfaces are sampled and
+    /// dispatched against <see cref="_interestMapMarked"/>.</summary>
+    private bool _anyMarkExempt;
 
     /// <summary>Cached schedule + the <see cref="RegionService.TopologyVersion"/>
     /// it was built against. The (region, chunk) tuple list only
@@ -273,26 +291,48 @@ namespace Keystone.Mod.Recipes {
     /// cycle start.</summary>
     private void BuildInterestMap() {
       var temp = new Dictionary<(BiomeKind, string), List<int>>();
+      // Parallel map restricted to mark-exempt handlers, consulted on
+      // player-marked surfaces. Stays empty (and _anyMarkExempt false)
+      // when no handler opts in, which preserves the fast marked-tile
+      // skip in ProcessUnit.
+      var tempMarked = new Dictionary<(BiomeKind, string), List<int>>();
+      _anyMarkExempt = false;
       for (var i = 0; i < _handlers.Count; i++) {
+        var markExempt = _handlers[i].RunsOnMarkedTiles;
+        if (markExempt) _anyMarkExempt = true;
         foreach (var bucket in _handlers[i].ActiveBuckets) {
-          if (!temp.TryGetValue(bucket, out var list)) {
-            list = new List<int>();
-            temp[bucket] = list;
-          }
-          // De-dupe: a handler with multiple recipes in the same
-          // bucket still only appears once in its interested list.
-          if (list.Count == 0 || list[list.Count - 1] != i) {
-            // ActiveBuckets is allowed to emit duplicates; collapsing
-            // them here means the dispatch loop never invokes the
-            // same handler twice for one (surface, level).
-            if (!list.Contains(i)) list.Add(i);
-          }
+          AddInterest(temp, bucket, i);
+          if (markExempt) AddInterest(tempMarked, bucket, i);
         }
       }
-      _interestMap = new Dictionary<(BiomeKind, string), int[]>(temp.Count);
-      foreach (var kv in temp) {
-        _interestMap[kv.Key] = kv.Value.ToArray();
+      _interestMap = Freeze(temp);
+      _interestMapMarked = Freeze(tempMarked);
+    }
+
+    /// <summary>Append <paramref name="handlerIndex"/> to the bucket's
+    /// interested-handler list, de-duped. <see cref="IRuleHandler.ActiveBuckets"/>
+    /// is allowed to emit duplicates; collapsing them here means the
+    /// dispatch loop never invokes the same handler twice for one
+    /// (surface, level).</summary>
+    private static void AddInterest(
+        Dictionary<(BiomeKind, string), List<int>> map,
+        (BiomeKind Biome, string LevelId) bucket, int handlerIndex) {
+      if (!map.TryGetValue(bucket, out var list)) {
+        list = new List<int>();
+        map[bucket] = list;
       }
+      if (!list.Contains(handlerIndex)) list.Add(handlerIndex);
+    }
+
+    /// <summary>Freeze a mutable bucket→indices builder map into the
+    /// array-valued form the dispatch loop reads.</summary>
+    private static Dictionary<(BiomeKind Biome, string LevelId), int[]> Freeze(
+        Dictionary<(BiomeKind, string), List<int>> temp) {
+      var frozen = new Dictionary<(BiomeKind Biome, string LevelId), int[]>(temp.Count);
+      foreach (var kv in temp) {
+        frozen[kv.Key] = kv.Value.ToArray();
+      }
+      return frozen;
     }
 
     private void RebuildCachedSchedule() {
@@ -345,7 +385,12 @@ namespace Keystone.Mod.Recipes {
         var tMarks = Stopwatch.GetTimestamp();
         var isMarked = _marks.IsMarked(surface.X, surface.Y, surface.Z);
         marksTicks += Stopwatch.GetTimestamp() - tMarks;
-        if (isMarked) continue;
+        // A marked surface is skipped wholesale only when no handler is
+        // mark-exempt; otherwise we still sample + dispatch, but against
+        // the mark-exempt-only interest map so spawn/attrition stay out
+        // of forester zones while overgrowth draping runs there.
+        if (isMarked && !_anyMarkExempt) continue;
+        var interestMap = isMarked ? _interestMapMarked! : _interestMap!;
 
         var tSample = Stopwatch.GetTimestamp();
         // Fold per-tile riparian into dominance: on a clean-near-water
@@ -388,7 +433,7 @@ namespace Keystone.Mod.Recipes {
           // recipe for this (biome, levelId) bucket. Saves the
           // virtual-call + dict-lookup overhead of N handlers each
           // independently returning "nothing to do for me here."
-          if (!_interestMap!.TryGetValue((biome, level.LevelId), out var interestedHandlers)
+          if (!interestMap.TryGetValue((biome, level.LevelId), out var interestedHandlers)
               || interestedHandlers.Length == 0) {
             continue;
           }

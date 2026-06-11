@@ -74,6 +74,17 @@ namespace Keystone.Mod.Overgrowth {
     }
 
     /// <inheritdoc />
+    /// <remarks>Overgrowth draping is additive — it decorates the tree
+    /// already standing on the tile, never placing or replacing a
+    /// <c>BlockObject</c> — so it's exempt from the applier's marked-tile
+    /// skip and decorates trees inside forester zones too. The one
+    /// destructive sub-action, <see cref="OvergrowthTarget.Reseed"/>
+    /// (delete host + replant a Class-D species), re-checks the mark in
+    /// <see cref="OnRecipeChosen"/> so a forester's planting designation
+    /// still wins there.</remarks>
+    public override bool RunsOnMarkedTiles => true;
+
+    /// <inheritdoc />
     protected override IReadOnlyList<OvergrowthRecipe> GetAllRecipes() => _catalog.AllOvergrowth;
 
     /// <inheritdoc />
@@ -93,9 +104,6 @@ namespace Keystone.Mod.Overgrowth {
     /// <inheritdoc />
     protected override void OnRecipeChosen(
         SurfaceCoord surface, BiomeKind biome, BiomeLevel level, OvergrowthRecipe recipe) {
-      // Defense in depth on the dispatcher's marked-tile skip.
-      if (IsMarked(surface)) return;
-
       var tile = new Vector3Int(surface.X, surface.Y, surface.Z);
       var overgrowth = _blockService.GetFirstObjectWithComponentAt<KeystoneOvergrowth>(tile);
       if (overgrowth == null) return;
@@ -106,6 +114,12 @@ namespace Keystone.Mod.Overgrowth {
       var isDead = living != null && living.IsDead;
 
       if (recipe.Target == OvergrowthTarget.Reseed) {
+        // The handler opts into marked-tile dispatch (RunsOnMarkedTiles)
+        // for the non-destructive Live/Dead draping below — but reseed
+        // deletes the host and replants a Class-D-picked species, which
+        // would override a forester's designated species. So reseed
+        // alone re-honours the planting mark and bails on marked tiles.
+        if (IsMarked(surface)) return;
         ReseedIfReady(overgrowth, isDead, biome, recipe);
         return;
       }

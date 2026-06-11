@@ -40,9 +40,26 @@ namespace Keystone.Mod.Recipes {
   /// presence, planting marks, biome dominance at the tile (Score-pass
   /// + max-Score winner), and "investment ≥ level lower bound" before
   /// calling <see cref="OnUnit"/>. Handlers can assume those
-  /// preconditions and skip re-checking.</para>
+  /// preconditions and skip re-checking.
+  /// <para><b>Exception — <see cref="RunsOnMarkedTiles"/>.</b> The
+  /// planting-mark gate is the one precondition a handler can opt out
+  /// of: a handler that returns <c>true</c> there is also dispatched on
+  /// player-marked tiles. Such a handler must re-check the mark itself
+  /// for any sub-action that <i>is</i> destructive/obstructive.</para></para>
   /// </summary>
   public interface IRuleHandler {
+
+    /// <summary>When <c>true</c>, this handler is dispatched even on
+    /// tiles the player has marked for planting (forester zones);
+    /// <c>false</c> (the default) keeps the applier's blanket
+    /// marked-tile skip. Opt in only for <b>non-destructive,
+    /// non-obstructive</b> work that doesn't place or replace a
+    /// <c>BlockObject</c> on the tile — e.g. overgrowth draping a
+    /// decoration on the existing tree. A handler that opts in but has
+    /// some destructive sub-action (overgrowth's reseed, which deletes
+    /// and replants the host) must re-check the mark itself for that
+    /// path so the player's planting designation still wins there.</summary>
+    bool RunsOnMarkedTiles => false;
 
     /// <summary>Reset any per-cycle scratch state. Called once per
     /// cycle, before the per-unit pass begins. Default no-op

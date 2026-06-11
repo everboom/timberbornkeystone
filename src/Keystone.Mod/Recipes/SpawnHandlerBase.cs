@@ -110,6 +110,13 @@ namespace Keystone.Mod.Recipes {
     public virtual bool ShouldRun() => GetAllRecipes().Count > 0;
 
     /// <inheritdoc />
+    /// <remarks>Spawn handlers place <c>BlockObject</c>s, so by default
+    /// they honour the applier's marked-tile skip. Overridden by
+    /// <see cref="Keystone.Mod.Overgrowth.OvergrowthHandler"/>, whose
+    /// draping is non-destructive.</remarks>
+    public virtual bool RunsOnMarkedTiles => false;
+
+    /// <inheritdoc />
     public System.Collections.Generic.IEnumerable<(BiomeKind Biome, string LevelId)> ActiveBuckets {
       get {
         var recipes = GetAllRecipes();
