@@ -5,6 +5,7 @@ using Timberborn.BlockSystem;
 using Timberborn.Coordinates;
 using Timberborn.Cutting;
 using Timberborn.CursorToolSystem;
+using Timberborn.EntitySystem;
 using Timberborn.Growing;
 using Timberborn.InputSystem;
 using Timberborn.Localization;
@@ -83,7 +84,8 @@ namespace Keystone.Mod.Flora {
       if (blueprint == null) return;
 
       var spec = blueprint.GetSpec<BlockObjectSpec>();
-      var entity = _blockObjectFactory.CreateFinished(spec,
+      var entity = _blockObjectFactory.CreateFinished(
+          new EntitySetup.Builder(spec.Blueprint),
           new Placement(tile, Orientation.Cw0, FlipMode.Unflipped));
       if (entity == null) {
         KeystoneLog.Verbose(

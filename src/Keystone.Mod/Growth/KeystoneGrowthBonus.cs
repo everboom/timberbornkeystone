@@ -150,7 +150,15 @@ namespace Keystone.Mod.Growth {
 
     #region Lifecycle
 
-    public override void StartTickable() {
+    // v1.1 migration: TickableComponent dropped the StartTickable() lifecycle
+    // hook -- the base class no longer runs a one-time init before the first
+    // Tick(). We reproduce that contract ourselves with the _started guard at
+    // the top of Tick() below, preserving the original "run once, lazily,
+    // before first tick" semantics. Kept as a named method so the existing
+    // <see cref="StartTickable"/> references resolve.
+    private bool _started;
+
+    private void StartTickable() {
       try {
         _growable = GetComponent<Growable>();
         _blockObject = GetComponent<BlockObject>();
@@ -235,6 +243,7 @@ namespace Keystone.Mod.Growth {
     #region Tick
 
     public override void Tick() {
+      if (!_started) { StartTickable(); _started = true; }
       if (_targetBiome == null) return;
 
       if (++_tickCounter < CheckIntervalTicks) return;

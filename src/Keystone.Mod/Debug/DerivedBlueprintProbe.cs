@@ -4,6 +4,7 @@ using Keystone.Mod.Diagnostics;
 using Timberborn.BlockSystem;
 using Timberborn.BlueprintSystem;
 using Timberborn.Coordinates;
+using Timberborn.EntitySystem;
 using Timberborn.GameDistricts;
 using Timberborn.NaturalResourcesMoisture;
 using Timberborn.SingletonSystem;
@@ -137,7 +138,8 @@ namespace Keystone.Mod.Debug {
         var tileCoord = new Vector3Int(dc.x + SpawnDistance, dc.y, dc.z);
         var placement = new Placement(tileCoord);
 
-        var entity = _blockObjectFactory.CreateFinished(blockObjectSpec, placement);
+        var entity = _blockObjectFactory.CreateFinished(
+            new EntitySetup.Builder(blockObjectSpec.Blueprint), placement);
         if (entity == null) {
           KeystoneLog.Verbose(
               $"[Keystone] DerivedBlueprintProbe: CreateFinished returned null at {tileCoord}.");

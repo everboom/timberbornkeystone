@@ -7,6 +7,7 @@ using Keystone.Mod.Diagnostics;
 using Timberborn.BlockSystem;
 using Timberborn.BlueprintSystem;
 using Timberborn.Coordinates;
+using Timberborn.EntitySystem;
 using Timberborn.GameDistricts;
 using Timberborn.Growing;
 using Timberborn.NaturalResources;
@@ -318,7 +319,8 @@ namespace Keystone.Mod.Debug {
       var coord = new Vector3Int(dc.x + BuildingSpawnDistance, dc.y, dc.z);
 
       try {
-        var built = _blockFactory.CreateFinished(spec, new Placement(coord));
+        var built = _blockFactory.CreateFinished(
+            new EntitySetup.Builder(spec.Blueprint), new Placement(coord));
         KeystoneLog.Verbose(
             $"[Keystone] SpawnProbe: CreateFinished('{CrossFactionBuildingTemplate}', {coord}) -> " +
             $"{(built == null ? "null" : built.GameObject.name)}.");

@@ -316,7 +316,12 @@ namespace Keystone.Mod.Overgrowth {
     /// <summary>Tick-system init: stagger the throttle by tile so trees
     /// don't all update on the same frame, and seed the elapsed-time
     /// baseline.</summary>
-    public override void StartTickable() {
+    // v1.1 migration: TickableComponent dropped the StartTickable() lifecycle
+    // hook. We reproduce its "run once, lazily, before first tick" contract
+    // with the _started guard at the top of Tick() below.
+    private bool _started;
+
+    private void StartTickable() {
       _lastCheckDay = _dayNightCycle.PartialDayNumber;
       _tickCounter = StaggerTicks(GetComponent<BlockObject>());
     }
@@ -332,6 +337,7 @@ namespace Keystone.Mod.Overgrowth {
     /// </list>
     /// Living, un-decorated trees (the majority) early-out.</summary>
     public override void Tick() {
+      if (!_started) { StartTickable(); _started = true; }
       var blockObject = GetComponent<BlockObject>();
       if (blockObject == null) return;
 
@@ -540,13 +546,13 @@ namespace Keystone.Mod.Overgrowth {
     /// holds (it is a single wood type). Returns <c>false</c> when the pile is
     /// empty or every remaining unit is reserved — the signal to stop this
     /// day's pass. The <see cref="Inventory.UnreservedAmountInStock"/> guard
-    /// is mandatory: <see cref="Inventory.Take"/> throws on reserved stock.
+    /// is mandatory: <see cref="Inventory.TakeExisting"/> throws on reserved stock.
     /// The <c>return</c> immediately after the take exits the enumeration
     /// before the (now-mutated) stock list is advanced.</summary>
     private static bool RotOneLog(Inventory inventory) {
       foreach (var good in inventory.Stock) {
         if (inventory.UnreservedAmountInStock(good.GoodId) >= 1) {
-          inventory.Take(new GoodAmount(good.GoodId, 1));
+          inventory.TakeExisting(new GoodAmount(good.GoodId, 1));
           return true;
         }
       }

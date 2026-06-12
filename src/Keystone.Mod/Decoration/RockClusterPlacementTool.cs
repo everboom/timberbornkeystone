@@ -153,7 +153,8 @@ namespace Keystone.Mod.Decoration {
       }
       var spec = blueprint.GetSpec<BlockObjectSpec>();
       var placement = new Placement(tile, Orientation.Cw0, FlipMode.Unflipped);
-      var entity = _blockObjectFactory.CreateFinished(spec, placement);
+      var entity = _blockObjectFactory.CreateFinished(
+          new EntitySetup.Builder(spec.Blueprint), placement);
       if (entity == null) {
         KeystoneLog.Verbose(
             $"[Keystone] RockClusterPlacementTool: CreateFinished returned " +

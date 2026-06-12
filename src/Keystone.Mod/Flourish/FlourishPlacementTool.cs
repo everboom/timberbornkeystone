@@ -190,7 +190,8 @@ namespace Keystone.Mod.Flourish {
       ClearReplaceableOccupants(tile);
 
       var spec = bp.GetSpec<BlockObjectSpec>();
-      var entity = _blockObjectFactory.CreateFinished(spec,
+      var entity = _blockObjectFactory.CreateFinished(
+          new EntitySetup.Builder(spec.Blueprint),
           new Placement(tile, Orientation.Cw0, FlipMode.Unflipped));
       if (entity == null) {
         KeystoneLog.Verbose(

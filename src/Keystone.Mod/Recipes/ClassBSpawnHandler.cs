@@ -323,7 +323,8 @@ namespace Keystone.Mod.Recipes {
       try {
         var spec = blueprint.GetSpec<BlockObjectSpec>();
         var placement = new Placement(tile, Orientation.Cw0, FlipMode.Unflipped);
-        var entity = _blockObjectFactory.CreateFinished(spec, placement);
+        var entity = _blockObjectFactory.CreateFinished(
+            new EntitySetup.Builder(spec.Blueprint), placement);
         if (entity == null) {
           // Routine: placement service rejected the tile. The spawn
           // budget will look elsewhere; not a real fault.

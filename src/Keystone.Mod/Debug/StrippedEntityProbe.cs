@@ -158,7 +158,7 @@ namespace Keystone.Mod.Debug {
     /// <c>(dc.x + SpawnDistance, dc.y, dc.z)</c>.</summary>
     private void SpawnSingle(BlockObjectSpec spec, Vector3Int dc) {
       var tileCoord = new Vector3Int(dc.x + SpawnDistance, dc.y, dc.z);
-      var entity = _blockObjectFactory.CreateFinished(spec, new Placement(tileCoord));
+      var entity = _blockObjectFactory.CreateFinished(new EntitySetup.Builder(spec.Blueprint), new Placement(tileCoord));
       if (entity == null) {
         KeystoneLog.Verbose(
             $"[Keystone] StrippedEntityProbe: CreateFinished returned null at {tileCoord}.");
@@ -185,7 +185,7 @@ namespace Keystone.Mod.Debug {
       var spawned = 0;
       for (var i = 0; i < 3; i++) {
         try {
-          var entity = _blockObjectFactory.CreateFinished(spec, placement);
+          var entity = _blockObjectFactory.CreateFinished(new EntitySetup.Builder(spec.Blueprint), placement);
           if (entity == null) {
             KeystoneLog.Verbose(
                 $"[Keystone] StrippedEntityProbe stack-test [{i}]: CreateFinished returned null.");
@@ -231,7 +231,7 @@ namespace Keystone.Mod.Debug {
       }
 
       try {
-        _blockObjectFactory.CreateFinished(spec, new Placement(tileCoord));
+        _blockObjectFactory.CreateFinished(new EntitySetup.Builder(spec.Blueprint), new Placement(tileCoord));
         KeystoneLog.Verbose(
             $"[Keystone] StrippedEntityProbe overlap-test: ambient placement unexpectedly succeeded " +
             $"at {tileCoord} (was supposed to be rejected by BlockValidator).");
