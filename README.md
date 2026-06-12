@@ -31,6 +31,7 @@ A simulation reads water depth and flow, soil moisture, contamination, and what 
 - **Stone that responds to its conditions** — rocks go pale and dusty under drought, wet-dark along streams, sickly under badwater.
 - **Cross-faction flora.** Plant the right conditions and the *other* faction's flora takes root on its own. No menus, no recipes — just the right ground in the right place.
 - **Morning mist over wetlands.** Slow shallow water at the right depth wakes up wreathed in fog, which burns off as the day warms.
+- **Dead trees decay and come back.** Deadwood is reclaimed instead of standing forever: a dead tree gathers undergrowth, and where the surrounding biome is healthy and recovering it eventually reseeds into a new living sapling — the felled trunk's wood left on the ground for a lumberjack to haul. Drought and badwater stall and reverse the process, so the cycle only turns where the land is cared for.
 - **Long-term ecological memory.** Healthy land builds slowly when conditions hold and fades when they don't. A short lapse heals; long neglect leaves a scar. Drought management becomes biome management.
 - **Wildlife where the habitat supports it.** Deer roam mature forest, cattle find their footing on established grassland, fish thread through wetlands and across standing lakes. Populations scale with the biome's reach — a wider block of healthy forest holds more deer; a small one holds none.
 - **Beaver wellbeing tied to the ecosystem.** The bigger and healthier the ecosystem near a contemplation building, the stronger the bonus.
@@ -39,6 +40,7 @@ A simulation reads water depth and flow, soil moisture, contamination, and what 
 
 - **Mod settings menu** — throttle individual features to taste: dial things back for performance on lower-end machines, or tune the balance between realism and convenience.
 - **Biome overlay** — a built-in overlay shows what the mod sees: which biomes it reads on your terrain and how it's interpreting the world. Handy for understanding why a flourish appeared, why an animal won't settle, or how close a patch is to maturing.
+- **Planting & cutting brushes** — optional area tools (toggle each in mod settings): drag-paint a weighted mix of crops, trees, and bushes across a region — you set the proportions and how much bare ground to leave — or thin a set percentage of an area's trees for cutting. They only place ordinary planting/cutting marks, so your beavers do the work through the normal pipeline.
 
 ## Performance
 

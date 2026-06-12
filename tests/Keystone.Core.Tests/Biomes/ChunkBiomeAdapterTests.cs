@@ -263,8 +263,8 @@ namespace Keystone.Core.Tests.Biomes {
 
     [TestMethod]
     public void Build_FlowExactlyAtHighFlowThreshold_StaysSlow() {
-      // HighFlowThreshold is 0.10, strict `>`. Flow 0.10 → slow.
-      var (adapter, field, _, _, _) = Setup(Scalars(waterDepth: 0.5f, waterFlow: 0.10f));
+      // HighFlowThreshold is 0.35, strict `>`. Flow 0.35 → slow.
+      var (adapter, field, _, _, _) = Setup(Scalars(waterDepth: 0.5f, waterFlow: 0.35f));
 
       var inputs = adapter.Build(field, 0, 0);
 

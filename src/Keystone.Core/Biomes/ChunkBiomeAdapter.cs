@@ -53,7 +53,7 @@ namespace Keystone.Core.Biomes {
     /// observation -- raise if too many slow side-channels are
     /// classifying as River, lower if too many fast channels are
     /// classifying as Wetland.</summary>
-    private const float HighFlowThreshold = 0.10f;
+    private const float HighFlowThreshold = 0.35f;
 
     #endregion
 

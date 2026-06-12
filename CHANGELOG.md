@@ -1,5 +1,43 @@
 # Changelog
 
+## 1.3.2.0
+
+- **Overgrowth reaches managed forests**: the dead-tree recovery cycle now decorates trees inside your forester zones too. Previously the draping was suppressed everywhere you'd marked tiles for planting — which is most of the trees you actually look at — so it rarely showed. The cosmetic overgrowth now appears there; only the tree-*replacement* step still stays out of planting areas, so Keystone never swaps a forester's chosen species for a different one.
+- **Reseed wood gets reclaimed even from older piles**: wood left behind when a dead tree reseeds is now picked up (and slowly rots if left unhauled) whether the pile was just created or had been sitting in your save from a previous session.
+- **Growth bonus leaves modded centerpiece trees alone**: the Tree of Life mod's centerpiece tree is excluded from the biome growth-speed bonus, so it behaves the way its own mod intends.
+- **Save robustness**: fixed an internal mismatch in how per-tile surface data counted its levels when writing a save.
+
+## 1.3.1.0
+
+- **Two sliders for the dead-tree cycle**: mod settings now split overgrowth into an **overgrowth rate** (how much dead and living wood gets visually draped) and a **replacement rate** (how fast matured dead trees reseed into new ones), each adjustable 0–200% independently. The recovery clock runs regardless of the visuals, so you can turn the graphics down without changing how fast trees come back — or stop replacement entirely while keeping the look.
+- **Monoculture strips overgrowth**: a dense, low-diversity managed field actively clears overgrowth from its trees and is left out of the tree-replacement cycle — your tidy monocrop blocks stay tidy.
+- **Reclaiming dead bushes**: dead vanilla bushes (spent blueberry bushes, dandelions, and the like) can now be cleared by biome attrition the same way dead ambient flora is.
+- **Reseed wood rots if ignored**: wood dropped by a reseeded tree slowly decays if no lumberjack hauls it, instead of lingering forever.
+- **First-pass tuning** of the dead-tree cycle toward its intended 10–30 in-game-day pace.
+
+## 1.3.0.0
+
+- **Dead trees come back to life** *(new)*: deadwood is now reclaimed instead of standing forever. A dead tree gathers undergrowth, and where the surrounding biome is healthy and recovering it eventually reseeds into a new living sapling — the felled trunk's wood left on the ground for a lumberjack to haul. Drought and badwater stall and reverse the process, so the cycle only turns where the land is cared for. Ten hand-built undergrowth scenes ring the trunks for variety, with content for both grassland and forest.
+- **Clearer growth-bonus readout**: the entity panel now explains a plant's growth-speed bonus in plain language — a one-line verdict (thriving, benefiting, establishing, wrong biome, and so on) plus a hover tooltip breaking down the established biome, what the plant needs, and the exact bonus.
+
+## 1.2.4.0
+
+- **Cutting Planner** *(new)*: an area tool to mark a chosen *percentage* of an area's trees for cutting — thin a forest without hand-picking every trunk.
+- **Ambient flora stops shoving your trees around**: a newly matured Keystone tree no longer displaces the small living ground-flora already sharing its tile.
+- **Softer wet-field look**: tilled, well-watered soil now reads with a lighter texture.
+
+## 1.2.2.0
+
+- **Mixed-planting brush** *(new)*: drag-select an area and paint a weighted blend of species across it — set each one's share with proportion bars, and weight in "clearings" to leave some bare ground. It only places ordinary planting marks; your beavers plant through the normal pipeline. Optional **overwrite** and **destroy-existing** toggles let the brush replace whatever's already on a tile, and it has its own on/off setting in mod settings.
+- **Dead flora fades away**: wilted, dead ambient plants are now gradually cleared from the world (~10%/day) instead of lingering as permanent clutter.
+- **Nature wellbeing wording**: tooltips now say "wellbeing bonus", and the top ecosystem tier is renamed **Perfect**.
+
+## 1.1.2.0
+
+- **Forest needs a real canopy**: the Forest biome now establishes only once roughly a quarter of its trees have actually matured, rather than the moment saplings appear — so a freshly planted plot reads as grassland until the canopy fills in, and grassland gives way to forest at that same threshold.
+- **Wild-spread throttle**: a new Base Game setting controls how aggressively wild plants reproduce, so you can dial ambient spread up or down.
+- **Save/load hardening**: clearer reporting when a chunk's ecology data can't be placed on load, plus a save-time sweep that clears orphaned plant footprints.
+
 ## 1.0.0.1
 
 - **Fixed a save that could refuse to load**: if another mod placed a building on the exact tile of a Keystone plant — and the overlapping placement got written into the save anyway — the game would fail to load that save from then on, with an error that never mentioned Keystone. Keystone plants now bow out gracefully when they find themselves on a tile that's no longer valid: the stray plant is quietly removed and the save loads normally.
