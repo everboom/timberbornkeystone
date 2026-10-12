@@ -72,7 +72,7 @@ namespace Keystone.Mod.Fauna {
     /// state, so this is the recovery budget for when a big chunk of
     /// terrain newly qualifies and clusters fill up post-load /
     /// post-fast-forward.</summary>
-    private const int MaxSpawnsPerFrame = 2;
+    private const int MaxSpawnsPerFrame = 1;
 
     /// <summary>Maximum cluster visits per frame, separate from spawns.
     /// A visit that finds the cluster camera-blocked or finds no
@@ -132,6 +132,12 @@ namespace Keystone.Mod.Fauna {
     /// blueprint name (all three warning sites are about the same
     /// blueprint).</summary>
     private readonly HashSet<string> _warnedBlueprints = new();
+
+    // Build lazily from the session's recipe catalog; this avoids a linear
+    // AllClassE scan for every registered animal during every drain visit.
+    // The catalog is immutable after load; duplicate names retain the first
+    // recipe just like the original First/foreach implementation.
+    private Dictionary<string, Keystone.Core.Biomes.ClassERecipe>? _recipeByBlueprint;
 
     #endregion
 
@@ -442,10 +448,17 @@ namespace Keystone.Mod.Fauna {
     }
 
     private Keystone.Core.Biomes.ClassERecipe? FindRecipeForBlueprint(string blueprintName) {
-      foreach (var r in _catalog.AllClassE) {
-        if (r.BlueprintName == blueprintName) return r;
+      if (_recipeByBlueprint == null) {
+        var index = new Dictionary<string, Keystone.Core.Biomes.ClassERecipe>(System.StringComparer.Ordinal);
+        foreach (var recipe in _catalog.AllClassE) {
+          if (recipe.BlueprintName != null && !index.ContainsKey(recipe.BlueprintName)) {
+            index.Add(recipe.BlueprintName, recipe);
+          }
+        }
+        _recipeByBlueprint = index;
       }
-      return null;
+      return blueprintName != null && _recipeByBlueprint.TryGetValue(blueprintName, out var result)
+          ? result : null;
     }
 
     private Keystone.Core.Biomes.ClassERecipe PickWeighted(
