@@ -5,6 +5,7 @@
     "RequiredFeatureToggle": "",
     "DisablingFeatureToggle": ""
   },
+  "KeystoneVariantSpec": {},
   "BlockObjectSpec": {
     "Size": { "X": 1, "Y": 1, "Z": 1 },
     "Blocks": [

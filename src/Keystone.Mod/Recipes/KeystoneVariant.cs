@@ -1,6 +1,7 @@
 using Timberborn.BaseComponentSystem;
 using Timberborn.Persistence;
 using Timberborn.WorldPersistence;
+using Timberborn.TerrainSystem;
 
 namespace Keystone.Mod.Recipes {
 
@@ -30,7 +31,12 @@ namespace Keystone.Mod.Recipes {
   /// bearing for the patches. The string values match the recipe
   /// <c>Class</c> field for symmetry.</para>
   /// </summary>
-  public sealed class KeystoneVariant : BaseComponent, IPersistentEntity {
+  /// <para><b>Terrain excavation compatibility.</b> Timberborn recognizes
+  /// <see cref="IGroundMatterBelowInvalidator"/> as a ground-supported
+  /// object that may be invalidated when its supporting ground is removed.
+  /// Using the vanilla marker keeps other excavation mods optional.
+  /// No Miners of Mountains assembly is loaded or referenced.</para>
+  public sealed class KeystoneVariant : BaseComponent, IPersistentEntity, IGroundMatterBelowInvalidator {
 
     private static readonly ComponentKey ComponentKey = new("KeystoneVariant");
     private static readonly PropertyKey<string> ClassKey = new("Class");

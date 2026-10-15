@@ -6,6 +6,7 @@
     "DisablingFeatureToggle": ""
   },
   "KeystoneFlourishSpec": {},
+  "KeystoneVariantSpec": {},
   "BlockObjectSpec": {
     "Size": { "X": 1, "Y": 1, "Z": 2 },
     "Blocks": [
